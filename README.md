@@ -23,6 +23,7 @@ Configurable by Title Format, lets you generate playlists based on selection. Ba
 - Tool-tip shows multiple info about the point selected.
 - AutoPlaylist and Playlist creation on click over a point.
 - Fully Wine - Unix - non IE SOs compatible.
+- Automatically check for updates (configurable).
 
 ![tl](https://github.com/regorxxx/Timeline-SMP/assets/83307074/f7c3f202-9462-4726-a6f8-50c4710495c7)
 

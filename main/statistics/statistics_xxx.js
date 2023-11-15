@@ -1,5 +1,5 @@
 ﻿'use strict';
-//12/11/23
+//15/11/23
 
 include('statistics_xxx_helper.js');
 
@@ -1119,7 +1119,6 @@ function _chart({
 					? 2 
 					: 1
 				);
-		console.log(step, newRange);
 		if (range === points && newRange > range) {return false;}
 		let left, right;
 		if (Number.isFinite(newRange)) {
@@ -1142,7 +1141,6 @@ function _chart({
 			right = Infinity;
 			if ((left - right) >= range) {return false;}
 		}
-		console.log(left, right);
 		this.changeConfig({bPaint: true, dataManipulation: {slice: [left, right === points ? Infinity : right]}});
 		this.move(this.mx, this.my);
 		return true;

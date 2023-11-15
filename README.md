@@ -7,7 +7,7 @@ A [foobar2000](https://www.foobar2000.org/) interactive Timeline
 [Spider Monkey Panel](https://theqwertiest.github.io/foo_spider_monkey_panel/) of your library. 
 Configurable by Title Format, lets you generate playlists based on selection. Based on [Statistics-Framework-SMP](https://regorxxx.github.io/foobar2000-Framework-SMP.github.io/scripts/statistics-framework-smp/)
 
-![tl_ui](https://github.com/regorxxx/Timeline-SMP/assets/83307074/f7303e56-978e-492d-b597-447278fb672f)
+![tl_ui](https://github.com/regorxxx/Timeline-SMP/assets/83307074/fb65251f-47a3-4460-aea8-428b91480aa2)
 
 ## Features
 - Statistics fully configurable:
@@ -22,10 +22,10 @@ Configurable by Title Format, lets you generate playlists based on selection. Ba
 - AutoPlaylist and Playlist creation on click over a point.
 - Fully Wine - Unix - non IE SOs compatible.
 
-![tl](https://github.com/regorxxx/Timeline-SMP/assets/83307074/ddc53d75-5bfa-4268-911c-364e305b3ef8)
+![tl](https://github.com/regorxxx/Timeline-SMP/assets/83307074/f7c3f202-9462-4726-a6f8-50c4710495c7)
 
 ## Installation
-See [_TIPS and INSTALLATION (txt)](https://github.com/regorxxx/Device-Priority-SMP/blob/main/_TIPS%20and%20INSTALLATION.txt) and the [Wiki](https://github.com/regorxxx/Device-Priority-SMP/wiki/Installation).
+See [_TIPS and INSTALLATION (txt)](https://github.com/regorxxx/Timeline-SMP/blob/main/_TIPS%20and%20INSTALLATION.txt) and the [Wiki](https://github.com/regorxxx/Timeline-SMP/wiki/Installation).
 Not properly following the installation instructions will result in scripts not working as intended. Please don't report errors before checking this.
 
 [changelog]: CHANGELOG.md

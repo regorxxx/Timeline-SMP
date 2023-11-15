@@ -16,13 +16,18 @@ Configurable by Title Format, lets you generate playlists based on selection. Ba
 - Asynchronous data calculations (UI is not blocked).
 - Point statistics.
 - Scroll with buttons and mouse dragging.
-- Zoom with mouse wheel.
+- Zoom with mouse wheel and button.
 - Configurable background (cover, colors, gradient, ...).
+	- Color palettes and schemes from [colorbrewer](https://colorbrewer2.org).
+	- Colorblind friendly.
 - Tool-tip shows multiple info about the point selected.
 - AutoPlaylist and Playlist creation on click over a point.
 - Fully Wine - Unix - non IE SOs compatible.
 
 ![tl](https://github.com/regorxxx/Timeline-SMP/assets/83307074/f7c3f202-9462-4726-a6f8-50c4710495c7)
+
+## Also integrates
+ 1. [Statistics-Framework-SMP](https://github.com/regorxxx/Statistics-Framework-SMP): An open source framework to display charts on foobar2000.
 
 ## Installation
 See [_TIPS and INSTALLATION (txt)](https://github.com/regorxxx/Timeline-SMP/blob/main/_TIPS%20and%20INSTALLATION.txt) and the [Wiki](https://github.com/regorxxx/Timeline-SMP/wiki/Installation).

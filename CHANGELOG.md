@@ -6,9 +6,13 @@
 
 ## [Unreleased][]
 ### Added
+- UI: added transparency to all chart types (previously only on 'Timeline' type).
 ### Changed
+- UI: improved input menu entries with hints. For ex. transparency input menu entries now have a hint about which value is opaque and which transparent.
+- Helpers. updated helpers.
 ### Removed
 ### Fixed
+- UI: extra column on color palette's schemes submenu.
 
 ## [0.6.0] - 2023-11-15
 ### Added

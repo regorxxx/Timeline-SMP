@@ -1,5 +1,5 @@
 ﻿'use strict';
-//06/11/23
+//16/11/23
 
 // Don't load this helper unless menu framework is also present
 // https://github.com/regorxxx/Menu-Framework-SMP
@@ -223,16 +223,18 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 		menu.newEntry({menuName: subMenu, entryText: 'sep'});
 		{
 				const subMenuTwo = menu.newMenu('By scheme...', subMenu);
+				let j = 0;
 				for (let key in (this.chroma.colorBlindSafe ? colorbrewer.colorBlind : colorbrewer)) {
 					colorbrewer[key].forEach((scheme, i) => {
 						if (i === 0) {
-							menu.newEntry({menuName: subMenuTwo, entryText: key.charAt(0).toUpperCase() + key.slice(1), flags: MF_GRAYED | MF_MENUBARBREAK});
+							menu.newEntry({menuName: subMenuTwo, entryText: key.charAt(0).toUpperCase() + key.slice(1), flags: (j === 0 ? MF_GRAYED : MF_GRAYED | MF_MENUBARBREAK)});
 							menu.newEntry({menuName: subMenuTwo, entryText: 'sep'});
 						}
 						[
 							{isEq: null,	key: this.chroma.scheme, value: null,				newValue: scheme,			entryText: scheme},
 						].forEach(createMenuOption('chroma', 'scheme', subMenuTwo, true, () => {this.colors = [];})); // Remove colors to force new palette
 					});
+					j++;
 				}
 		}
 		menu.newEntry({menuName: subMenu, entryText: 'sep'});
@@ -260,7 +262,7 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 		{
 			const configSubMenu = menu.newMenu('Point transparency...', subMenu);
 			[0, 20, 40, 60, 80, 100].map((val) => {
-				return {isEq: null,	key: this.graph.pointAlpha, value: null, newValue: Math.round(val * 255 / 100), entryText: val.toString()};
+				return {isEq: null,	key: this.graph.pointAlpha, value: null, newValue: Math.round(val * 255 / 100), entryText: val.toString() + (val === 0 ? '\t(transparent)' : val === 100 ? '\t(opaque)' : '')};
 			}).forEach(createMenuOption('graph', 'pointAlpha', configSubMenu));
 		}
 	}

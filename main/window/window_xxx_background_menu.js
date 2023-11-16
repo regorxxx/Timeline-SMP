@@ -1,5 +1,5 @@
 ﻿'use strict';
-//05/11/23
+//16/11/23
 
 include('..\\..\\helpers\\menu_xxx.js');
 include('..\\..\\helpers\\helpers_xxx_input.js');
@@ -91,13 +91,13 @@ function createBackgroundMenu(appendTo) { // Must be bound to _background() inst
 		].forEach(createMenuOption('coverModeOptions', 'bFill', subMenu, true));
 		menu.newEntry({menuName: subMenu, entryText: 'sep'});
 		[
-			{key: 'blur', entryText: 'Blur...', checks: [(num) => num >= 0 && num < Infinity]},
-			{key: 'angle', entryText: 'Angle...', checks: [(num) => num >= 0 && num <= 360]},
-			{key: 'alpha', entryText: 'Transparency...', checks: [(num) => num > 0 && num <= 100]},
+			{key: 'blur', entryText: 'Blur...', checks: [(num) => num >= 0 && num < Infinity], inputHint: '\n(0 to ∞)'},
+			{key: 'angle', entryText: 'Angle...', checks: [(num) => num >= 0 && num <= 360], inputHint: '\nClockwise.\n(0 to 360)'},
+			{key: 'alpha', entryText: 'Transparency...', checks: [(num) => num > 0 && num <= 100], inputHint: '\n0 is transparent, 100 is opaque.\n(0 to 100)'},
 		].forEach((option) => {
 			const prevVal = option.key === 'alpha' ? Math.round(this.coverModeOptions[option.key] * 100 / 255) : this.coverModeOptions[option.key];
 			menu.newEntry({menuName: subMenu, entryText: option.entryText + '\t[' + prevVal + ']', func: () => {
-				const input = Input.number('int positive', prevVal, 'Enter number:', window.Name, 100, option.checks);
+				const input = Input.number('int positive', prevVal, 'Enter number:' + option.inputHint, window.Name, 100, option.checks);
 				if (input === null) {return;}
 				const newVal = option.key === 'alpha' ? Math.round(input * 255 / 100) : input;
 				this.changeConfig({config: {coverModeOptions: {[option.key]: newVal}}, callbackArgs: {bSaveProperties: true}});
@@ -128,10 +128,10 @@ function createBackgroundMenu(appendTo) { // Must be bound to _background() inst
 		].forEach(createMenuOption('colorModeOptions', 'bDither', subMenu, true));
 		menu.newEntry({menuName: subMenu, entryText: 'sep'});
 		[
-			{key: 'angle', entryText: 'Angle...', checks: [(num) => num > 0 && num < 360]},
+			{key: 'angle', entryText: 'Angle...', checks: [(num) => num > 0 && num < 360], inputHint: '\nClockwise.\n(0 to 360)'},
 		].forEach((option) => {
 			menu.newEntry({menuName: subMenu, entryText: option.entryText + '\t[' + this.colorModeOptions[option.key] + ']', func: () => {
-				const input = Input.number('int positive', this.colorModeOptions[option.key], 'Enter number:', window.Name, 100, option.checks);
+				const input = Input.number('int positive', this.colorModeOptions[option.key], 'Enter number:' + option.inputHint, window.Name, 100, option.checks);
 				if (input === null) {return;}
 				this.changeConfig({config: {colorModeOptions: {[option.key]: input}}, callbackArgs: {bSaveProperties: true}});
 			}});

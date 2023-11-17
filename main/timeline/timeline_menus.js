@@ -1,5 +1,5 @@
 'use strict';
-//09/11/23
+//17/11/23
 
 include('..\\..\\helpers\\helpers_xxx_playlists.js');
 include('..\\..\\helpers\\helpers_xxx_input.js');
@@ -7,7 +7,7 @@ include('..\\..\\helpers\\menu_xxx.js');
 include('..\\..\\helpers\\menu_xxx_extras.js');
 include('..\\filter_and_query\\remove_duplicates.js');
 
-function onLbtnUpPoint(point, x, y) { 
+function onLbtnUpPoint(point, x, y, mask) { 
 	// Constants
 	const menu = new _menu();
 	// Header
@@ -106,17 +106,17 @@ function onLbtnUpPoint(point, x, y) {
 			'\n' + 
 			this.axis.x.key + ':\t' + point.x +
 			'\n' + 
-			this.axis.y.key + ':\t' + point.y +
+			this.axis.y.key + ':\t' + point.y + ' ' + _p(round(point.y / libItems.Count * 100, 2) + '%') +
 			'\n' + 
-			'Average ' + this.axis.y.key + ' (any ' + this.axis.x.key + '): ' + Math.round(avgCurr) +
+			'Average ' + this.axis.y.key + ' (any ' + this.axis.x.key + '): ' + Math.round(avgCurr) + ' ' + _p(round(avgCurr / libItems.Count * 100, 2) + '%') +
 			'\n' + 
 			'Total ' + this.axis.y.key + ' (any ' + this.axis.x.key + '): ' + fb.GetQueryItems(libItems, this.axis.z.tf + ' IS ' + point.z).Count +
 			'\n' + 
 			'-'.repeat(40) +
 			'\n' + 
-			'Global total ' + this.axis.y.key + ' : ' + libItems.Count +
+			'Global total ' + this.axis.y.key + ': ' + libItems.Count +
 			'\n' + 
-			'Global average ' + this.axis.y.key + ' (any ' + this.axis.x.key + '): ' + Math.round(avg)
+			'Global average ' + this.axis.y.key + ' (any ' + this.axis.x.key + '): ' + Math.round(avg) +  ' ' + _p(round(avg / libItems.Count * 100, 2) + '%')
 		, window.Name + ': Point statistics');
 	}});
 	return menu.btn_up(x, y);

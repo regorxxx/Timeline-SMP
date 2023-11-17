@@ -185,7 +185,7 @@ addEventListener('on_mouse_move', (x, y, mask) => {
 			if (chart.inFocus) {chart.scrollX({x, release: 0x01 /* VK_LBUTTON */, bThrottle: true});}
 		});
 	} else {
-		const bFound = charts.some((chart) => {return chart.move(x,y);});
+		const bFound = charts.some((chart) => {return chart.move(x, y, mask);});
 	}
 });
 

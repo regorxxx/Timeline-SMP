@@ -1,5 +1,5 @@
 ﻿'use strict';
-//16/11/23
+//17/11/23
 
 include('statistics_xxx_helper.js');
 
@@ -7,7 +7,7 @@ function _chart({
 				data /* [[{x, y}, ...]]*/,
 				dataAsync = null, /* function returning a promise or promise, resolving to data, see above*/
 				colors = [/* rgbSerie1, ... */],
-				chroma = {/* scheme, colorBlindSafe */}, // diverging, qualitative, sequential, random or [color, ...] see https://vis4.net/chromajs/#color-scales
+				chroma = {/* scheme, colorBlindSafe, interpolation */}, // diverging, qualitative, sequential, random or [color, ...] see https://vis4.net/chromajs/#color-scales
 				graph = {/* type, multi, borderWidth, point, pointAlpha */},
 				dataManipulation = {/* sort, filter, slice, distribution , probabilityPlot, group*/},
 				background = {/* color, image*/},
@@ -23,7 +23,7 @@ function _chart({
 				h = window.Height,
 				title,
 				gFont = _gdiFont('Segoe UI', _scale(10)),
-				tooltipText = ''
+				tooltipText = '' /* function or string */
 		} = {}) {
 	// Global tooltip
 	this.tooltip = new _tt(null);
@@ -189,7 +189,14 @@ function _chart({
 			iX = r * Math.cos(2 * Math.PI / ticks * j)
 			circleArr.push(c.x + iX, c.y + iY);
 		}
-		gr.FillPolygon(RGBA(...toRGB(invert(this.background.color, true)), this.graph.pointAlpha / 2), 0, circleArr);
+		if (this.background.color !== null || this.configuration.bDynColor && this.callbacks.config.backgroundColor) {
+			const bgColor = this.configuration.bDynColor && this.callbacks.config.backgroundColor
+				? this.configuration.bDynColorBW 
+					? invert(this.callbacks.config.backgroundColor()[0], true) 
+					: Chroma.average(this.callbacks.config.backgroundColor(), void(0), [0.6, 0.4]).android()
+				: this.background.color;
+			gr.FillPolygon(RGBA(...toRGB(invert(this.background.color, true)), this.graph.pointAlpha / 2), 0, circleArr);
+		}
 		let alpha = 0;
 		serie.forEach((value, j, thisSerie) => {
 			const borderColor = RGBA(...toRGB(invert(this.colors[i][j], true)), getBrightness(...toRGB(this.colors[i][j])) < 50 ? 300 : 25);
@@ -274,7 +281,7 @@ function _chart({
 			? this.configuration.bDynColorBW 
 				? invert(this.callbacks.config.backgroundColor()[0], true) 
 				: Chroma.average(this.callbacks.config.backgroundColor(), void(0), [0.6, 0.4]).android()
-			: null;
+			: this.background.color;
 		const xAxisColor = bgColor || this.axis.x.color;
 		const xAxisColorInverted = xAxisColor === this.axis.x.color 
 			? xAxisColor 
@@ -504,7 +511,9 @@ function _chart({
 									const yTickText = label.from.y + (border + tickH /2) * Math.sin(tetha) - tickH / 2;
 									const xTickText = label.from.x + (border + tickW) * Math.cos(tetha) - tickW / 2;
 									const flags = DT_CENTER | DT_END_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX;
-									const borderColor = RGBA(...toRGB(invert(this.colors[i][j], true)), 150);
+									const borderColor = bgColor
+										? RGBA(...Chroma.average([invert(this.colors[i][j], true), bgColor], void(0), [0.9, 0.1]).rgb(), 150)
+										: RGBA(...toRGB(invert(this.colors[i][j], true)), 150);
 									const offsetR = Math.max(Math.max(xTickText + tickW + _scale(2) + this.margin.right / 3, w) - w - x, 0);
 									const offsetL = Math.max(Math.max(xTickText, this.x + _scale(2) + this.margin.left / 3) - xTickText, 0);
 									// Lines to labels
@@ -827,8 +836,8 @@ function _chart({
 		return RGB(Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
 	};
 	
-	this.chromaColor = (scheme = this.chroma.scheme, len = this.series) => {
-		return Chroma.scale(scheme).colors(len, 'rgb').map((arr) => {return RGB(...arr);});
+	this.chromaColor = (scheme = this.chroma.scheme, len = this.series, mode = this.chroma.interpolation) => {
+		return Chroma.scale(scheme).mode(mode || 'lrgb').colors(len, 'rgb').map((arr) => {return RGB(...arr);});
 	}
 	
 	this.nFormatter = (num, digits) => { // Y axis formatter
@@ -934,7 +943,7 @@ function _chart({
 		return (x >= this.x && x <= this.x + this.w && y >= this.y && y <= this.y + this.h);
 	};
 	
-	this.move = (x, y) => {
+	this.move = (x, y, mask) => {
 		if (!window.ID) {return false;}
 		if (this.trace(x,y)) {
 			let bHand = false;
@@ -1002,7 +1011,10 @@ function _chart({
 						ttText = point.x + ': ' + point.y + (this.axis.y.key ?  ' ' + this.axis.y.key : '') +
 							(bPercent ? ' ' + _p(percent + '%') : '') +
 							(point.hasOwnProperty('z') ? ' - ' + point.z : '') +
-							(this.tooltipText && this.tooltipText.length ? tooltipText : '');
+							(this.tooltipText 
+								? isFunction(tooltipText) ? tooltipText.call(this, point, serie, mask) : tooltipText
+								: ''
+							);
 					}
 				}
 				if (ttText.length) {this.tooltip.SetValue(ttText, true);}
@@ -1238,6 +1250,7 @@ function _chart({
 		return false;
 	}
 	
+	// This callback must be used in case single click is also used, otherwise double clicking will result in 2 single click calls
 	this.lbtnDblClk = (x, y, mask) => {
 		mask -= MK_LBUTTON; // Remove useless mask here...
 		if (this.trace(x,y)) {
@@ -1596,6 +1609,7 @@ function _chart({
 	*/
 	
 	this.changeConfig = ({data, dataAsync = null, colors, chroma, graph, dataManipulation, background, grid, axis, margin, x, y, w, h, title, configuration, gFont, bPaint = true, callback = this.callbacks.config.change /* (config, arguments, callbackArgs) => void(0) */, callbackArgs = null}) => {
+		let bCheckColors = false;
 		if (gFont) {this.gFont = gFont;}
 		if (this.data && this.data.length && (this.dataManipulation.slice[0] !== 0 || this.dataManipulation.slice[1] !== Infinity)) {
 			if (data && data.length !== this.data.length || dataAsync) {
@@ -1615,9 +1629,10 @@ function _chart({
 			this.graph = {...this.graph, ...graph};
 		}
 		if (background) {this.background = {...this.background, ...background}; this.background.imageGDI = this.background.image ? gdi.Image(this.background.image) : null;}
-		if (colors) {this.colors = colors;}
-		if (chroma) {this.chroma = {...this.chroma, ...chroma}; this.checkScheme();}
-		if ((colors || chroma) && !dataAsync && !this.dataAsync) {this.checkColors();}
+		if (colors) {this.colors = colors; bCheckColors = true;}
+		if (chroma) {this.chroma = {...this.chroma, ...chroma}; this.checkScheme(); bCheckColors = true;}
+		if (dataManipulation && dataManipulation.slice && this.chroma.scheme) {this.colors = []; bCheckColors = true;}
+		if (bCheckColors && !dataAsync && !this.dataAsync) {this.checkColors();}
 		if (axis) {
 			if (axis.x) {this.axis.x = {...this.axis.x, ...axis.x};}
 			if (axis.y) {this.axis.y = {...this.axis.y, ...axis.y};}
@@ -1641,7 +1656,7 @@ function _chart({
 		if (data || dataManipulation || graph) {this.initData();}
 		if (this.configuration.bLoadAsyncData) {
 			if (dataAsync) {this.initDataAsync();}
-			else if ((colors || chroma) && this.dataAsync) {this.dataAsync.then(() => this.checkColors());}
+			else if (bCheckColors && this.dataAsync) {this.dataAsync.then(() => this.checkColors());}
 		} // May be managed by the chart or externally
 		if (callback && isFunction(callback)) {callback.call(this, this.exportConfig(), arguments[0], callbackArgs);}
 		if (bPaint) {this.repaint();}
@@ -1703,7 +1718,7 @@ function _chart({
 							} else { // An array of colors or colorbrewer palette (string)
 								scheme = this.chroma.scheme;
 							}
-							const scale = this.chromaColor(scheme, serieLen);
+							const scale = this.chromaColor(scheme, serieLen, this.chroma.interpolation || 'lrgb');
 							let k = 0;
 							arrCol.forEach((color, j) => {
 								if (!color) {
@@ -1948,7 +1963,7 @@ function _chart({
 	
 	this.setDefaults = () => {
 		this.colors = [];
-		this.chroma = {scheme: 'sequential', colorBlindSafe: true}; // diverging, qualitative, sequential, random or [color, ...] see https://vis4.net/chromajs/#color-scales
+		this.chroma = {scheme: 'sequential', colorBlindSafe: true, interpolation: 'lrgb'}; // diverging, qualitative, sequential, random or [color, ...] see https://vis4.net/chromajs/#color-scales
 		this.graph = {type: 'bars', multi: false, borderWidth: _scale(1), point: null, pointAlpha: 255};
 		this.dataManipulation = {sort: 'natural', filter: null, slice: [0, 10], distribution: null, probabilityPlot: null, group: 4};
 		this.background = {color: RGB(255 , 255, 255), image: null};
@@ -2101,7 +2116,7 @@ function _chart({
 			border: {enabled: false}, 
 			icon: {enabled: true}, 
 			...(this.configuration.bPopupBackground 
-				? {color: {panel: opaqueColor(0xFF4354AF, 30), text: invert(this.background.color, true)}} // Blue overlay
+				? {color: {panel: opaqueColor(0xFF4354AF, 30), text: invert(this.background.color || RGB(0, 0, 0), true)}} // Blue overlay
 				: {})
 			}
 	});

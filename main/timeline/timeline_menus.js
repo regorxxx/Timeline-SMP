@@ -291,6 +291,12 @@ function onLbtnUpSettings() {
 	{
 		menu.newEntry({entryText: 'sep'});
 		const subMenu = menu.newMenu('Other settings...');
+		menu.newEntry({menuName: subMenu, entryText: 'Asynchronous calculation', func: () => {
+			properties.bAsync[1] = !properties.bAsync[1];
+			overwriteProperties(properties);
+		}});
+		menu.newCheckMenu(subMenu, 'Asynchronous calculation', void(0), () => properties.bAsync[1]);
+		menu.newEntry({menuName: subMenu, entryText: 'sep'});
 		menu.newEntry({menuName: subMenu, entryText: 'Automatically check for updates', func: () => {
 			properties.bAutoUpdateCheck[1] = !properties.bAutoUpdateCheck[1];
 			overwriteProperties(properties);
@@ -301,12 +307,6 @@ function onLbtnUpSettings() {
 		}});
 		menu.newCheckMenu(subMenu, 'Automatically check for updates', void(0),  () => properties.bAutoUpdateCheck[1]);
 	}
-	menu.newEntry({entryText: 'sep'});
-	menu.newEntry({entryText: 'Asynchronous calculation', func: () => {
-		properties.bAsync[1] = !properties.bAsync[1];
-		overwriteProperties(properties);
-	}});
-	menu.newCheckMenu(void(0), 'Asynchronous calculation', void(0), () => properties.bAsync[1]);
 	menu.newEntry({entryText: 'sep'});
 	menu.newEntry({entryText: 'Check for updates...',  func: () => {
 		if (typeof checkUpdate === 'undefined') {include('helpers\\helpers_xxx_web_update.js');}

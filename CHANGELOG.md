@@ -6,11 +6,16 @@
 
 ## [Unreleased][]
 ### Added
+- Data: Y-axis is now configurable and can be set to count any TF expression per track (previously it just counted the num of tracks for the given X/Z point). For ex. it can be set to count listens per track ('%PLAY_COUNT%'), all 5 rated tracks ('$ifequal(%RATING%,5,1$not(0),0)'), etc.
+- Data: Y-axis can be adjusted proportionally per total counter of tracks per serie. This setting is provided along the TF expression used (so you can set entries to display total and proportional values).
+- Data: data can be filtered by query. For example 'ALL' to display all tracks or queries like '%LAST_PLAYED% DURING LAST 4 WEEKS'.
 - Statistics: expanded point statistics with percentages.
 - UI: added transparency to all chart types (previously only on 'Timeline' type).
 ### Changed
+- UI: data TF entries now have a check to show the one currently being used.
 - UI: improved input menu entries with hints. For ex. transparency input menu entries now have a hint about which value is opaque and which transparent.
 - Helpers: updated helpers.
+- Console: reduced max log file size to 1 MB.
 ### Removed
 ### Fixed
 - UI: extra column on color palette's schemes submenu.

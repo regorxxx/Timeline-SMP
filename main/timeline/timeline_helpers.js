@@ -57,7 +57,7 @@ function getData(option = 'tf', tf = 'genre', query = 'ALL', arg = null, counter
 				});
 			});
 			dic.forEach((value, key, map) => {
-				map.set(key, Object.entries(value).map((pair) => {return {key: pair[0], ...pair[1] /* count, total */};};}).sort((a, b) => {return b.count - a.count;}));
+				map.set(key, Object.entries(value).map((pair) => {return {key: pair[0], ...pair[1] /* count, total */};}).sort((a, b) => {return b.count - a.count;}));
 			})
 			data = [[...dic].map((points) => points[1].map((point) => {return {x: points[0], y: (bProportional ? point.count / point.total : point.count), z: point.key};}))];
 			break;

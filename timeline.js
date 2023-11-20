@@ -1,5 +1,5 @@
 ﻿'use strict';
-//09/11/23
+//20/11/23
 
 include('main\\statistics\\statistics_xxx.js');
 include('main\\statistics\\statistics_xxx_menu.js');
@@ -32,31 +32,49 @@ let properties = {
 		}
 	)), {func: isJSON}],
 	data:		['Data options', JSON.stringify({
-		x: {key: 'Date', tf: '"$year(%DATE%)"'}, 
-		y: {key: 'Tracks'},
-		z: {key: 'Artist', tf: '%ALBUM ARTIST%'}
+		x: {key: 'Date',	tf: '"$year(%DATE%)"'}, 
+		y: {key: 'Tracks',	tf: '1'},
+		z: {key: 'Artist',	tf: '%ALBUM ARTIST%'}
 	}), {func: isJSON}],
+	dataQuery:	['Data query', 'ALL', {func: isString}],
 	xEntries:	['Axis X TF entries', JSON.stringify([
-		{x: '$year(%DATE%)', keyX: 'Date'},
-		{x: '$right($div($year(%DATE%),10)0s,3)', keyX: 'Decade'},
-		{x: '%BPM%', keyX: 'BPM'},
-		{x: '%RATING%', keyX: 'Rating'},
+		{x: '$year(%DATE%)',						keyX: 'Date'},
+		{x: '$right($div($year(%DATE%),10)0s,3)',	keyX: 'Decade'},
+		{x: '%BPM%',								keyX: 'BPM'},
+		{x: '%RATING%',								keyX: 'Rating'},
 		{name: 'sep'},
-		{x: globTags.camelotKey, keyX: 'Camelot Key'}, // helpers_xxx_global.js
-		{x: globTags.openKey, keyX: 'Open Key'},
+		{x: globTags.camelotKey,					keyX: 'Camelot Key'}, // helpers_xxx_global.js
+		{x: globTags.openKey,						keyX: 'Open Key'},
 		{name: 'sep'},
-		{x: '%MOOD%', keyX: 'Mood'},
-		{x: '%GENRE%', keyX: 'Genre'},
-		{x: '%STYLE%', keyX: 'Style'},
+		{x: '%MOOD%',								keyX: 'Mood'},
+		{x: '%GENRE%',								keyX: 'Genre'},
+		{x: '%STYLE%',								keyX: 'Style'},
 	].map((v) => {return (v.hasOwnProperty('name') ? v : {...v, name: 'By ' + v.keyX});})), {func: isJSON}],
+	yEntries:	['Axis Y TF entries', JSON.stringify([ // Better use queries to filter by 0 and 1...
+		{y: '1',									keyY: 'Total Tracks',	bProportional: false},
+		{y: '%PLAY_COUNT%',							keyY: 'Listens',		bProportional: false},
+		{name: 'sep'},
+		{y: '%PLAY_COUNT%',							keyY: 'Listens/Track',	bProportional: true},
+		{y: '$ifequal(%FEEDBACK%,1,1$not(0),0)',	keyY: 'Loves/Track',	bProportional: true}, // requires not to ouput true value
+		{y: '$ifequal(%FEEDBACK%,-1,1$not(0),0)',	keyY: 'Hates/Track',	bProportional: true},
+		{y: '$ifequal(%RATING%,5,1$not(0),0)',		keyY: 'Rated 5/Track',	bProportional: true},
+	].map((v) => {return (v.hasOwnProperty('name') ? v : {...v, name: 'By ' + v.keyY});})), {func: isJSON}],
 	zEntries:	['Axis Z TF entries', JSON.stringify([
-		{z: '%ALBUM ARTIST%', keyZ: 'Artist'},
-		{z: '%COMPOSER%', keyZ: 'Composer'},
-		{z: '%MOOD%', keyZ: 'Mood'},
-		{z: '%GENRE%', keyZ: 'Genre'},
-		{z: '%STYLE%', keyZ: 'Style'},
-		{z: '%RATING%', keyZ: 'Rating'},
+		{z: '%ALBUM ARTIST%',						keyZ: 'Artist'},
+		{z: '%COMPOSER%',							keyZ: 'Composer'},
+		{z: '%MOOD%',								keyZ: 'Mood'},
+		{z: '%GENRE%',								keyZ: 'Genre'},
+		{z: '%STYLE%',								keyZ: 'Style'},
+		{z: '%RATING%',								keyZ: 'Rating'},
 	].map((v) => {return (v.hasOwnProperty('name') ? v : {...v, name: 'By ' + v.keyZ});})), {func: isJSON}],
+	queryEntries:	['Query entries', JSON.stringify([
+		{query: '%LAST_PLAYED% DURING LAST 4 WEEKS',	name: 'Played this month'},
+		{query: '%RATING% EQUAL 5',						name: 'Rated 5 tracks'},
+		{query: '%FEEDBACK% IS 1',						name: 'Loved tracks'},
+		{query: '%FEEDBACK% IS -1',						name: 'Hated tracks'},
+		{name: 'sep'},
+		{query: 'ALL',									name: 'All'},
+	]), {func: isJSON}],
 	bAsync: 	['Data asynchronous calculation', true, {func: isBoolean}],
 	bAutoUpdateCheck: ['Automatically check updates?', globSettings.bAutoUpdateCheck, {func: isBoolean}],
 };
@@ -129,9 +147,23 @@ const newConfig = [
 ];
 newConfig.forEach((row) => row.forEach((config) => {
 	if (properties.bAsync[1]) {
-		config.dataAsync = () => getDataAsync('timeline', _qCond(config.axis.x.tf, true), config.axis.x.tf + ' PRESENT AND ' + config.axis.z.tf + ' PRESENT', _qCond(config.axis.z.tf, true));
+		config.dataAsync = () => getDataAsync(
+			'timeline',
+			_qCond(config.axis.x.tf, true),
+			query_join([properties.dataQuery[1], config.axis.x.tf + ' PRESENT AND ' + config.axis.z.tf + ' PRESENT'], 'AND'),
+			_qCond(config.axis.z.tf, true),
+			_qCond(config.axis.y.tf, true),
+			config.axis.y.bProportional
+		);
 	} else {
-		config.data = getData('timeline', _qCond(config.axis.x.tf, true), config.axis.x.tf + ' PRESENT AND ' + config.axis.z.tf + ' PRESENT', _qCond(config.axis.z.tf, true));
+		config.data = getData(
+			'timeline',
+			_qCond(config.axis.x.tf, true),
+			query_join([properties.dataQuery[1], config.axis.x.tf + ' PRESENT AND ' + config.axis.z.tf + ' PRESENT'], 'AND'),
+			_qCond(config.axis.z.tf, true),
+			_qCond(config.axis.y.tf, true),
+			config.axis.y.bProportional
+		);
 	}
 }));
 

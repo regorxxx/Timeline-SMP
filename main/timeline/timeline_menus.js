@@ -1,5 +1,5 @@
 'use strict';
-//17/11/23
+//20/11/23
 
 include('..\\..\\helpers\\helpers_xxx_playlists.js');
 include('..\\..\\helpers\\helpers_xxx_input.js');
@@ -130,25 +130,31 @@ function onLbtnUpSettings() {
 			[properties.bAsync[1] ? 'dataAsync' : 'data']: (properties.bAsync[1] ? getDataAsync : getData)(
 				'timeline',
 				entry.x || _qCond(this.axis.x.tf, true),
-				entry.hasOwnProperty('query')
-					? entry.query 
-					: (entry.hasOwnProperty('z') ? _qCond(entry.z) : this.axis.z.tf) + ' PRESENT AND ' + (entry.hasOwnProperty('x') ? _qCond(entry.x) : this.axis.x.tf) + ' PRESENT',
-				entry.z || _qCond(this.axis.z.tf, true)
+				query_join([
+					entry.hasOwnProperty('query') ? entry.query : properties.dataQuery[1],
+					(entry.hasOwnProperty('z') ? _qCond(entry.z) : this.axis.z.tf) + ' PRESENT AND ' + (entry.hasOwnProperty('x') ? _qCond(entry.x) : this.axis.x.tf) + ' PRESENT'
+				], 'AND'),
+				entry.z || _qCond(this.axis.z.tf, true),
+				entry.y || _qCond(this.axis.y.tf, true),
+				entry.bProportional
 			),
 			axis: {}
 		};
 		if (entry.x) {newConfig.axis.x = {key: entry.keyX, tf: _qCond(entry.x)};}
-		if (entry.y) {newConfig.axis.y = {key: entry.keyY, tf: _qCond(entry.y)};}
+		if (entry.y) {newConfig.axis.y = {key: entry.keyY, tf: _qCond(entry.y), bProportional: entry.bProportional};}
 		if (entry.z) {newConfig.axis.z = {key: entry.keyZ, tf: _qCond(entry.z)};}
 		this.changeConfig({...newConfig, bPaint: true});
 		this.changeConfig({title: window.Name + ' - ' + 'Graph 1 {' + this.axis.x.key + ' - ' + this.axis.y.key + '}', bPaint: false, callbackArgs: {bSaveProperties: true}});
 	};
 	const inputTF = (axis = 'x') => {
-		const input = Input.string('string', '', 'Enter tag or TF expression:\n\nFor example:\n%GENRE%', window.Name, '%GENRE%');
+		axis = axis.toLowerCase();
+		const input = Input.string('string', '', 'Enter tag or TF expression:\n\n' + (axis === 'y' ? 'Expression should output a number per track (and TRUE). For example:\nListens: %PLAY_COUNT%\nRated 5 tracks: $ifequal(%RATING%,5,1$not(0),0)' : 'For example:\n%GENRE%'), window.Name, '%GENRE%');
 		if (input === null) {return;}
-		return axis.toLowerCase() === 'x'
-			? {x: input, keyX: Input.string('string', input, 'Enter axis name:', window.Name, 'Date') || input}
-			: {z: input, keyZ: Input.string('string', input, 'Enter axis name:', window.Name, 'Date') || input};
+		return {
+			[axis]: input,
+			['key' + axis.toUpperCase()]: Input.string('string', input, 'Enter axis name:', window.Name, 'Date') || input,
+			bProportional: axis === 'y' && WshShell.Popup('Proportional to total number of tracks per serie?', 0, window.Name, popup.question + popup.yes_no) === popup.yes
+		};
 	};
 	// Header
 	menu.newEntry({entryText: this.title, flags: MF_GRAYED});
@@ -161,7 +167,10 @@ function onLbtnUpSettings() {
 		const list = JSON.parse(properties.xEntries[1]);
 		list.forEach((entry) => {
 			if (entry.name === 'sep') {menu.newEntry({menuName: subMenu, entryText: 'sep'});}
-			else {menu.newEntry({menuName: subMenu, entryText: entry.name, func: setData.bind(this, entry)});}
+			else {
+				menu.newEntry({menuName: subMenu, entryText: entry.name, func: setData.bind(this, entry)});
+				menu.newCheckMenu(subMenu, entry.name, void(0),  () => this.axis.x.tf === _qCond(entry.x));
+			}
 		});
 		menu.newEntry({menuName: subMenu, entryText: 'sep'});
 		menu.newEntry({menuName: subMenu, entryText: 'By TF...', func: () => {
@@ -182,13 +191,46 @@ function onLbtnUpSettings() {
 		});
 	}
 	{
+		const subMenu = menu.newMenu('Set Y-axis data...');
+		menu.newEntry({menuName: subMenu, entryText: 'By TF:', flags: MF_GRAYED});
+		menu.newEntry({menuName: subMenu, entryText: 'sep'});
+		const list = JSON.parse(properties.yEntries[1]);
+		list.forEach((entry) => {
+			if (entry.name === 'sep') {menu.newEntry({menuName: subMenu, entryText: 'sep'});}
+			else {
+				menu.newEntry({menuName: subMenu, entryText: entry.name, func: setData.bind(this, entry)});
+				menu.newCheckMenu(subMenu, entry.name, void(0),  () => this.axis.y.tf === _qCond(entry.y) && this.axis.y.bProportional === entry.bProportional);
+			}
+		});
+		menu.newEntry({menuName: subMenu, entryText: 'sep'});
+		menu.newEntry({menuName: subMenu, entryText: 'By TF...', func: () => {
+			const entry = inputTF('y');
+			if (entry) {setData.call(this, entry);}
+		}});
+		menu.newEntry({menuName: subMenu, entryText: 'sep'});
+		_createSubMenuEditEntries(menu, subMenu, {
+			name: 'Axis Y TF entries',
+			list, 
+			defaults: JSON.parse(properties.yEntries[3]), 
+			input: () => inputTF('y'),
+			bNumbered: true,
+			onBtnUp: (entries) => {
+				properties.yEntries[1] = JSON.stringify(entries);
+				overwriteProperties(properties);
+			}
+		});
+	}
+	{
 		const subMenu = menu.newMenu('Set Z-axis data...');
 		menu.newEntry({menuName: subMenu, entryText: 'By TF:', flags: MF_GRAYED});
 		menu.newEntry({menuName: subMenu, entryText: 'sep'});
 		const list = JSON.parse(properties.zEntries[1]);
 		list.forEach((entry) => {
 			if (entry.name === 'sep') {menu.newEntry({menuName: subMenu, entryText: 'sep'});}
-			else {menu.newEntry({menuName: subMenu, entryText: entry.name, func: setData.bind(this, entry)});}
+			else {
+				menu.newEntry({menuName: subMenu, entryText: entry.name, func: setData.bind(this, entry)});
+				menu.newCheckMenu(subMenu, entry.name, void(0),  () => this.axis.z.tf === _qCond(entry.z));
+			}
 		});
 		menu.newEntry({menuName: subMenu, entryText: 'sep'});
 		menu.newEntry({menuName: subMenu, entryText: 'By TF...', func: () => {
@@ -204,6 +246,44 @@ function onLbtnUpSettings() {
 			bNumbered: true,
 			onBtnUp: (entries) => {
 				properties.zEntries[1] = JSON.stringify(entries);
+				overwriteProperties(properties);
+			}
+		});
+	}
+	menu.newEntry({entryText: 'sep'});
+	{
+		const subMenu = menu.newMenu('Filter data...');
+		menu.newEntry({menuName: subMenu, entryText: 'By query:', flags: MF_GRAYED});
+		menu.newEntry({menuName: subMenu, entryText: 'sep'});
+		const list = JSON.parse(properties.queryEntries[1]);
+		list.forEach((entry) => {
+			if (entry.name === 'sep') {menu.newEntry({menuName: subMenu, entryText: 'sep'});}
+			else {
+				menu.newEntry({menuName: subMenu, entryText: entry.name, func: () => {
+					properties.dataQuery[1] = entry.query;
+					overwriteProperties(properties);
+					setData.call(this, entry);
+				}});
+				menu.newCheckMenu(subMenu, entry.name, void(0), () => properties.dataQuery[1] === entry.query);
+			}
+		});
+		menu.newEntry({menuName: subMenu, entryText: 'sep'});
+		menu.newEntry({menuName: subMenu, entryText: 'By query...', func: () => {
+			const input = Input.string('string', properties.dataQuery[1], 'Enter query:', window.Name, 'ALL');
+			if (input === null) {return;}
+			properties.dataQuery[1] = input;
+			overwriteProperties(properties);
+			setData.call(this, {query: input})
+		}});
+		menu.newEntry({menuName: subMenu, entryText: 'sep'});
+		_createSubMenuEditEntries(menu, subMenu, {
+			name: 'Query entries',
+			list, 
+			defaults: JSON.parse(properties.queryEntries[3]), 
+			input: () => Input.string('string', properties.dataQuery[1], 'Enter query:', window.Name, 'ALL'),
+			bNumbered: true,
+			onBtnUp: (entries) => {
+				properties.queryEntries[1] = JSON.stringify(entries);
 				overwriteProperties(properties);
 			}
 		});

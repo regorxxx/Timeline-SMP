@@ -10,6 +10,7 @@
 - Data: Y-axis can be adjusted proportionally per total counter of tracks per serie. This setting is provided along the TF expression used (so you can set entries to display total and proportional values).
 - Data: data can be filtered by query. For example 'ALL' to display all tracks or queries like '%LAST_PLAYED% DURING LAST 4 WEEKS'.
 - Statistics: expanded point statistics with percentages.
+- UI: number of points shown per X-value is now configurable at 'Display settings\Chart type'.
 - UI: added transparency to all chart types (previously only on 'Timeline' type).
 ### Changed
 - UI: data TF entries now have a check to show the one currently being used.

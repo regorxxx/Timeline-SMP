@@ -1,5 +1,5 @@
 ﻿'use strict';
-//16/11/23
+//22/11/23
 
 // Don't load this helper unless menu framework is also present
 // https://github.com/regorxxx/Menu-Framework-SMP
@@ -87,6 +87,23 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 		].forEach(createMenuOption('graph', 'type', subMenu, void(0), (option) => {
 			this.graph.borderWidth = fineGraphs.has(option.newValue) ? _scale(1) : _scale(4);
 		}));
+		menu.newEntry({menuName: subMenu, entryText: 'sep'});
+		const subMenuGroup = menu.newMenu('Group X-data by...' + (!this.graph.multi ? '\t[3D-Graphs]' : ''), subMenu, this.graph.multi ? MF_STRING : MF_GRAYED);
+		if (this.graph.multi) {
+			menu.newEntry({menuName: subMenuGroup, entryText: 'Show n points per X-value:', flags: MF_GRAYED});
+			menu.newEntry({menuName: subMenuGroup, entryText: 'sep'});
+			const parent = this;
+			const options = [...new Set([this.stats.maxGroup, 10, 8, 5, 4, 3, 2, 1].map((frac) => {
+				return Math.round(this.stats.maxGroup / frac) || this.stats.minGroup; // Don't allow zero
+			}))];
+			
+			options.map((val) => {
+				return {isEq: null, key: this.dataManipulation.group, value: null, newValue: val, entryText: val + ' point(s)'};
+			}).forEach(function (option, i){
+				createMenuOption('dataManipulation', 'group', subMenuGroup, false)(option);
+				menu.newCheckMenu(subMenuGroup, option.entryText, void(0), () => this.dataManipulation.group === options[i]);
+			}.bind(parent));
+		}
 	}
 	{
 		const subMenu = menu.newMenu('Distribution...');

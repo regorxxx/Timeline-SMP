@@ -1,5 +1,5 @@
 'use strict';
-//20/11/23
+//22/11/23
 
 include('..\\..\\helpers\\helpers_xxx_playlists.js');
 include('..\\..\\helpers\\helpers_xxx_input.js');
@@ -14,80 +14,33 @@ function onLbtnUpPoint(point, x, y, mask) {
 	menu.newEntry({entryText: this.title, flags: MF_GRAYED});
 	menu.newEntry({entryText: 'sep'});
 	// Menus
-	{
-		const subMenu = menu.newMenu('Create playlist...');
-		menu.newEntry({menuName: subMenu, entryText: 'De-duplicated and randomized:', flags: MF_GRAYED});
-		menu.newEntry({menuName: subMenu, entryText: 'sep'});
+	{	// Playlists
+		const subMenu = [menu.newMenu('Create playlist...'), menu.newMenu('Create AutoPlaylist...')];
+		menu.newEntry({menuName: subMenu[0], entryText: 'De-duplicated and randomized:', flags: MF_GRAYED});
+		menu.newEntry({menuName: subMenu[0], entryText: 'sep'});
+		menu.newEntry({menuName: subMenu[1], entryText: 'Configurable query:', flags: MF_GRAYED});
+		menu.newEntry({menuName: subMenu[1], entryText: 'sep'});
+		const currPoints = this.dataDraw.map((serie) => serie.find((newPoint) => newPoint.x === point.x));
 		[
-			{name: 'By ' + this.axis.x.key, func: () => {
-				const query = this.axis.x.tf + ' IS ' + point.x;
-				if (checkQuery(query)) {
-					let handleList = fb.GetQueryItems(fb.GetLibraryItems(), query);
-					handleList = removeDuplicatesV2({handleList, sortOutput: '', checkKeys: globTags.remDupl, sortBias: globQuery.remDuplBias, bAdvTitle: true, bPreserveSort: false});
-					sendToPlaylist(handleList, 'Timeline: ' + point.x);
-				}
-			}},
-			{name: 'By ' + this.axis.z.key, func: () => {
-				const query = this.axis.z.tf + ' IS ' + point.z;
-				if (checkQuery(query)) {
-					let handleList = fb.GetQueryItems(fb.GetLibraryItems(), query);
-					handleList = removeDuplicatesV2({handleList, sortOutput: '', checkKeys: globTags.remDupl, sortBias: globQuery.remDuplBias, bAdvTitle: true, bPreserveSort: false});
-					sendToPlaylist(handleList, 'Timeline: ' + point.z, query);
-				}
-			}},
-			{name: 'By ' + this.axis.x.key + ' and ' + this.axis.z.key, func: () => {
-				const query = this.axis.x.tf + ' IS ' + point.x + ' AND ' + this.axis.z.tf + ' IS ' + point.z;
-				if (checkQuery(query)) {
-					let handleList = fb.GetQueryItems(fb.GetLibraryItems(), query);
-					handleList = removeDuplicatesV2({handleList, sortOutput: '', checkKeys: globTags.remDupl, sortBias: globQuery.remDuplBias, bAdvTitle: true, bPreserveSort: false});
-					sendToPlaylist(handleList, 'Timeline: ' + point.x + ' - ' + point.z);
-				}
-			}},
-			{name: 'By ' + this.axis.x.key + ' and top ' + this.axis.z.key, func: () => {
-				const points = this.dataDraw.map((serie) => serie.find((newPoint) => newPoint.x === point.x));
-				const query = this.axis.x.tf + ' IS ' + point.x + ' AND ' + _p(points.map((point) => this.axis.z.tf + ' IS ' + point.z).join(' OR '));
-				if (checkQuery(query)) {
-					let handleList = fb.GetQueryItems(fb.GetLibraryItems(), query);
-					handleList = removeDuplicatesV2({handleList, sortOutput: '', checkKeys: globTags.remDupl, sortBias: globQuery.remDuplBias, bAdvTitle: true, bPreserveSort: false});
-					sendToPlaylist(handleList, 'Timeline: ' + point.x + ' - Top ' + points.length + ' ' + this.axis.z.key);
-				}
-			}},
+			{name: 'By ' + this.axis.x.key, query: this.axis.x.tf + ' IS ' + point.x, playlist: 'Timeline: ' + point.x},
+			{name: 'By ' + this.axis.z.key, query: this.axis.z.tf + ' IS ' + point.z, playlist: 'Timeline: ' + point.z},
+			{name: 'By ' + this.axis.x.key + ' and ' + this.axis.z.key, query: this.axis.x.tf + ' IS ' + point.x + ' AND ' + this.axis.z.tf + ' IS ' + point.z,
+				playlist: 'Timeline: ' + point.x + ' - ' + point.z},
+			{name: 'By ' + this.axis.x.key + ' and top ' + this.axis.z.key, query: this.axis.x.tf + ' IS ' + point.x + ' AND ' + _p(currPoints.map((point) => this.axis.z.tf + ' IS ' + point.z).join(' OR ')),
+				playlist: 'Timeline: ' + point.x + ' - Top ' + currPoints.length + ' ' + this.axis.z.key}
 		].forEach((entry) => {
-			menu.newEntry({menuName: subMenu, entryText: entry.name, func: entry.func});
-		}) 
-	}
-	{
-		const subMenu = menu.newMenu('Create AutoPlaylist...');
-		menu.newEntry({menuName: subMenu, entryText: 'Configurable query:', flags: MF_GRAYED});
-		menu.newEntry({menuName: subMenu, entryText: 'sep'});
-		[
-			{name: 'By ' + this.axis.x.key, func: () => {
-				const query = this.axis.x.tf + ' IS ' + point.x;
-				if (checkQuery(query)) {
-					plman.ActivePlaylist = plman.CreateAutoPlaylist(plman.PlaylistCount, 'Timeline: ' + point.x, query);
+			menu.newEntry({menuName: subMenu[0], entryText: entry.name, func: () => {
+				if (checkQuery(entry.query)) {
+					let handleList = fb.GetQueryItems(fb.GetLibraryItems(), entry.query);
+					handleList = removeDuplicatesV2({handleList, sortOutput: '', checkKeys: globTags.remDupl, sortBias: globQuery.remDuplBias, bAdvTitle: true, bPreserveSort: false});
+					sendToPlaylist(handleList, entry.playlist);
 				}
-			}},
-			{name: 'By ' + this.axis.z.key, func: () => {
-				const query = this.axis.z.tf + ' IS ' + point.z;
-				if (checkQuery(query)) {
-					plman.ActivePlaylist = plman.CreateAutoPlaylist(plman.PlaylistCount, 'Timeline: ' + point.z, query);
+			}});
+			menu.newEntry({menuName: subMenu[1], entryText: entry.name, func: () => {
+				if (checkQuery(entry.query)) {
+					plman.ActivePlaylist = plman.CreateAutoPlaylist(plman.PlaylistCount, entry.playlist, entry.query);
 				}
-			}},
-			{name: 'By ' + this.axis.x.key + ' and ' + this.axis.z.key, func: () => {
-				const query = this.axis.x.tf + ' IS ' + point.x + ' AND ' + this.axis.z.tf + ' IS ' + point.z;
-				if (checkQuery(query)) {
-					plman.ActivePlaylist = plman.CreateAutoPlaylist(plman.PlaylistCount, 'Timeline: ' + point.x + ' - ' + point.z, query);
-				}
-			}},
-			{name: 'By ' + this.axis.x.key + ' and top ' + this.axis.z.key, func: () => {
-				const points = this.dataDraw.map((serie) => serie.find((newPoint) => newPoint.x === point.x));
-				const query = this.axis.x.tf + ' IS ' + point.x + ' AND ' + _p(points.map((point) => this.axis.z.tf + ' IS ' + point.z).join(' OR '));
-				if (checkQuery(query)) {
-					plman.ActivePlaylist = plman.CreateAutoPlaylist(plman.PlaylistCount, 'Timeline: ' + point.x + ' - Top ' + points.length + ' ' + this.axis.z.key, query);
-				}
-			}},
-		].forEach((entry) => {
-			menu.newEntry({menuName: subMenu, entryText: entry.name, func: entry.func});
+			}});
 		}) 
 	}
 	menu.newEntry({entryText: 'sep'});

@@ -1,5 +1,5 @@
 ﻿'use strict';
-//20/11/23
+//22/11/23
 
 include('main\\statistics\\statistics_xxx.js');
 include('main\\statistics\\statistics_xxx_menu.js');
@@ -114,7 +114,7 @@ const defaultConfig = deepAssign()(
 	{
 		data: [],
 		x: 0, y: 0, w: 0, h: 0,
-		tooltipText: '\n\n(L. click to create playlist)\n(use buttons to configure chart)',
+		tooltipText: '\n\n(L. click to create playlist)\n(Use buttons to configure chart)',
 		configuration: {bSlicePerKey: true},
 		callbacks: {
 			point:		{onLbtnUp: onLbtnUpPoint},

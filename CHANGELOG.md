@@ -2,9 +2,16 @@
 
 ## [Table of Contents]
 - [Unreleased](#unreleased)
+- [0.7.0](#070---2023-11-24)
 - [0.6.0](#060---2023-11-15)
 
 ## [Unreleased][]
+### Added
+### Changed
+### Removed
+### Fixed
+
+## [0.7.0] - 2023-11-24
 ### Added
 - Data: Y-axis is now configurable and can be set to count any TF expression per track (previously it just counted the num of tracks for the given X/Z point). For ex. it can be set to count listens per track ('%PLAY_COUNT%'), all 5 rated tracks ('$ifequal(%RATING%,5,1$not(0),0)'), etc.
 - Data: Y-axis can be adjusted proportionally per total counter of tracks per serie. This setting is provided along the TF expression used (so you can set entries to display total and proportional values).
@@ -21,6 +28,7 @@
 ### Fixed
 - UI: extra column on color palette's schemes submenu.
 
+
 ## [0.6.0] - 2023-11-15
 ### Added
 - First release.
@@ -28,5 +36,6 @@
 ### Removed
 ### Fixed
 
-[Unreleased]: https://github.com/regorxxx/World-Map-SMP/compare/v3.4.0...HEAD
+[Unreleased]: https://github.com/regorxxx/World-Map-SMP/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/regorxxx/World-Map-SMP/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/regorxxx/World-Map-SMP/compare/9ecd88d...v0.6.0

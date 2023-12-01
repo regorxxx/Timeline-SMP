@@ -34,6 +34,9 @@ Configurable by Title Format, lets you generate playlists based on selection. Ba
 See [_TIPS and INSTALLATION (txt)](https://github.com/regorxxx/Timeline-SMP/blob/main/_TIPS%20and%20INSTALLATION.txt) and the [Wiki](https://github.com/regorxxx/Timeline-SMP/wiki/Installation).
 Not properly following the installation instructions will result in scripts not working as intended. Please don't report errors before checking this.
 
+## Nightly releases
+Automatic package [built from GitHub](https://nightly.link/regorxxx/Timeline-SMP/workflows/build/main/file.zip) (using the latest commit).
+
 [changelog]: CHANGELOG.md
 [version_badge]: https://img.shields.io/github/release/regorxxx/Timeline-SMP.svg
 [codacy_badge]: https://api.codacy.com/project/badge/Grade/e04be28637dd40d99fae7bd92f740677

@@ -1,5 +1,5 @@
 ﻿'use strict';
-//22/11/23
+//04/12/23
 
 // Don't load this helper unless menu framework is also present
 // https://github.com/regorxxx/Menu-Framework-SMP
@@ -242,6 +242,7 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 				const subMenuTwo = menu.newMenu('By scheme...', subMenu);
 				let j = 0;
 				for (let key in (this.chroma.colorBlindSafe ? colorbrewer.colorBlind : colorbrewer)) {
+					if (key === 'colorBlind') {continue;}
 					colorbrewer[key].forEach((scheme, i) => {
 						if (i === 0) {
 							menu.newEntry({menuName: subMenuTwo, entryText: key.charAt(0).toUpperCase() + key.slice(1), flags: (j === 0 ? MF_GRAYED : MF_GRAYED | MF_MENUBARBREAK)});

@@ -11,6 +11,7 @@
 ### Changed
 ### Removed
 ### Fixed
+- Crash opening menu when palettes have been set to not use only colorblind schemes.
 
 ## [0.8.0] - 2023-11-28
 ### Added

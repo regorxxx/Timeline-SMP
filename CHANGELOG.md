@@ -2,11 +2,18 @@
 
 ## [Table of Contents]
 - [Unreleased](#unreleased)
+- [0.8.1](#081---2023-12-08)
 - [0.8.0](#080---2023-11-28)
 - [0.7.0](#070---2023-11-24)
 - [0.6.0](#060---2023-11-15)
 
 ## [Unreleased][]
+### Added
+### Changed
+### Removed
+### Fixed
+
+## [0.8.1] - 2023-12-08
 ### Added
 ### Changed
 ### Removed
@@ -47,7 +54,8 @@
 ### Removed
 ### Fixed
 
-[Unreleased]: https://github.com/regorxxx/World-Map-SMP/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/regorxxx/World-Map-SMP/compare/v0.8.1...HEAD
+[0.8.1]: https://github.com/regorxxx/World-Map-SMP/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/regorxxx/World-Map-SMP/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/regorxxx/World-Map-SMP/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/regorxxx/World-Map-SMP/compare/9ecd88d...v0.6.0

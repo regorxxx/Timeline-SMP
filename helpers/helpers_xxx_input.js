@@ -164,8 +164,12 @@ const Input = Object.seal(Object.freeze({
 					break;
 				}
 			}
-			if (checks && checks.length  && !checks.some((check) => {return check.call(this, newVal);})) {
-				throw new Error('Invalid checks');
+			if (checks) {
+				if (!Array.isArray(checks)) {
+					throw new Error('Invalid checks argument');
+				} else if (checks.length && !checks.some((check) => {return check.call(this, newVal);})) {
+					throw new Error('Invalid checks');
+				}
 			}
 		}
 		catch (e) {
@@ -173,6 +177,8 @@ const Input = Object.seal(Object.freeze({
 				fb.ShowPopupMessage('Value is not valid:\n' + input + '\n\nValue must be an ' + type.toUpperCase() + '\n\nExample:\n' + example, title);
 			} else if (e.message === 'Empty') {
 				fb.ShowPopupMessage('Value is not valid:\n' + input + '\n\nValue must be a non zero length string.\n\nExample:\n' + example, title);
+			} else if (e.message === 'Invalid checks argument') {
+				fb.ShowPopupMessage('Checks is not an array:\n' + checks, title);
 			} else if (e.message === 'Invalid checks') {
 				fb.ShowPopupMessage('Value is not valid:\n' + input + '\n\nValue must pass these checks:\n' + checks.map(f => this.cleanCheck(f)).join('\n') + '\n\nExample:\n' + example, title);
 			} else if (e.message !== 'InputBox failed:\nDialog window was closed') {

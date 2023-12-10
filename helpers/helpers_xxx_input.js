@@ -1,5 +1,5 @@
 ﻿'use strict';
-//21/06/23
+//10/12/23
 
 // Helpers for input popup and checking proper values are provided
 // Provides extensive error popups on output to give feedback to the user
@@ -14,6 +14,12 @@ const Input = Object.seal(Object.freeze({
 		} else {
 			return (this.data.last === this.data.lastInput);
 		}
+	},
+	get lastInput() {
+		return this.data.lastInput;
+	},
+	get previousInput() {
+		return this.data.last;
 	},
 	// Input methods
 	json: function (type, oldVal, message, title, example, checks = [], bFilterFalse = false) {

@@ -1,5 +1,5 @@
 'use strict';
-//22/11/23
+//10/12/23
 
 include('..\\..\\helpers\\helpers_xxx_playlists.js');
 include('..\\..\\helpers\\helpers_xxx_input.js');
@@ -80,17 +80,17 @@ function onLbtnUpSettings() {
 	const menu = new _menu();
 	const setData = (entry) => {
 		const newConfig = {
-			[properties.bAsync[1] ? 'dataAsync' : 'data']: (properties.bAsync[1] ? getDataAsync : getData)(
-				'timeline',
-				entry.x || _qCond(this.axis.x.tf, true),
-				query_join([
-					entry.hasOwnProperty('query') ? entry.query : properties.dataQuery[1],
-					(entry.hasOwnProperty('z') ? _qCond(entry.z) : this.axis.z.tf) + ' PRESENT AND ' + (entry.hasOwnProperty('x') ? _qCond(entry.x) : this.axis.x.tf) + ' PRESENT'
-				], 'AND'),
-				entry.z || _qCond(this.axis.z.tf, true),
-				entry.y || _qCond(this.axis.y.tf, true),
-				entry.bProportional
-			),
+			[properties.bAsync[1] ? 'dataAsync' : 'data']: (properties.bAsync[1] ? getDataAsync : getData)({
+				option:		'timeline',
+				x:			entry.x || _qCond(this.axis.x.tf, true),
+				y:			entry.y || _qCond(this.axis.y.tf, true),
+				z:			entry.z || _qCond(this.axis.z.tf, true),
+				query:		query_join([
+								entry.hasOwnProperty('query') ? entry.query : properties.dataQuery[1],
+								(entry.hasOwnProperty('z') ? _qCond(entry.z) : this.axis.z.tf) + ' PRESENT AND ' + (entry.hasOwnProperty('x') ? _qCond(entry.x) : this.axis.x.tf) + ' PRESENT'
+							], 'AND'),
+				bProportional: entry.bProportional
+			}),
 			axis: {}
 		};
 		if (entry.x) {newConfig.axis.x = {key: entry.keyX, tf: _qCond(entry.x)};}
@@ -101,11 +101,11 @@ function onLbtnUpSettings() {
 	};
 	const inputTF = (axis = 'x') => {
 		axis = axis.toLowerCase();
-		const input = Input.string('string', '', 'Enter tag or TF expression:\n\n' + (axis === 'y' ? 'Expression should output a number per track (and TRUE). For example:\nListens: %PLAY_COUNT%\nRated 5 tracks: $ifequal(%RATING%,5,1$not(0),0)' : 'For example:\n%GENRE%'), window.Name, '%GENRE%');
+		const input = Input.string('string', this.axis[axis].tf, 'Enter tag or TF expression:\n\n' + (axis === 'y' ? 'Expression should output a number per track (and TRUE). For example:\nListens: %PLAY_COUNT%\nRated 5 tracks: $ifequal(%RATING%,5,1$not(0),0)' : 'For example:\n%GENRE%'), window.Name, '%GENRE%');
 		if (input === null) {return;}
 		return {
 			[axis]: input,
-			['key' + axis.toUpperCase()]: Input.string('string', input, 'Enter axis name:', window.Name, 'Date') || input,
+			['key' + axis.toUpperCase()]: Input.string('string', capitalizeAll(input.replace(/%/g,'')), 'Enter axis name:', window.Name, 'Date') || Input.lastInput,
 			bProportional: axis === 'y' && WshShell.Popup('Proportional to total number of tracks per serie?', 0, window.Name, popup.question + popup.yes_no) === popup.yes
 		};
 	};

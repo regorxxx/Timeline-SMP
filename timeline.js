@@ -1,5 +1,5 @@
 ﻿'use strict';
-//08/12/23
+//10/12/23
 
 include('main\\statistics\\statistics_xxx.js');
 include('main\\statistics\\statistics_xxx_menu.js');
@@ -9,7 +9,7 @@ include('main\\window\\window_xxx_background.js');
 include('main\\window\\window_xxx_background_menu.js');
 include('helpers\\helpers_xxx_properties.js');
 
-if (!window.ScriptInfo.PackageId) {window.DefineScript('Timeline', {author:'regorxxx', version: '0.8.1', features: {drag_n_drop: false, grab_focus: true}});}
+if (!window.ScriptInfo.PackageId) {window.DefineScript('Timeline', {author:'regorxxx', version: '0.9.0', features: {drag_n_drop: false, grab_focus: true}});}
 
 let properties = {
 	background:	['Background options', JSON.stringify(deepAssign()(
@@ -121,7 +121,7 @@ const defaultConfig = deepAssign()(
 			settings:	{onLbtnUp: function(x, y, mask) {onLbtnUpSettings.call(this).btn_up(x, y);}},
 			display:	{onLbtnUp: function(x, y, mask) {createStatisticsMenu.call(this).btn_up(x, y, ['sep', createBackgroundMenu.call(background, 'Background')]);}},
 			config:		{
-				change:   function(config, changeArgs, callbackArgs) {
+				change: function(config, changeArgs, callbackArgs) {
 					if (callbackArgs && callbackArgs.bSaveProperties) {
 						['x', 'y', 'w', 'h'].forEach((key) => delete config[key]);
 						config.dataManipulation.sort = this.exportSortLabel();
@@ -147,23 +147,23 @@ const newConfig = [
 ];
 newConfig.forEach((row) => row.forEach((config) => {
 	if (properties.bAsync[1]) {
-		config.dataAsync = () => getDataAsync(
-			'timeline',
-			_qCond(config.axis.x.tf, true),
-			query_join([properties.dataQuery[1], config.axis.x.tf + ' PRESENT AND ' + config.axis.z.tf + ' PRESENT'], 'AND'),
-			_qCond(config.axis.z.tf, true),
-			_qCond(config.axis.y.tf, true),
-			config.axis.y.bProportional
-		);
+		config.dataAsync = () => getDataAsync({
+			option:			'timeline',
+			x:				_qCond(config.axis.x.tf, true),
+			y:				_qCond(config.axis.y.tf, true),
+			z:				_qCond(config.axis.z.tf, true),
+			query:			query_join([properties.dataQuery[1], config.axis.x.tf + ' PRESENT AND ' + config.axis.z.tf + ' PRESENT'], 'AND'),
+			bProportional:	config.axis.y.bProportional
+		});
 	} else {
-		config.data = getData(
-			'timeline',
-			_qCond(config.axis.x.tf, true),
-			query_join([properties.dataQuery[1], config.axis.x.tf + ' PRESENT AND ' + config.axis.z.tf + ' PRESENT'], 'AND'),
-			_qCond(config.axis.z.tf, true),
-			_qCond(config.axis.y.tf, true),
-			config.axis.y.bProportional
-		);
+		config.data = getData({
+			option:			'timeline',
+			x:				_qCond(config.axis.x.tf, true),
+			y:				_qCond(config.axis.y.tf, true),
+			z:				_qCond(config.axis.z.tf, true),
+			query:			query_join([properties.dataQuery[1], config.axis.x.tf + ' PRESENT AND ' + config.axis.z.tf + ' PRESENT'], 'AND'),
+			bProportional:	config.axis.y.bProportional
+		});
 	}
 }));
 

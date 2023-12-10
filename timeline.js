@@ -78,6 +78,7 @@ let properties = {
 	]), {func: isJSON}],
 	bAsync: 	['Data asynchronous calculation', true, {func: isBoolean}],
 	bAutoUpdateCheck: ['Automatically check updates?', globSettings.bAutoUpdateCheck, {func: isBoolean}],
+	bAutoData: ['Automatically update data sources', true, {func: isBoolean}],
 };
 Object.keys(properties).forEach(p => properties[p].push(properties[p][1]));
 setProperties(properties, '', 0);
@@ -223,24 +224,34 @@ charts.forEach((chart) => {
 let playingPlaylist = plman.PlayingPlaylist;
 let activePlaylist = plman.ActivePlaylist;
 let selectedPlaylists = -1;
-function refreshData(plsIdx) {
-	const dataSource = JSON.parse(properties.dataSource[1]);
-	if (dataSource.sourceType === 'playingPlaylist' && (playingPlaylist !== plman.PlayingPlaylist || plsIdx === plman.PlayingPlaylist)) {
-		charts.forEach((chart) => {!chart.pop.isEnabled() && chart.setData();});
-	}
-	playingPlaylist = plman.PlayingPlaylist;
-	if ((dataSource.sourceType === 'activePlaylist' || dataSource.sourceType === 'playingPlaylist' && !fb.IsPlaying) && (activePlaylist !== plman.activePlaylist || plsIdx === plman.PlayingPlaylist)) {
-		charts.forEach((chart) => {!chart.pop.isEnabled() && chart.setData();});
-	}
-	activePlaylist = plman.ActivePlaylist;
-	if (dataSource.sourceType === 'playlist') {
-		const idxArr = dataSource.sourceArg.reduce((acc, curr) => acc.concat(getPlaylistIndexArray(curr)), []);
-		console.log(dataSource.sourceArg, idxArr, plsIdx, selectedPlaylists);
-		if (selectedPlaylists !== idxArr.length || idxArr.includes(plsIdx)) {
+function refreshData(plsIdx, bForce = false) {
+	let bRefresh = false;
+	if (bForce) {
+		charts.forEach((chart) => {chart.setData();});
+		bRefresh = true;
+	} else {
+		const dataSource = JSON.parse(properties.dataSource[1]);
+		if (dataSource.sourceType === 'playingPlaylist' && (playingPlaylist !== plman.PlayingPlaylist || plsIdx === plman.PlayingPlaylist)) {
 			charts.forEach((chart) => {!chart.pop.isEnabled() && chart.setData();});
+			bRefresh = true;
 		}
-		selectedPlaylists = idxArr.length;
+		playingPlaylist = plman.PlayingPlaylist;
+		if ((dataSource.sourceType === 'activePlaylist' || dataSource.sourceType === 'playingPlaylist' && !fb.IsPlaying) && (activePlaylist !== plman.activePlaylist || plsIdx === plman.PlayingPlaylist)) {
+			charts.forEach((chart) => {!chart.pop.isEnabled() && chart.setData();});
+			bRefresh = true;
+		}
+		activePlaylist = plman.ActivePlaylist;
+		if (dataSource.sourceType === 'playlist') {
+			const idxArr = dataSource.sourceArg.reduce((acc, curr) => acc.concat(getPlaylistIndexArray(curr)), []);
+			console.log(dataSource.sourceArg, idxArr, plsIdx, selectedPlaylists);
+			if (selectedPlaylists !== idxArr.length || idxArr.includes(plsIdx)) {
+				charts.forEach((chart) => {!chart.pop.isEnabled() && chart.setData();});
+				bRefresh = true;
+			}
+			selectedPlaylists = idxArr.length;
+		}
 	}
+	return bRefresh;
 }
 
 /* 
@@ -322,7 +333,7 @@ addEventListener('on_key_up', (vKey) => {
 addEventListener('on_playback_new_track', () => { // To show playing now playlist indicator...
 	if (background.coverMode.toLowerCase() !== 'none') {background.updateImageBg();}
 	if (!window.ID) {return;}
-	refreshData();
+	if (properties.bAutoData[1]) {refreshData();}
 });
 
 addEventListener('on_selection_changed', () => {
@@ -342,7 +353,7 @@ addEventListener('on_playlist_switch', () => {
 		background.updateImageBg();
 	}
 	if (!window.ID) {return;}
-	refreshData();
+	if (properties.bAutoData[1]) {refreshData();}
 });
 
 addEventListener('on_playback_stop', (reason) => {
@@ -356,15 +367,15 @@ addEventListener('on_playlists_changed', () => { // To show/hide loaded playlist
 		background.updateImageBg();
 	}
 	if (!window.ID) {return;}
-	refreshData();
+	if (properties.bAutoData[1]) {refreshData();}
 });
 
 addEventListener('on_playlist_items_added', (idx) => {
 	if (!window.ID) {return;}
-	refreshData(idx);
+	if (properties.bAutoData[1]) {refreshData();}
 });
 
 addEventListener('on_playlist_items_removed', (idx) => {
 	if (!window.ID) {return;}
-	refreshData(idx);
+	if (properties.bAutoData[1]) {refreshData();}
 });

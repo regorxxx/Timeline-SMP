@@ -78,30 +78,7 @@ function onLbtnUpPoint(point, x, y, mask) {
 function onLbtnUpSettings() { 
 	// Constants
 	const menu = new _menu();
-	const setData = (entry) => {
-		const dataSource = JSON.parse(properties.dataSource[1]);
-		const newConfig = {
-			[properties.bAsync[1] ? 'dataAsync' : 'data']: (properties.bAsync[1] ? getDataAsync : getData)({
-				option:		'timeline',
-				sourceType:	entry.hasOwnProperty('sourceType') ? entry.sourceType : dataSource.sourceType,
-				sourceArg: 	(entry.hasOwnProperty('sourceArg') ? entry.sourceArg : dataSource.sourceArg) || null,
-				x:			entry.x || _qCond(this.axis.x.tf, true),
-				y:			entry.y || _qCond(this.axis.y.tf, true),
-				z:			entry.z || _qCond(this.axis.z.tf, true),
-				query:		query_join([
-								entry.hasOwnProperty('query') ? entry.query : properties.dataQuery[1],
-								(entry.hasOwnProperty('z') ? _qCond(entry.z) : this.axis.z.tf) + ' PRESENT AND ' + (entry.hasOwnProperty('x') ? _qCond(entry.x) : this.axis.x.tf) + ' PRESENT'
-							], 'AND'),
-				bProportional: entry.bProportional
-			}),
-			axis: {}
-		};
-		if (entry.x) {newConfig.axis.x = {key: entry.keyX, tf: _qCond(entry.x)};}
-		if (entry.y) {newConfig.axis.y = {key: entry.keyY, tf: _qCond(entry.y), bProportional: entry.bProportional};}
-		if (entry.z) {newConfig.axis.z = {key: entry.keyZ, tf: _qCond(entry.z)};}
-		this.changeConfig({...newConfig, bPaint: true});
-		this.changeConfig({title: window.Name + ' - ' + 'Graph 1 {' + this.axis.x.key + ' - ' + this.axis.y.key + '}', bPaint: false, callbackArgs: {bSaveProperties: true}});
-	};
+	const dataSource = JSON.parse(properties.dataSource[1]);
 	const inputTF = (axis = 'x') => {
 		axis = axis.toLowerCase();
 		const axisTF = Input.string('string', this.axis[axis].tf, 'Enter tag or TF expression:\n\n' + (axis === 'y' ? 'Expression should output a number per track (and TRUE). For example:\nListens: %PLAY_COUNT%\nRated 5 tracks: $ifequal(%RATING%,5,1$not(0),0)' : 'For example:\n%GENRE%'), window.Name, '%GENRE%');
@@ -126,14 +103,14 @@ function onLbtnUpSettings() {
 		list.forEach((entry) => {
 			if (entry.name === 'sep') {menu.newEntry({menuName: subMenu, entryText: 'sep'});}
 			else {
-				menu.newEntry({menuName: subMenu, entryText: entry.name, func: setData.bind(this, entry)});
+				menu.newEntry({menuName: subMenu, entryText: entry.name, func: () => this.setData(entry)});
 				menu.newCheckMenu(subMenu, entry.name, void(0),  () => this.axis.x.tf === _qCond(entry.x));
 			}
 		});
 		menu.newEntry({menuName: subMenu, entryText: 'sep'});
 		menu.newEntry({menuName: subMenu, entryText: 'By TF...', func: () => {
 			const entry = inputTF('x');
-			if (entry) {setData.call(this, entry);}
+			if (entry) {this.setData(entry);}
 		}});
 		menu.newEntry({menuName: subMenu, entryText: 'sep'});
 		_createSubMenuEditEntries(menu, subMenu, {
@@ -156,14 +133,14 @@ function onLbtnUpSettings() {
 		list.forEach((entry) => {
 			if (entry.name === 'sep') {menu.newEntry({menuName: subMenu, entryText: 'sep'});}
 			else {
-				menu.newEntry({menuName: subMenu, entryText: entry.name, func: setData.bind(this, entry)});
+				menu.newEntry({menuName: subMenu, entryText: entry.name, func: () => this.setData(entry)});
 				menu.newCheckMenu(subMenu, entry.name, void(0),  () => this.axis.y.tf === _qCond(entry.y) && this.axis.y.bProportional === entry.bProportional);
 			}
 		});
 		menu.newEntry({menuName: subMenu, entryText: 'sep'});
 		menu.newEntry({menuName: subMenu, entryText: 'By TF...', func: () => {
 			const entry = inputTF('y');
-			if (entry) {setData.call(this, entry);}
+			if (entry) {this.setData(entry);}
 		}});
 		menu.newEntry({menuName: subMenu, entryText: 'sep'});
 		_createSubMenuEditEntries(menu, subMenu, {
@@ -186,14 +163,14 @@ function onLbtnUpSettings() {
 		list.forEach((entry) => {
 			if (entry.name === 'sep') {menu.newEntry({menuName: subMenu, entryText: 'sep'});}
 			else {
-				menu.newEntry({menuName: subMenu, entryText: entry.name, func: setData.bind(this, entry)});
+				menu.newEntry({menuName: subMenu, entryText: entry.name, func: () => this.setData(entry)});
 				menu.newCheckMenu(subMenu, entry.name, void(0),  () => this.axis.z.tf === _qCond(entry.z));
 			}
 		});
 		menu.newEntry({menuName: subMenu, entryText: 'sep'});
 		menu.newEntry({menuName: subMenu, entryText: 'By TF...', func: () => {
 			const entry = inputTF('z');
-			if (entry) {setData.call(this, entry);}
+			if (entry) {this.setData(entry);}
 		}});
 		menu.newEntry({menuName: subMenu, entryText: 'sep'});
 		_createSubMenuEditEntries(menu, subMenu, {
@@ -221,28 +198,23 @@ function onLbtnUpSettings() {
 		];
 		options.forEach((option) => {
 			menu.newEntry({menuName: subMenu, entryText: option.entryText, func: () => {
-				let sourceArg = null;
 				if (option.hasOwnProperty('sourceArg')) {
 					 if (option.sourceArg === null) {
-						const input = Input.string('string', JSON.parse(properties.dataSource[1]).sourceArg || '', 'Enter playlist name(s):\n(separated by ;)', window.Name, 'My Playlist;Other Playlist', void(0), true) || Input.lastInput;
+						const input = Input.string('string', dataSource.sourceArg || '', 'Enter playlist name(s):\n(separated by ;)', window.Name, 'My Playlist;Other Playlist', void(0), true) || Input.lastInput;
 						if (input === null) {return;}
-						sourceArg = input.split(';');
-						console.log(sourceArg);
+						dataSource.sourceArg = input.split(';');
 					 } else {
-						sourceArg = option.sourceArg;
+						dataSource.sourceArg = option.sourceArg;
 					 }
 				}
-				properties.dataSource[1] = JSON.stringify({sourceType: option.sourceType, sourceArg});
+				dataSource.sourceType = option.sourceType;
+				properties.dataSource[1] = JSON.stringify(dataSource);
 				overwriteProperties(properties);
-				setData.call(this, {
-					sourceType: option.sourceType, 
-					sourceArg: sourceArg
-				});
+				this.setData({...dataSource});
 			}});
 		});
 		menu.newCheckMenuLast(() => {
-			const currType = JSON.parse(properties.dataSource[1]).sourceType;
-			const idx = options.findIndex((opt) => opt.sourceType === currType);
+			const idx = options.findIndex((opt) => opt.sourceType === dataSource.sourceType);
 			return (idx !== -1 ? idx : 0);
 		}, options);
 	}
@@ -293,6 +265,12 @@ function onLbtnUpSettings() {
 		}});
 		menu.newCheckMenu(subMenu, 'Asynchronous calculation', void(0), () => properties.bAsync[1]);
 		menu.newEntry({menuName: subMenu, entryText: 'sep'});
+		menu.newEntry({menuName: subMenu, entryText: 'Auto-update data sources', func: () => {
+			properties.bAutoData[1] = !properties.bAutoData[1];
+			overwriteProperties(properties);
+		}, flags: dataSource.sourceType === 'library' ? MF_GRAYED : MF_STRING});
+		menu.newCheckMenuLast(() => properties.bAutoData[1]);
+		menu.newEntry({menuName: subMenu, entryText: 'sep'});
 		menu.newEntry({menuName: subMenu, entryText: 'Automatically check for updates', func: () => {
 			properties.bAutoUpdateCheck[1] = !properties.bAutoUpdateCheck[1];
 			overwriteProperties(properties);
@@ -302,12 +280,15 @@ function onLbtnUpSettings() {
 			}
 		}});
 		menu.newCheckMenu(subMenu, 'Automatically check for updates', void(0),  () => properties.bAutoUpdateCheck[1]);
+		menu.newEntry({menuName: subMenu, entryText: 'Check for updates...',  func: () => {
+			if (typeof checkUpdate === 'undefined') {include('helpers\\helpers_xxx_web_update.js');}
+			checkUpdate({bDownload: globSettings.bAutoUpdateDownload, bOpenWeb: globSettings.bAutoUpdateOpenWeb, bDisableWarning: false})
+				.then((bFound) => !bFound && fb.ShowPopupMessage('No updates found.', window.Name));
+		}});
 	}
 	menu.newEntry({entryText: 'sep'});
-	menu.newEntry({entryText: 'Check for updates...',  func: () => {
-		if (typeof checkUpdate === 'undefined') {include('helpers\\helpers_xxx_web_update.js');}
-		checkUpdate({bDownload: globSettings.bAutoUpdateDownload, bOpenWeb: globSettings.bAutoUpdateOpenWeb, bDisableWarning: false})
-			.then((bFound) => !bFound && fb.ShowPopupMessage('No updates found.', window.Name));
+	menu.newEntry({entryText: 'Force data update', func: () => {
+		this.setData();
 	}});
 	return menu;
 }

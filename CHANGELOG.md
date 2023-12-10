@@ -9,7 +9,8 @@
 
 ## [Unreleased][]
 ### Added
-- Data: tracks' source can now be set to library, current playlist, playing playlist or specific playlist(s) by name. When using playlists sources (any type), data is refreshed on real time when adding/removing tracks or switching playlists.
+- Data: tracks' source can now be set to library, current playlist, playing playlist or specific playlist(s) by name. When using playlists sources (any type), data can be refreshed on real time when adding/removing tracks or switching playlists. Library source is never automatically updated.
+- Data: new menu entry to force a data update of the selected source.
 - Data: tracks are now deduplicated before processing statistics (for ex. having 2 versions of the same album will not introduce any more biases).
 ### Changed
 - UI: when changing the TF of any axis, the axis name is now suggested without '%' and capitalized (instead of the raw tag).

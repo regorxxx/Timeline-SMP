@@ -33,12 +33,12 @@ include('..\\filter_and_query\\remove_duplicates.js');
 function getData({
 	option = 'tf', 
 	x = 'genre', y = 1, z = 'artist',
-	query = 'ALL', sourceType = 'library',
+	query = 'ALL', sourceType = 'library', sourceArg = null,
 	bProportional = false,
 	bRemoveDuplicates = true
 } = {}) {
 	const noSplitTags = new Set(['ALBUM']); noSplitTags.forEach((tag) => noSplitTags.add(_t(tag)));
-	const source = filterSource(query, getSource(sourceType));
+	const source = filterSource(query, getSource(sourceType, sourceArg));
 	const handleList = bRemoveDuplicates ? deduplicateSource(source) : source;
 	let data;
 	switch (option) {
@@ -52,7 +52,7 @@ function getData({
 			const bSingleY = !isNaN(y);
 			const serieCounters = bSingleY 
 				? Number(y) 
-				: fb.TitleFormat(_bt(queryReplaceWithCurrent(y))).EvalWithMetadbs(handleList); // Y
+				: fb.TitleFormat(_bt(queryReplaceWithCurrent(y))).EvalWithMetadbs(handleList).map((val) => {return val ? Number(val) : 0}); // Y
 			const dic = new Map();
 			xTags.forEach((arr, i) => {
 				arr.forEach((x) => {
@@ -72,7 +72,7 @@ function getData({
 			});
 			dic.forEach((value, key, map) => {
 				map.set(key, Object.entries(value).map((pair) => {return {key: pair[0], ...pair[1] /* count, total */};}).sort((a, b) => {return b.count - a.count;}));
-			})
+			});
 			data = [[...dic].map((points) => points[1].map((point) => {return {x: points[0], y: (bProportional ? point.count / point.total : point.count), z: point.key};}))];
 			break;
 		}
@@ -121,12 +121,12 @@ function getData({
 async function getDataAsync({
 	option = 'tf', 
 	x = 'genre', y = 1, z = 'artist',
-	query = 'ALL', sourceType = 'library',
+	query = 'ALL', sourceType = 'library', sourceArg = null,
 	bProportional = false, 
 	bRemoveDuplicates = true
 } = {}) {
 	const noSplitTags = new Set(['ALBUM']); noSplitTags.forEach((tag) => noSplitTags.add(_t(tag)));
-	const source = filterSource(query, getSource(sourceType));
+	const source = filterSource(query, getSource(sourceType, sourceArg));
 	const handleList = bRemoveDuplicates ? deduplicateSource(source) : source;
 	let data;
 	switch (option) {
@@ -207,9 +207,12 @@ async function getDataAsync({
 }
 
 function getSource(type, arg) {
-	switch (type.toLowerCase()) {
-		case 'library': return fb.GetLibraryItems();
-		case 'playlist': return getHandleFromUIPlaylists(arg); // [playlist names]
+	switch (type) {
+		case 'playlist':		return getHandleFromUIPlaylists(arg, false); // [playlist names]
+		case 'playingPlaylist':	return (plman.PlayingPlaylist !== -1 && fb.IsPlaying ? plman.GetPlaylistItems(plman.PlayingPlaylist) : getSource('activePlaylist'));
+		case 'activePlaylist':	return (plman.ActivePlaylist !== -1 ? plman.GetPlaylistItems(plman.ActivePlaylist) : new FbMetadbHandleList());
+		case 'library':
+		default:				return fb.GetLibraryItems();
 	}
 }
 

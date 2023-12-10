@@ -79,9 +79,12 @@ function onLbtnUpSettings() {
 	// Constants
 	const menu = new _menu();
 	const setData = (entry) => {
+		const dataSource = JSON.parse(properties.dataSource[1]);
 		const newConfig = {
 			[properties.bAsync[1] ? 'dataAsync' : 'data']: (properties.bAsync[1] ? getDataAsync : getData)({
 				option:		'timeline',
+				sourceType:	entry.hasOwnProperty('sourceType') ? entry.sourceType : dataSource.sourceType,
+				sourceArg: 	(entry.hasOwnProperty('sourceArg') ? entry.sourceArg : dataSource.sourceArg) || null,
 				x:			entry.x || _qCond(this.axis.x.tf, true),
 				y:			entry.y || _qCond(this.axis.y.tf, true),
 				z:			entry.z || _qCond(this.axis.z.tf, true),
@@ -101,11 +104,13 @@ function onLbtnUpSettings() {
 	};
 	const inputTF = (axis = 'x') => {
 		axis = axis.toLowerCase();
-		const input = Input.string('string', this.axis[axis].tf, 'Enter tag or TF expression:\n\n' + (axis === 'y' ? 'Expression should output a number per track (and TRUE). For example:\nListens: %PLAY_COUNT%\nRated 5 tracks: $ifequal(%RATING%,5,1$not(0),0)' : 'For example:\n%GENRE%'), window.Name, '%GENRE%');
-		if (input === null) {return;}
+		const axisTF = Input.string('string', this.axis[axis].tf, 'Enter tag or TF expression:\n\n' + (axis === 'y' ? 'Expression should output a number per track (and TRUE). For example:\nListens: %PLAY_COUNT%\nRated 5 tracks: $ifequal(%RATING%,5,1$not(0),0)' : 'For example:\n%GENRE%'), window.Name, '%GENRE%');
+		if (axisTF === null) {return;}
+		const axisKey = Input.string('string', capitalizeAll(axisTF.replace(/%/g,'')), 'Enter axis name:', window.Name, 'Date') || Input.lastInput;
+		if (axisKey === null) {return;}
 		return {
-			[axis]: input,
-			['key' + axis.toUpperCase()]: Input.string('string', capitalizeAll(input.replace(/%/g,'')), 'Enter axis name:', window.Name, 'Date') || Input.lastInput,
+			[axis]: axisTF,
+			['key' + axis.toUpperCase()]: axisKey,
 			bProportional: axis === 'y' && WshShell.Popup('Proportional to total number of tracks per serie?', 0, window.Name, popup.question + popup.yes_no) === popup.yes
 		};
 	};
@@ -205,6 +210,44 @@ function onLbtnUpSettings() {
 	}
 	menu.newEntry({entryText: 'sep'});
 	{
+		const subMenu = menu.newMenu('Data source...');
+		menu.newEntry({menuName: subMenu, entryText: 'Select source for tracks:', flags: MF_GRAYED});
+		menu.newEntry({menuName: subMenu, entryText: 'sep'});
+		const options = [
+			{entryText: 'Library',				 	sourceType: 'library'},
+			{entryText: 'Current playlist', 		sourceType: 'activePlaylist'},
+			{entryText: 'Playing playlist', 		sourceType: 'playingPlaylist'},
+			{entryText: 'Selected playlist(s)....', sourceType: 'playlist', sourceArg: null},
+		];
+		options.forEach((option) => {
+			menu.newEntry({menuName: subMenu, entryText: option.entryText, func: () => {
+				let sourceArg = null;
+				if (option.hasOwnProperty('sourceArg')) {
+					 if (option.sourceArg === null) {
+						const input = Input.string('string', JSON.parse(properties.dataSource[1]).sourceArg || '', 'Enter playlist name(s):\n(separated by ;)', window.Name, 'My Playlist;Other Playlist', void(0), true) || Input.lastInput;
+						if (input === null) {return;}
+						sourceArg = input.split(';');
+						console.log(sourceArg);
+					 } else {
+						sourceArg = option.sourceArg;
+					 }
+				}
+				properties.dataSource[1] = JSON.stringify({sourceType: option.sourceType, sourceArg});
+				overwriteProperties(properties);
+				setData.call(this, {
+					sourceType: option.sourceType, 
+					sourceArg: sourceArg
+				});
+			}});
+		});
+		menu.newCheckMenuLast(() => {
+			const currType = JSON.parse(properties.dataSource[1]).sourceType;
+			const idx = options.findIndex((opt) => opt.sourceType === currType);
+			return (idx !== -1 ? idx : 0);
+		}, options);
+	}
+	menu.newEntry({entryText: 'sep'});
+	{
 		const subMenu = menu.newMenu('Filter data...');
 		menu.newEntry({menuName: subMenu, entryText: 'By query:', flags: MF_GRAYED});
 		menu.newEntry({menuName: subMenu, entryText: 'sep'});
@@ -226,7 +269,7 @@ function onLbtnUpSettings() {
 			if (input === null) {return;}
 			properties.dataQuery[1] = input;
 			overwriteProperties(properties);
-			setData.call(this, {query: input})
+			setData.call(this, {query: input});
 		}});
 		menu.newEntry({menuName: subMenu, entryText: 'sep'});
 		_createSubMenuEditEntries(menu, subMenu, {

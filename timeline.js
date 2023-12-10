@@ -37,6 +37,7 @@ let properties = {
 		z: {key: 'Artist',	tf: '%ALBUM ARTIST%'}
 	}), {func: isJSON}],
 	dataQuery:	['Data query', 'ALL', {func: isString}],
+	dataSource:	['Data source', JSON.stringify({sourceType: 'library', sourceArg: null}), {func: isJSON}],
 	xEntries:	['Axis X TF entries', JSON.stringify([
 		{x: '$year(%DATE%)',						keyX: 'Date'},
 		{x: '$right($div($year(%DATE%),10)0s,3)',	keyX: 'Decade'},
@@ -146,9 +147,12 @@ const newConfig = [
 	]
 ];
 newConfig.forEach((row) => row.forEach((config) => {
+	const dataSource = JSON.parse(properties.dataSource[1]);
 	if (properties.bAsync[1]) {
 		config.dataAsync = () => getDataAsync({
 			option:			'timeline',
+			sourceType:		dataSource.sourceType,
+			sourceArg: 		dataSource.sourceArg || null,
 			x:				_qCond(config.axis.x.tf, true),
 			y:				_qCond(config.axis.y.tf, true),
 			z:				_qCond(config.axis.z.tf, true),
@@ -158,6 +162,8 @@ newConfig.forEach((row) => row.forEach((config) => {
 	} else {
 		config.data = getData({
 			option:			'timeline',
+			sourceType:		dataSource.sourceType,
+			sourceArg: 		dataSource.sourceArg || null,
 			x:				_qCond(config.axis.x.tf, true),
 			y:				_qCond(config.axis.y.tf, true),
 			z:				_qCond(config.axis.z.tf, true),
@@ -183,6 +189,59 @@ const nCharts = new Array(rows).fill(1).map((row) => {return new Array(columns).
 	});
 });
 const charts = nCharts.flat(Infinity);
+
+/* 
+	Helper to set data
+*/
+charts.forEach((chart) => {
+	chart.setData = function(entry = {}) {
+		const dataSource = JSON.parse(properties.dataSource[1]);
+		const newConfig = {
+			[properties.bAsync[1] ? 'dataAsync' : 'data']: (properties.bAsync[1] ? getDataAsync : getData)({
+				option:		'timeline',
+				sourceType:	entry.hasOwnProperty('sourceType') ? entry.sourceType : dataSource.sourceType,
+				sourceArg: 	(entry.hasOwnProperty('sourceArg') ? entry.sourceType : dataSource.sourceArg) || null,
+				x:			entry.x || _qCond(this.axis.x.tf, true),
+				y:			entry.y || _qCond(this.axis.y.tf, true),
+				z:			entry.z || _qCond(this.axis.z.tf, true),
+				query:		query_join([
+								entry.hasOwnProperty('query') ? entry.query : properties.dataQuery[1],
+								(entry.hasOwnProperty('z') ? _qCond(entry.z) : this.axis.z.tf) + ' PRESENT AND ' + (entry.hasOwnProperty('x') ? _qCond(entry.x) : this.axis.x.tf) + ' PRESENT'
+							], 'AND'),
+				bProportional: entry.bProportional
+			}),
+			axis: {}
+		};
+		if (entry.x) {newConfig.axis.x = {key: entry.keyX, tf: _qCond(entry.x)};}
+		if (entry.y) {newConfig.axis.y = {key: entry.keyY, tf: _qCond(entry.y), bProportional: entry.bProportional};}
+		if (entry.z) {newConfig.axis.z = {key: entry.keyZ, tf: _qCond(entry.z)};}
+		this.changeConfig({...newConfig, bPaint: true});
+		this.changeConfig({title: window.Name + ' - ' + 'Graph 1 {' + this.axis.x.key + ' - ' + this.axis.y.key + '}', bPaint: false, callbackArgs: {bSaveProperties: true}});
+	};
+});
+
+let playingPlaylist = plman.PlayingPlaylist;
+let activePlaylist = plman.ActivePlaylist;
+let selectedPlaylists = -1;
+function refreshData(plsIdx) {
+	const dataSource = JSON.parse(properties.dataSource[1]);
+	if (dataSource.sourceType === 'playingPlaylist' && (playingPlaylist !== plman.PlayingPlaylist || plsIdx === plman.PlayingPlaylist)) {
+		charts.forEach((chart) => {!chart.pop.isEnabled() && chart.setData();});
+	}
+	playingPlaylist = plman.PlayingPlaylist;
+	if ((dataSource.sourceType === 'activePlaylist' || dataSource.sourceType === 'playingPlaylist' && !fb.IsPlaying) && (activePlaylist !== plman.activePlaylist || plsIdx === plman.PlayingPlaylist)) {
+		charts.forEach((chart) => {!chart.pop.isEnabled() && chart.setData();});
+	}
+	activePlaylist = plman.ActivePlaylist;
+	if (dataSource.sourceType === 'playlist') {
+		const idxArr = dataSource.sourceArg.reduce((acc, curr) => acc.concat(getPlaylistIndexArray(curr)), []);
+		console.log(dataSource.sourceArg, idxArr, plsIdx, selectedPlaylists);
+		if (selectedPlaylists !== idxArr.length || idxArr.includes(plsIdx)) {
+			charts.forEach((chart) => {!chart.pop.isEnabled() && chart.setData();});
+		}
+		selectedPlaylists = idxArr.length;
+	}
+}
 
 /* 
 	Callbacks
@@ -262,6 +321,8 @@ addEventListener('on_key_up', (vKey) => {
 
 addEventListener('on_playback_new_track', () => { // To show playing now playlist indicator...
 	if (background.coverMode.toLowerCase() !== 'none') {background.updateImageBg();}
+	if (!window.ID) {return;}
+	refreshData();
 });
 
 addEventListener('on_selection_changed', () => {
@@ -280,6 +341,8 @@ addEventListener('on_playlist_switch', () => {
 	if (background.coverMode.toLowerCase() !== 'none' && (!background.coverModeOptions.bNowPlaying || !fb.IsPlaying)) {
 		background.updateImageBg();
 	}
+	if (!window.ID) {return;}
+	refreshData();
 });
 
 addEventListener('on_playback_stop', (reason) => {
@@ -292,4 +355,16 @@ addEventListener('on_playlists_changed', () => { // To show/hide loaded playlist
 	if (background.coverMode.toLowerCase() !== 'none' && (!background.coverModeOptions.bNowPlaying || !fb.IsPlaying)) {
 		background.updateImageBg();
 	}
+	if (!window.ID) {return;}
+	refreshData();
+});
+
+addEventListener('on_playlist_items_added', (idx) => {
+	if (!window.ID) {return;}
+	refreshData(idx);
+});
+
+addEventListener('on_playlist_items_removed', (idx) => {
+	if (!window.ID) {return;}
+	refreshData(idx);
 });

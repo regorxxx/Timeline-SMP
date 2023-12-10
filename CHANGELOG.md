@@ -10,6 +10,10 @@
 ## [Unreleased][]
 ### Added
 ### Changed
+- UI: when changing the TF of any axis, the axis name is now suggested without '%' and capitalized (instead of the raw tag).
+- UI: when changing the TF of any axis, the current expression is shown.
+- Data: max slice range applied when changing data (previously Infinity). Set to 50 by default.
+- Data: tracks are now deduplicated before processing statistics (for ex. having 2 versions of the same album will not introduce any more biases).
 ### Removed
 ### Fixed
 

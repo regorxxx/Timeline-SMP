@@ -1,15 +1,15 @@
 ﻿'use strict';
-//16/11/23
+//11/12/23
 
 include('..\\..\\helpers\\menu_xxx.js');
 include('..\\..\\helpers\\helpers_xxx_input.js');
 
-function createBackgroundMenu(appendTo) { // Must be bound to _background() instance
+function createBackgroundMenu(appendTo /* {menuName, subMenuFrom, flags} */, parentMenu) { // Must be bound to _background() instance
 	// Constants
 	if (this.hasOwnProperty('tooltip')) {this.tooltip.SetValue(null);}
-	const menu = new _menu();
-	if (appendTo) {menu.newMenu(appendTo);}
-	const mainMenuName = appendTo || menu.getMainMenuName();
+	const menu = parentMenu || new _menu();
+	if (appendTo) {menu.findOrNewMenu(appendTo.menuName, appendTo.subMenuFrom, appendTo.flags);}
+	const mainMenuName = appendTo.menuName || menu.getMainMenuName();
 	// helper
 	const createMenuOption = (key, subKey, menuName = mainMenuName, bCheck = true, addFunc = null) => {
 		return function (option) {

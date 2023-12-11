@@ -1,5 +1,5 @@
 ﻿'use strict';
-//10/12/23
+//11/12/23
 
 include('main\\statistics\\statistics_xxx.js');
 include('main\\statistics\\statistics_xxx_menu.js');
@@ -121,7 +121,7 @@ const defaultConfig = deepAssign()(
 		callbacks: {
 			point:		{onLbtnUp: onLbtnUpPoint},
 			settings:	{onLbtnUp: function(x, y, mask) {onLbtnUpSettings.call(this).btn_up(x, y);}},
-			display:	{onLbtnUp: function(x, y, mask) {createStatisticsMenu.call(this).btn_up(x, y, ['sep', createBackgroundMenu.call(background, 'Background')]);}},
+			display:	{onLbtnUp: function(x, y, mask) {createStatisticsMenu.call(this).btn_up(x, y, ['sep', createBackgroundMenu.call(background, {menuName: 'Background'})]);}},
 			config:		{
 				change: function(config, changeArgs, callbackArgs) {
 					if (callbackArgs && callbackArgs.bSaveProperties) {

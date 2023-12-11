@@ -12,6 +12,10 @@ Configurable by Title Format, lets you generate playlists based on selection. Ba
 ## Features
 - Statistics fully configurable:
 	- Set data per axis with [Title Format](https://wiki.hydrogenaud.io/index.php?title=Foobar2000:Title_Formatting_Reference).
+	- 3 Axis available.
+	- Allows to aggregate data in groups, calculate proportional values per group (for ex. average rating/album), ...
+ 	- Configurable sources: library, active/now playing playist, selectable playlists (by name).
+   	- Filtering with queries.
 	- Highly configurable chart and data manipulation.
 - Asynchronous data calculations (UI is not blocked).
 - Point statistics.

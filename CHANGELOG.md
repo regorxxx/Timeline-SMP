@@ -2,7 +2,7 @@
 
 ## [Table of Contents]
 - [Unreleased](#unreleased)
-- [0.9.0](#090---2023-12-11)
+- [0.9.0](#081---2023-12-11)
 - [0.8.1](#081---2023-12-08)
 - [0.8.0](#080---2023-11-28)
 - [0.7.0](#070---2023-11-24)
@@ -14,18 +14,29 @@
 ### Removed
 ### Fixed
 
-## [0.8.1] - 2023-12-11
+## [0.9.0] - 2023-12-11
 ### Added
-- Data: tracks' source can now be set to library, current playlist, playing playlist or specific playlist(s) by name. When using playlists sources (any type), data can be refreshed on real time when adding/removing tracks or switching playlists. Library source is never automatically updated.## [0.8.1] - 2023-12-08
-- Data: new menu entry to force a data update of the selected source.### Added
-- Data: tracks are now deduplicated before processing statistics (for ex. having 2 versions of the same album will not introduce any more biases).### Changed
-### Changed### Removed
-- UI: when changing the TF of any axis, the axis name is now suggested without '%' and capitalized (instead of the raw tag).### Fixed
-- UI: when changing the TF of any axis, the current expression is shown.- Crash opening menu when palettes have been set to not use only colorblind schemes.
+- Data: tracks' source can now be set to library, current playlist, playing playlist or specific playlist(s) by name. When using playlists sources (any type), data can be refreshed on real time when adding/removing tracks or switching playlists. Library source is never automatically updated.
+- Data: new menu entry to force a data update of the selected source.
+- Data: tracks are now deduplicated before processing statistics (for ex. having 2 versions of the same album will not introduce any more biases).
+### Changed
+- UI: when changing the TF of any axis, the axis name is now suggested without '%' and capitalized (instead of the raw tag).
+- UI: when changing the TF of any axis, the current expression is shown.
 - Data: max slice range applied when changing data (previously Infinity). Set to 50 by default.
-### Removed## [0.8.0] - 2023-11-28
-### Fixed### Added
-- Data: incorrect number handling on Y axis in some cases when using synchronous calculation.- UI: added setting to disable tooltip on all scripts. Found at '[FOOBAR PROFILE FOLDER]\js_data\presets\global\globSettings.json', by changing 'bTooltip'. By default tooltip is always shown. This setting will never be exposed within foobar, only at this file.
+### Removed
+### Fixed
+- Data: incorrect number handling on Y axis in some cases when using synchronous calculation.
+
+## [0.8.1] - 2023-12-08
+### Added
+### Changed
+### Removed
+### Fixed
+- Crash opening menu when palettes have been set to not use only colorblind schemes.
+
+## [0.8.0] - 2023-11-28
+### Added
+- UI: added setting to disable tooltip on all scripts. Found at '[FOOBAR PROFILE FOLDER]\js_data\presets\global\globSettings.json', by changing 'bTooltip'. By default tooltip is always shown. This setting will never be exposed within foobar, only at this file.
 ### Changed
 - Helpers: updated helpers.
 - Improved error messages about features not working related to OS checks (at startup) with tips and warnings.
@@ -57,7 +68,8 @@
 ### Removed
 ### Fixed
 
-[Unreleased]: https://github.com/regorxxx/World-Map-SMP/compare/v0.8.1...HEAD
+[Unreleased]: https://github.com/regorxxx/World-Map-SMP/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/regorxxx/World-Map-SMP/compare/v0.8.1...v0.9.0
 [0.8.1]: https://github.com/regorxxx/World-Map-SMP/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/regorxxx/World-Map-SMP/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/regorxxx/World-Map-SMP/compare/v0.6.0...v0.7.0

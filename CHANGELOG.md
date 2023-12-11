@@ -11,6 +11,7 @@
 ## [Unreleased][]
 ### Added
 ### Changed
+- UI: optimized repainting to use less resources.
 ### Removed
 ### Fixed
 

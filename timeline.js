@@ -1,5 +1,5 @@
 ﻿'use strict';
-//11/12/23
+//12/12/23
 
 include('main\\statistics\\statistics_xxx.js');
 include('main\\statistics\\statistics_xxx_menu.js');
@@ -260,8 +260,10 @@ function refreshData(plsIdx, bForce = false) {
 addEventListener('on_paint', (gr) => { 
 	if (!window.ID) {return;}
 	if (!window.Width || !window.Height) {return;}
+	// extendGR(gr, {Repaint: true}); // helpers_xxx_prototypes_smp.js
 	background.paint(gr);
 	charts.forEach((chart) => {chart.paint(gr);});
+	if (window.debugPainting) {window.drawDebugRectAreas(gr);}
 });
 
 addEventListener('on_size', () => {

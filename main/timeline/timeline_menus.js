@@ -1,11 +1,13 @@
 'use strict';
-//10/12/23
+//12/12/23
 
 include('..\\..\\helpers\\helpers_xxx_playlists.js');
 include('..\\..\\helpers\\helpers_xxx_input.js');
 include('..\\..\\helpers\\menu_xxx.js');
 include('..\\..\\helpers\\menu_xxx_extras.js');
 include('..\\filter_and_query\\remove_duplicates.js');
+include('..\\window\\window_xxx_background_menu.js');
+include('..\\..\\helpers-external\\namethatcolor\\ntc.js'); // For createBackgroundMenu() on createStatisticsMenu() call
 
 function onLbtnUpPoint(point, x, y, mask) { 
 	// Constants

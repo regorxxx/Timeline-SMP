@@ -6,7 +6,6 @@ include('main\\statistics\\statistics_xxx_menu.js');
 include('main\\timeline\\timeline_helpers.js');
 include('main\\timeline\\timeline_menus.js');
 include('main\\window\\window_xxx_background.js');
-include('main\\window\\window_xxx_background_menu.js');
 include('helpers\\helpers_xxx_properties.js');
 
 if (!window.ScriptInfo.PackageId) {window.DefineScript('Timeline', {author:'regorxxx', version: '0.9.0', features: {drag_n_drop: false, grab_focus: true}});}
@@ -121,7 +120,7 @@ const defaultConfig = deepAssign()(
 		callbacks: {
 			point:		{onLbtnUp: onLbtnUpPoint},
 			settings:	{onLbtnUp: function(x, y, mask) {onLbtnUpSettings.call(this).btn_up(x, y);}},
-			display:	{onLbtnUp: function(x, y, mask) {createStatisticsMenu.call(this).btn_up(x, y, ['sep', createBackgroundMenu.call(background, {menuName: 'Background'})]);}},
+			display:	{onLbtnUp: function(x, y, mask) {createStatisticsMenu.call(this).btn_up(x, y, ['sep', createBackgroundMenu.call(background, {menuName: 'Background'}, void(0), {nameColors: true})]);}},
 			config:		{
 				change: function(config, changeArgs, callbackArgs) {
 					if (callbackArgs && callbackArgs.bSaveProperties) {
@@ -266,16 +265,16 @@ addEventListener('on_paint', (gr) => {
 	if (window.debugPainting) {window.drawDebugRectAreas(gr);}
 });
 
-addEventListener('on_size', () => {
+addEventListener('on_size', (width, height) => {
 	if (!window.ID) {return;}
-	if (!window.Width || !window.Height) {return;}
-	background.resize({w: window.Width, h: window.Height, bPaint: false});
+	if (!width || !height) {return;}
+	background.resize({w: width, h: height, bPaint: false});
 	for (let i = 0; i < rows; i++) {
 		for (let j = 0; j < columns; j++) {
-			const w = window.Width / columns;
-			const h = window.Height / rows * (i + 1);
+			const w = width / columns;
+			const h = height / rows * (i + 1);
 			const x = w * j;
-			const y = window.Height / rows * i;
+			const y = height / rows * i;
 			nCharts[i][j].changeConfig({x, y, w, h, bPaint: false});
 		}
 	}

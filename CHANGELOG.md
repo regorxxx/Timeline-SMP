@@ -10,8 +10,10 @@
 
 ## [Unreleased][]
 ### Added
+- UI: added color names to background color settings.
 ### Changed
 - UI: optimized repainting to use less resources.
+- Helpers: updated helpers.
 ### Removed
 ### Fixed
 

@@ -1,5 +1,5 @@
 ﻿'use strict';
-//12/12/23
+//17/12/23
 
 include('main\\statistics\\statistics_xxx.js');
 include('main\\statistics\\statistics_xxx_menu.js');
@@ -8,7 +8,7 @@ include('main\\timeline\\timeline_menus.js');
 include('main\\window\\window_xxx_background.js');
 include('helpers\\helpers_xxx_properties.js');
 
-if (!window.ScriptInfo.PackageId) {window.DefineScript('Timeline', {author:'regorxxx', version: '0.9.0', features: {drag_n_drop: false, grab_focus: true}});}
+if (!window.ScriptInfo.PackageId) {window.DefineScript('Timeline', {author:'regorxxx', version: '1.0.0', features: {drag_n_drop: false, grab_focus: true}});}
 
 let properties = {
 	background:	['Background options', JSON.stringify(deepAssign()(

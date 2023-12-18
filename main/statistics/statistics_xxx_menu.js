@@ -1,11 +1,15 @@
 ﻿'use strict';
-//04/12/23
+//18/12/23
+
+/* exported bindMenu */
 
 // Don't load this helper unless menu framework is also present
 // https://github.com/regorxxx/Menu-Framework-SMP
 try {include('..\\..\\helpers\\menu_xxx.js');} catch(e) {
 	try {include('..\\..\\examples\\_statistics\\menu_xxx.js');} catch(e) {fb.ShowPopupMessage('Missing menu framework file', window.Name);}
 }
+/* global _attachedMenu:readable, _menu:readable */
+/* global MF_GRAYED:readable, _scale:readable, MF_STRING:readable, colorbrewer:readable, MF_MENUBARBREAK:readable */
 
 function bindMenu(parent) {
 	return _attachedMenu.call(parent, {rMenu: createStatisticsMenu.bind(parent), popup: parent.pop});
@@ -66,11 +70,10 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 				}
 			}
 		}.bind(this);
-	}
-	const filtGreat = (num) => {return (a) => {return a.y > num;}};
-	const filtLow = (num) => {return (a) => {return a.y < num;}};
+	};
+	const filtGreat = (num) => {return (a) => {return a.y > num;};};
+	const filtLow = (num) => {return (a) => {return a.y < num;};};
 	const fineGraphs = new Set(['bars', 'doughnut', 'pie', 'timeline']);
-	const sizeGraphs = new Set(['scatter', 'lines']);
 	// Header
 	menu.newEntry({entryText: this.title, flags: MF_GRAYED});
 	menu.newEntry({entryText: 'sep'});

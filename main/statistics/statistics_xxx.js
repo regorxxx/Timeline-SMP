@@ -1742,7 +1742,15 @@ function _chart({
 		if (dataAsync) { this.dataAsync = dataAsync; }
 		if (dataManipulation) {
 			this.dataManipulation = { ...this.dataManipulation, ...dataManipulation };
-			if (dataManipulation.sort) { this.sortKey = null; }
+			if (Object.prototype.hasOwnProperty.call(dataManipulation, 'sort')) { this.sortKey = null; }
+			if (Object.prototype.hasOwnProperty.call(dataManipulation, 'distribution')) {
+				if (dataManipulation.distribution && dataManipulation.distribution.toLowerCase() !== 'none') {
+					this.dataManipulation.sort = this.sortKey = null;
+				} else if (!Object.prototype.hasOwnProperty.call(dataManipulation, 'sort')) {
+					this.dataManipulation.sort = 'natural';
+					this.sortKey = null;
+				}
+			}
 		}
 		if (graph) {
 			if (graph.type && graph.type !== this.graph.type && ['timeline', 'doughnut', 'pie'].some((t) => this.graph.type === t || graph.type === t)) {
@@ -2042,7 +2050,9 @@ function _chart({
 	};
 
 	this.convertSortLabel = (input) => {
-		if (Array.isArray(input)) {
+		if (!input) {
+			return null;
+		} else if (Array.isArray(input)) {
 			const sort = (input.length === 1 ? [...input, 'x'] : input.slice(0, 2)).join('|');
 			return sort;
 		} else {

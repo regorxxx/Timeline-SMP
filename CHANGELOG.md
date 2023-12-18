@@ -13,8 +13,10 @@
 ### Added
 ### Changed
 - Code cleanup.
+- Data: sorting is now set by default to 'natural|x' when changing from distributions to standard graphs.
 ### Removed
 ### Fixed
+- Data: fixed logging about sorting being set while using distributions.
 - UI: fix zoom while using normal distribution.
 - UI: data offset to the right while using normal distribution in some cases.
 - Minor fixes.

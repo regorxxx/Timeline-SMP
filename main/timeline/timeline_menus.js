@@ -1,15 +1,23 @@
 'use strict';
-//12/12/23
+//18/12/23
 
+/* exported onLbtnUpPoint, onLbtnUpSettings*/
+
+/* global _p:readable, checkQuery:readable, globTags:readable, globQuery:readable, round:readable, capitalizeAll:readable, properties:readable, WshShell:readable, popup:readable, _qCond:readable, overwriteProperties:readable, checkUpdate:readable, globSettings:readable */
 include('..\\..\\helpers\\helpers_xxx_playlists.js');
+/* global sendToPlaylist:readable */
 include('..\\..\\helpers\\helpers_xxx_input.js');
+/* global Input:readable */
 include('..\\..\\helpers\\menu_xxx.js');
+/* global MF_GRAYED:readable, _menu:readable, MF_STRING:readable */
 include('..\\..\\helpers\\menu_xxx_extras.js');
+/* global _createSubMenuEditEntries:readable */
 include('..\\filter_and_query\\remove_duplicates.js');
+/* global removeDuplicatesV2:readable */
 include('..\\window\\window_xxx_background_menu.js');
 include('..\\..\\helpers-external\\namethatcolor\\ntc.js'); // For createBackgroundMenu() on createStatisticsMenu() call
 
-function onLbtnUpPoint(point, x, y, mask) { 
+function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-vars
 	// Constants
 	const menu = new _menu();
 	// Header
@@ -43,41 +51,41 @@ function onLbtnUpPoint(point, x, y, mask) {
 					plman.ActivePlaylist = plman.CreateAutoPlaylist(plman.PlaylistCount, entry.playlist, entry.query);
 				}
 			}});
-		}) 
+		});
 	}
 	menu.newEntry({entryText: 'sep'});
 	menu.newEntry({entryText: 'Point statistics', func: () => {
-		const report = '';
 		const avg = this.data[0]
 			.map((pointArr) => pointArr.map((subPoint) => subPoint.y)).flat(Infinity)
-			.reduce((acc, curr, i, arr) => acc + (curr - acc) / (i + 1), 0);
+			.reduce((acc, curr, i) => acc + (curr - acc) / (i + 1), 0);
 		const avgCurr = this.data[0]
 			.map((pointArr) => pointArr.filter((dataPoint) => dataPoint.z === point.z))
 			.map((pointArr) => pointArr.map((subPoint) => subPoint.y)).flat(Infinity)
-			.reduce((acc, curr, i, arr) => acc + (curr - acc) / (i + 1), 0);
+			.reduce((acc, curr, i) => acc + (curr - acc) / (i + 1), 0);
 		const libItems = fb.GetLibraryItems();
 		fb.ShowPopupMessage(
 			this.axis.z.key + ':\t' + point.z +
-			'\n' + 
+			'\n' +
 			this.axis.x.key + ':\t' + point.x +
-			'\n' + 
+			'\n' +
 			this.axis.y.key + ':\t' + point.y + ' ' + _p(round(point.y / libItems.Count * 100, 2) + '%') +
-			'\n' + 
+			'\n' +
 			'Average ' + this.axis.y.key + ' (any ' + this.axis.x.key + '): ' + Math.round(avgCurr) + ' ' + _p(round(avgCurr / libItems.Count * 100, 2) + '%') +
-			'\n' + 
+			'\n' +
 			'Total ' + this.axis.y.key + ' (any ' + this.axis.x.key + '): ' + fb.GetQueryItems(libItems, this.axis.z.tf + ' IS ' + point.z).Count +
-			'\n' + 
+			'\n' +
 			'-'.repeat(40) +
-			'\n' + 
+			'\n' +
 			'Global total ' + this.axis.y.key + ': ' + libItems.Count +
-			'\n' + 
+			'\n' +
 			'Global average ' + this.axis.y.key + ' (any ' + this.axis.x.key + '): ' + Math.round(avg) +  ' ' + _p(round(avg / libItems.Count * 100, 2) + '%')
-		, window.Name + ': Point statistics');
+			, window.Name + ': Point statistics'
+		);
 	}});
 	return menu.btn_up(x, y);
 }
 
-function onLbtnUpSettings() { 
+function onLbtnUpSettings() {
 	// Constants
 	const menu = new _menu();
 	const dataSource = JSON.parse(properties.dataSource[1]);
@@ -117,8 +125,8 @@ function onLbtnUpSettings() {
 		menu.newEntry({menuName: subMenu, entryText: 'sep'});
 		_createSubMenuEditEntries(menu, subMenu, {
 			name: 'Axis X TF entries',
-			list, 
-			defaults: JSON.parse(properties.xEntries[3]), 
+			list,
+			defaults: JSON.parse(properties.xEntries[3]),
 			input: () => inputTF('x'),
 			bNumbered: true,
 			onBtnUp: (entries) => {
@@ -147,8 +155,8 @@ function onLbtnUpSettings() {
 		menu.newEntry({menuName: subMenu, entryText: 'sep'});
 		_createSubMenuEditEntries(menu, subMenu, {
 			name: 'Axis Y TF entries',
-			list, 
-			defaults: JSON.parse(properties.yEntries[3]), 
+			list,
+			defaults: JSON.parse(properties.yEntries[3]),
 			input: () => inputTF('y'),
 			bNumbered: true,
 			onBtnUp: (entries) => {
@@ -177,8 +185,8 @@ function onLbtnUpSettings() {
 		menu.newEntry({menuName: subMenu, entryText: 'sep'});
 		_createSubMenuEditEntries(menu, subMenu, {
 			name: 'Axis Z TF entries',
-			list, 
-			defaults: JSON.parse(properties.zEntries[3]), 
+			list,
+			defaults: JSON.parse(properties.zEntries[3]),
 			input: () => inputTF('z'),
 			bNumbered: true,
 			onBtnUp: (entries) => {
@@ -200,14 +208,14 @@ function onLbtnUpSettings() {
 		];
 		options.forEach((option) => {
 			menu.newEntry({menuName: subMenu, entryText: option.entryText, func: () => {
-				if (option.hasOwnProperty('sourceArg')) {
-					 if (option.sourceArg === null) {
+				if (Object.prototype.hasOwnProperty.call(option, 'sourceArg')) {
+					if (option.sourceArg === null) {
 						const input = Input.string('string', dataSource.sourceArg || '', 'Enter playlist name(s):\n(separated by ;)', window.Name, 'My Playlist;Other Playlist', void(0), true) || Input.lastInput;
 						if (input === null) {return;}
 						dataSource.sourceArg = input.split(';');
-					 } else {
+					} else {
 						dataSource.sourceArg = option.sourceArg;
-					 }
+					}
 				}
 				dataSource.sourceType = option.sourceType;
 				properties.dataSource[1] = JSON.stringify(dataSource);
@@ -232,7 +240,7 @@ function onLbtnUpSettings() {
 				menu.newEntry({menuName: subMenu, entryText: entry.name, func: () => {
 					properties.dataQuery[1] = entry.query;
 					overwriteProperties(properties);
-					setData.call(this, entry);
+					this.setData(entry);
 				}});
 				menu.newCheckMenu(subMenu, entry.name, void(0), () => properties.dataQuery[1] === entry.query);
 			}
@@ -243,13 +251,13 @@ function onLbtnUpSettings() {
 			if (input === null) {return;}
 			properties.dataQuery[1] = input;
 			overwriteProperties(properties);
-			setData.call(this, {query: input});
+			this.setData({query: input});
 		}});
 		menu.newEntry({menuName: subMenu, entryText: 'sep'});
 		_createSubMenuEditEntries(menu, subMenu, {
 			name: 'Query entries',
-			list, 
-			defaults: JSON.parse(properties.queryEntries[3]), 
+			list,
+			defaults: JSON.parse(properties.queryEntries[3]),
 			input: () => Input.string('string', properties.dataQuery[1], 'Enter query:', window.Name, 'ALL'),
 			bNumbered: true,
 			onBtnUp: (entries) => {

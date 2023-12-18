@@ -1,14 +1,22 @@
 'use strict';
-//10/12/23
+//18/12/23
 
+/* exported getData, getDataAsync */
+
+/* global globQuery:readable */
+include('..\\..\\helpers\\helpers_xxx_prototypes.js');
+/* global _t:readable, _bt:readable, globTags:readable */
 include('..\\..\\helpers\\helpers_xxx_tags.js');
+/* global queryReplaceWithCurrent:readable */
 include('..\\..\\helpers\\helpers_xxx_playlists.js');
+/* global getHandleFromUIPlaylists:readable */
 include('..\\filter_and_query\\remove_duplicates.js');
+/* global removeDuplicatesV2:readable */
 
-/* 
+/*
 	Data to feed the charts:
 	This may be arbitrary data in a single series, with each point having x,y,z properties.
-	[	
+	[
 		[
 			[{x1, y11, z11}, ...],
 			[{x2, y21, z21}, ...],
@@ -27,11 +35,11 @@ include('..\\filter_and_query\\remove_duplicates.js');
 			...
 		]
 	]
-	
+
 	In this example a timeline is shown..
 */
 function getData({
-	option = 'tf', 
+	option = 'tf',
 	x = 'genre', y = 1, z = 'artist',
 	query = 'ALL', sourceType = 'library', sourceArg = null,
 	bProportional = false,
@@ -43,24 +51,24 @@ function getData({
 	let data;
 	switch (option) {
 		case 'timeline': { // 3D {x, y, z}, x and z can be exchanged
-			const xTags = noSplitTags.has(x.toUpperCase()) 
+			const xTags = noSplitTags.has(x.toUpperCase())
 				? fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => [val])
 				: fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => val.split(',')); // X
-			const serieTags = noSplitTags.has(z.toUpperCase()) 
+			const serieTags = noSplitTags.has(z.toUpperCase())
 				? fb.TitleFormat(_bt(z)).EvalWithMetadbs(handleList).map((val) => [val])
 				: fb.TitleFormat(_bt(z)).EvalWithMetadbs(handleList).map((val) => val.split(',')); // Z
 			const bSingleY = !isNaN(y);
-			const serieCounters = bSingleY 
-				? Number(y) 
-				: fb.TitleFormat(_bt(queryReplaceWithCurrent(y))).EvalWithMetadbs(handleList).map((val) => {return val ? Number(val) : 0}); // Y
+			const serieCounters = bSingleY
+				? Number(y)
+				: fb.TitleFormat(_bt(queryReplaceWithCurrent(y))).EvalWithMetadbs(handleList).map((val) => {return val ? Number(val) : 0;}); // Y
 			const dic = new Map();
 			xTags.forEach((arr, i) => {
 				arr.forEach((x) => {
 					if (!dic.has(x)) {dic.set(x, {});}
 					const val = dic.get(x);
-					serieTags[i].forEach((serie, j) => {
+					serieTags[i].forEach((serie) => {
 						const count = bSingleY ? serieCounters : serieCounters[i];
-						if (val.hasOwnProperty(serie)) {
+						if (Object.prototype.hasOwnProperty.call(val, serie)) {
 							if (count) {val[serie].count += count;}
 							val[serie].total++;
 						} else {
@@ -77,7 +85,7 @@ function getData({
 			break;
 		}
 		case 'tf': {
-			const libraryTags = fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => {return val.split(',')}).flat(Infinity);
+			const libraryTags = fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => {return val.split(',');}).flat(Infinity);
 			const tagCount = new Map();
 			libraryTags.forEach((tag) => {
 				if (!tagCount.has(tag)) {tagCount.set(tag, 1);}
@@ -119,10 +127,10 @@ function getData({
 }
 
 async function getDataAsync({
-	option = 'tf', 
+	option = 'tf',
 	x = 'genre', y = 1, z = 'artist',
 	query = 'ALL', sourceType = 'library', sourceArg = null,
-	bProportional = false, 
+	bProportional = false,
 	bRemoveDuplicates = true
 } = {}) {
 	const noSplitTags = new Set(['ALBUM']); noSplitTags.forEach((tag) => noSplitTags.add(_t(tag)));
@@ -138,17 +146,17 @@ async function getDataAsync({
 				? (await fb.TitleFormat(_bt(z)).EvalWithMetadbsAsync(handleList)).map((val) => [val])
 				: (await fb.TitleFormat(_bt(z)).EvalWithMetadbsAsync(handleList)).map((val) => val.split(',')); //Z
 			const bSingleY = !isNaN(y);
-			const serieCounters = bSingleY 
-				? Number(y) 
-				: (await fb.TitleFormat(_bt(queryReplaceWithCurrent(y))).EvalWithMetadbsAsync(handleList)).map((val) => {return val ? Number(val) : 0}); // Y
+			const serieCounters = bSingleY
+				? Number(y)
+				: (await fb.TitleFormat(_bt(queryReplaceWithCurrent(y))).EvalWithMetadbsAsync(handleList)).map((val) => {return val ? Number(val) : 0;}); // Y
 			const dic = new Map();
 			xTags.forEach((arr, i) => {
 				arr.forEach((x) => {
 					if (!dic.has(x)) {dic.set(x, {});}
 					const val = dic.get(x);
-					serieTags[i].forEach((serie, j) => {
+					serieTags[i].forEach((serie) => {
 						const count = bSingleY ? serieCounters : serieCounters[i];
-						if (val.hasOwnProperty(serie)) {
+						if (Object.prototype.hasOwnProperty.call(val, serie)) {
 							if (count) {val[serie].count += count;}
 							val[serie].total++;
 						} else {
@@ -165,7 +173,7 @@ async function getDataAsync({
 			break;
 		}
 		case 'tf': {
-			const libraryTags = (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => {return val.split(',')}).flat(Infinity);
+			const libraryTags = (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => {return val.split(',');}).flat(Infinity);
 			const tagCount = new Map();
 			libraryTags.forEach((tag) => {
 				if (!tagCount.has(tag)) {tagCount.set(tag, 1);}

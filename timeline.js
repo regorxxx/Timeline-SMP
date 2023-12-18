@@ -1,22 +1,27 @@
 ﻿'use strict';
-//17/12/23
+//18/12/23
 
 include('main\\statistics\\statistics_xxx.js');
+/* global _chart:readable */
 include('main\\statistics\\statistics_xxx_menu.js');
+/* global createStatisticsMenu:readable */
 include('main\\timeline\\timeline_helpers.js');
+/* global _gdiFont:readable, MK_LBUTTON:readable, deepAssign:readable, RGB:readable, isJSON:readable, _scale:readable, isString:readable, globTags:readable, isBoolean:readable, globSettings:readable, setProperties:readable, getPropertiesPairs:readable, checkUpdate:readable, overwriteProperties:readable, getDataAsync:readable, _qCond:readable, query_join:readable, getData:readable, getPlaylistIndexArray:readable */
 include('main\\timeline\\timeline_menus.js');
+/* global onLbtnUpPoint:readable, onLbtnUpSettings:readable, createBackgroundMenu:readable */
 include('main\\window\\window_xxx_background.js');
+/* global _background:readable */
 include('helpers\\helpers_xxx_properties.js');
 
 if (!window.ScriptInfo.PackageId) {window.DefineScript('Timeline', {author:'regorxxx', version: '1.0.0', features: {drag_n_drop: false, grab_focus: true}});}
 
 let properties = {
 	background:	['Background options', JSON.stringify(deepAssign()(
-		(new _background).defaults(), 
+		(new _background).defaults(),
 		{colorMode: 'gradient', colorModeOptions: {color: [RGB(270,270,270), RGB(300,300,300)]}, coverMode: 'front'}
 	)), {func: isJSON}],
 	chart:		['Chart options', JSON.stringify(deepAssign()(
-		(new _chart).exportConfig(), 
+		(new _chart).exportConfig(),
 		{
 			graph: {type: 'timeline', multi: true, borderWidth: _scale(1), pointAlpha: Math.round(60 * 255 / 100)},
 			dataManipulation: {sort: 'natural|x', group: 3, filter: null, slice: [0, Infinity], distribution: null},
@@ -24,14 +29,14 @@ let properties = {
 			chroma: {scheme: 'Set1'},
 			margin: {left: _scale(20), right: _scale(10), top: _scale(10), bottom: _scale(15)},
 			axis: {
-				x: {show: true, color: RGB(50,50,50), width: _scale(2), ticks: 'auto', labels: true, bAltLabels: true}, 
+				x: {show: true, color: RGB(50,50,50), width: _scale(2), ticks: 'auto', labels: true, bAltLabels: true},
 				y: {show: false, color: RGB(50,50,50), width: _scale(2), ticks: 5, labels: true}
 			},
 			configuration : {bDynColor: true, bDynColorBW: false}
 		}
 	)), {func: isJSON}],
 	data:		['Data options', JSON.stringify({
-		x: {key: 'Date',	tf: '"$year(%DATE%)"'}, 
+		x: {key: 'Date',	tf: '"$year(%DATE%)"'},
 		y: {key: 'Tracks',	tf: '1'},
 		z: {key: 'Artist',	tf: '%ALBUM ARTIST%'}
 	}), {func: isJSON}],
@@ -49,7 +54,7 @@ let properties = {
 		{x: '%MOOD%',								keyX: 'Mood'},
 		{x: '%GENRE%',								keyX: 'Genre'},
 		{x: '%STYLE%',								keyX: 'Style'},
-	].map((v) => {return (v.hasOwnProperty('name') ? v : {...v, name: 'By ' + v.keyX});})), {func: isJSON}],
+	].map((v) => {return (Object.prototype.hasOwnProperty.call(v, 'name') ? v : {...v, name: 'By ' + v.keyX});})), {func: isJSON}],
 	yEntries:	['Axis Y TF entries', JSON.stringify([ // Better use queries to filter by 0 and 1...
 		{y: '1',									keyY: 'Total Tracks',	bProportional: false},
 		{y: '%PLAY_COUNT%',							keyY: 'Listens',		bProportional: false},
@@ -58,7 +63,7 @@ let properties = {
 		{y: '$ifequal(%FEEDBACK%,1,1$not(0),0)',	keyY: 'Loves/Track',	bProportional: true}, // requires not to ouput true value
 		{y: '$ifequal(%FEEDBACK%,-1,1$not(0),0)',	keyY: 'Hates/Track',	bProportional: true},
 		{y: '$ifequal(%RATING%,5,1$not(0),0)',		keyY: 'Rated 5/Track',	bProportional: true},
-	].map((v) => {return (v.hasOwnProperty('name') ? v : {...v, name: 'By ' + v.keyY});})), {func: isJSON}],
+	].map((v) => {return (Object.prototype.hasOwnProperty.call(v, 'name') ? v : {...v, name: 'By ' + v.keyY});})), {func: isJSON}],
 	zEntries:	['Axis Z TF entries', JSON.stringify([
 		{z: '%ALBUM ARTIST%',						keyZ: 'Artist'},
 		{z: '%COMPOSER%',							keyZ: 'Composer'},
@@ -66,7 +71,7 @@ let properties = {
 		{z: '%GENRE%',								keyZ: 'Genre'},
 		{z: '%STYLE%',								keyZ: 'Style'},
 		{z: '%RATING%',								keyZ: 'Rating'},
-	].map((v) => {return (v.hasOwnProperty('name') ? v : {...v, name: 'By ' + v.keyZ});})), {func: isJSON}],
+	].map((v) => {return (Object.prototype.hasOwnProperty.call(v, 'name') ? v : {...v, name: 'By ' + v.keyZ});})), {func: isJSON}],
 	queryEntries:	['Query entries', JSON.stringify([
 		{query: '%LAST_PLAYED% DURING LAST 4 WEEKS',	name: 'Played this month'},
 		{query: '%RATING% EQUAL 5',						name: 'Rated 5 tracks'},
@@ -89,7 +94,7 @@ if (properties.bAutoUpdateCheck[1]) {
 	setTimeout(checkUpdate, 120000, {bDownload: globSettings.bAutoUpdateDownload, bOpenWeb: globSettings.bAutoUpdateOpenWeb});
 }
 
-/* 
+/*
 	Panel background
 */
 const background = new _background({
@@ -105,7 +110,7 @@ const background = new _background({
 	},
 });
 
-/* 
+/*
 	Charts
 */
 const defaultConfig = deepAssign()(
@@ -119,8 +124,8 @@ const defaultConfig = deepAssign()(
 		configuration: {bSlicePerKey: true},
 		callbacks: {
 			point:		{onLbtnUp: onLbtnUpPoint},
-			settings:	{onLbtnUp: function(x, y, mask) {onLbtnUpSettings.call(this).btn_up(x, y);}},
-			display:	{onLbtnUp: function(x, y, mask) {createStatisticsMenu.call(this).btn_up(x, y, ['sep', createBackgroundMenu.call(background, {menuName: 'Background'}, void(0), {nameColors: true})]);}},
+			settings:	{onLbtnUp: function(x, y, mask) {onLbtnUpSettings.call(this).btn_up(x, y);}}, // eslint-disable-line no-unused-vars
+			display:	{onLbtnUp: function(x, y, mask) {createStatisticsMenu.call(this).btn_up(x, y, ['sep', createBackgroundMenu.call(background, {menuName: 'Background'}, void(0), {nameColors: true})]);}}, // eslint-disable-line no-unused-vars
 			config:		{
 				change: function(config, changeArgs, callbackArgs) {
 					if (callbackArgs && callbackArgs.bSaveProperties) {
@@ -173,12 +178,12 @@ newConfig.forEach((row) => row.forEach((config) => {
 	}
 }));
 
-/* 
+/*
 	Automatically draw new graphs using table above
 */
 const rows = newConfig.length;
 const columns = newConfig[0].length;
-const nCharts = new Array(rows).fill(1).map((row) => {return new Array(columns).fill(1);}).map((row, i) => {
+const nCharts = new Array(rows).fill(1).map(() => {return new Array(columns).fill(1);}).map((row, i) => {
 	return row.map((cell, j) => {
 		const w = window.Width / columns;
 		const h = window.Height / rows * (i + 1);
@@ -190,7 +195,7 @@ const nCharts = new Array(rows).fill(1).map((row) => {return new Array(columns).
 });
 const charts = nCharts.flat(Infinity);
 
-/* 
+/*
 	Helper to set data
 */
 charts.forEach((chart) => {
@@ -199,15 +204,15 @@ charts.forEach((chart) => {
 		const newConfig = {
 			[properties.bAsync[1] ? 'dataAsync' : 'data']: (properties.bAsync[1] ? getDataAsync : getData)({
 				option:		'timeline',
-				sourceType:	entry.hasOwnProperty('sourceType') ? entry.sourceType : dataSource.sourceType,
-				sourceArg: 	(entry.hasOwnProperty('sourceArg') ? entry.sourceType : dataSource.sourceArg) || null,
+				sourceType:	Object.prototype.hasOwnProperty.call(entry, 'sourceType') ? entry.sourceType : dataSource.sourceType,
+				sourceArg: 	(Object.prototype.hasOwnProperty.call(entry, 'sourceArg') ? entry.sourceType : dataSource.sourceArg) || null,
 				x:			entry.x || _qCond(this.axis.x.tf, true),
 				y:			entry.y || _qCond(this.axis.y.tf, true),
 				z:			entry.z || _qCond(this.axis.z.tf, true),
 				query:		query_join([
-								entry.hasOwnProperty('query') ? entry.query : properties.dataQuery[1],
-								(entry.hasOwnProperty('z') ? _qCond(entry.z) : this.axis.z.tf) + ' PRESENT AND ' + (entry.hasOwnProperty('x') ? _qCond(entry.x) : this.axis.x.tf) + ' PRESENT'
-							], 'AND'),
+					Object.prototype.hasOwnProperty.call(entry, 'query') ? entry.query : properties.dataQuery[1],
+					(Object.prototype.hasOwnProperty.call(entry, 'z') ? _qCond(entry.z) : this.axis.z.tf) + ' PRESENT AND ' + (Object.prototype.hasOwnProperty.call(entry, 'x') ? _qCond(entry.x) : this.axis.x.tf) + ' PRESENT'
+				], 'AND'),
 				bProportional: entry.bProportional
 			}),
 			axis: {}
@@ -253,10 +258,10 @@ function refreshData(plsIdx, bForce = false) {
 	return bRefresh;
 }
 
-/* 
+/*
 	Callbacks
 */
-addEventListener('on_paint', (gr) => { 
+addEventListener('on_paint', (gr) => {
 	if (!window.ID) {return;}
 	if (!window.Width || !window.Height) {return;}
 	// extendGR(gr, {Repaint: true}); // helpers_xxx_prototypes_smp.js
@@ -288,7 +293,7 @@ addEventListener('on_mouse_move', (x, y, mask) => {
 			if (chart.inFocus) {chart.scrollX({x, release: 0x01 /* VK_LBUTTON */, bThrottle: true});}
 		});
 	} else {
-		const bFound = charts.some((chart) => {return chart.move(x, y, mask);});
+		charts.some((chart) => {return chart.move(x, y, mask);});
 	}
 });
 
@@ -371,12 +376,12 @@ addEventListener('on_playlists_changed', () => { // To show/hide loaded playlist
 	if (properties.bAutoData[1]) {refreshData();}
 });
 
-addEventListener('on_playlist_items_added', (idx) => {
+addEventListener('on_playlist_items_added', (idx) => { // eslint-disable-line no-unused-vars
 	if (!window.ID) {return;}
 	if (properties.bAutoData[1]) {refreshData();}
 });
 
-addEventListener('on_playlist_items_removed', (idx) => {
+addEventListener('on_playlist_items_removed', (idx) => { // eslint-disable-line no-unused-vars
 	if (!window.ID) {return;}
 	if (properties.bAutoData[1]) {refreshData();}
 });

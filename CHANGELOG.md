@@ -12,8 +12,12 @@
 ## [Unreleased][]
 ### Added
 ### Changed
+- Code cleanup.
 ### Removed
 ### Fixed
+- UI: fix zoom while using normal distribution.
+- UI: data offset to the right while using normal distribution in some cases.
+- Minor fixes.
 
 ## [1.0.0] - 2023-12-17
 ### Added

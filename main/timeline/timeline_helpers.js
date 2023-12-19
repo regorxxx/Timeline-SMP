@@ -1,5 +1,5 @@
 'use strict';
-//18/12/23
+//19/12/23
 
 /* exported getData, getDataAsync */
 
@@ -68,7 +68,7 @@ function getData({
 					const val = dic.get(x);
 					serieTags[i].forEach((serie) => {
 						const count = bSingleY ? serieCounters : serieCounters[i];
-						if (Object.prototype.hasOwnProperty.call(val, serie)) {
+						if (Object.hasOwn(val, serie)) {
 							if (count) {val[serie].count += count;}
 							val[serie].total++;
 						} else {
@@ -156,7 +156,7 @@ async function getDataAsync({
 					const val = dic.get(x);
 					serieTags[i].forEach((serie) => {
 						const count = bSingleY ? serieCounters : serieCounters[i];
-						if (Object.prototype.hasOwnProperty.call(val, serie)) {
+						if (Object.hasOwn(val, serie)) {
 							if (count) {val[serie].count += count;}
 							val[serie].total++;
 						} else {

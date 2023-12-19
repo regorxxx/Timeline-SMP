@@ -1,5 +1,5 @@
 'use strict';
-//18/12/23
+//19/12/23
 
 /* exported onLbtnUpPoint, onLbtnUpSettings*/
 
@@ -208,7 +208,7 @@ function onLbtnUpSettings() {
 		];
 		options.forEach((option) => {
 			menu.newEntry({menuName: subMenu, entryText: option.entryText, func: () => {
-				if (Object.prototype.hasOwnProperty.call(option, 'sourceArg')) {
+				if (Object.hasOwn(option, 'sourceArg')) {
 					if (option.sourceArg === null) {
 						const input = Input.string('string', dataSource.sourceArg || '', 'Enter playlist name(s):\n(separated by ;)', window.Name, 'My Playlist;Other Playlist', void(0), true) || Input.lastInput;
 						if (input === null) {return;}

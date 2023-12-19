@@ -1,5 +1,5 @@
 ﻿'use strict';
-//18/12/23
+//19/12/23
 
 include('main\\statistics\\statistics_xxx.js');
 /* global _chart:readable */
@@ -13,76 +13,76 @@ include('main\\window\\window_xxx_background.js');
 /* global _background:readable */
 include('helpers\\helpers_xxx_properties.js');
 
-if (!window.ScriptInfo.PackageId) {window.DefineScript('Timeline', {author:'regorxxx', version: '1.0.0', features: {drag_n_drop: false, grab_focus: true}});}
+if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '1.0.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
 let properties = {
-	background:	['Background options', JSON.stringify(deepAssign()(
+	background: ['Background options', JSON.stringify(deepAssign()(
 		(new _background).defaults(),
-		{colorMode: 'gradient', colorModeOptions: {color: [RGB(270,270,270), RGB(300,300,300)]}, coverMode: 'front'}
-	)), {func: isJSON}],
-	chart:		['Chart options', JSON.stringify(deepAssign()(
+		{ colorMode: 'gradient', colorModeOptions: { color: [RGB(270, 270, 270), RGB(300, 300, 300)] }, coverMode: 'front' }
+	)), { func: isJSON }],
+	chart: ['Chart options', JSON.stringify(deepAssign()(
 		(new _chart).exportConfig(),
 		{
-			graph: {type: 'timeline', multi: true, borderWidth: _scale(1), pointAlpha: Math.round(60 * 255 / 100)},
-			dataManipulation: {sort: 'natural|x', group: 3, filter: null, slice: [0, Infinity], distribution: null},
-			background: {color: null},
-			chroma: {scheme: 'Set1'},
-			margin: {left: _scale(20), right: _scale(10), top: _scale(10), bottom: _scale(15)},
+			graph: { type: 'timeline', multi: true, borderWidth: _scale(1), pointAlpha: Math.round(60 * 255 / 100) },
+			dataManipulation: { sort: 'natural|x', group: 3, filter: null, slice: [0, Infinity], distribution: null },
+			background: { color: null },
+			chroma: { scheme: 'Set1' },
+			margin: { left: _scale(20), right: _scale(10), top: _scale(10), bottom: _scale(15) },
 			axis: {
-				x: {show: true, color: RGB(50,50,50), width: _scale(2), ticks: 'auto', labels: true, bAltLabels: true},
-				y: {show: false, color: RGB(50,50,50), width: _scale(2), ticks: 5, labels: true}
+				x: { show: true, color: RGB(50, 50, 50), width: _scale(2), ticks: 'auto', labels: true, bAltLabels: true },
+				y: { show: false, color: RGB(50, 50, 50), width: _scale(2), ticks: 5, labels: true }
 			},
-			configuration : {bDynColor: true, bDynColorBW: false}
+			configuration: { bDynColor: true, bDynColorBW: false }
 		}
-	)), {func: isJSON}],
-	data:		['Data options', JSON.stringify({
-		x: {key: 'Date',	tf: '"$year(%DATE%)"'},
-		y: {key: 'Tracks',	tf: '1'},
-		z: {key: 'Artist',	tf: '%ALBUM ARTIST%'}
-	}), {func: isJSON}],
-	dataQuery:	['Data query', 'ALL', {func: isString}],
-	dataSource:	['Data source', JSON.stringify({sourceType: 'library', sourceArg: null}), {func: isJSON}],
-	xEntries:	['Axis X TF entries', JSON.stringify([
-		{x: '$year(%DATE%)',						keyX: 'Date'},
-		{x: '$right($div($year(%DATE%),10)0s,3)',	keyX: 'Decade'},
-		{x: '%BPM%',								keyX: 'BPM'},
-		{x: '%RATING%',								keyX: 'Rating'},
-		{name: 'sep'},
-		{x: globTags.camelotKey,					keyX: 'Camelot Key'}, // helpers_xxx_global.js
-		{x: globTags.openKey,						keyX: 'Open Key'},
-		{name: 'sep'},
-		{x: '%MOOD%',								keyX: 'Mood'},
-		{x: '%GENRE%',								keyX: 'Genre'},
-		{x: '%STYLE%',								keyX: 'Style'},
-	].map((v) => {return (Object.prototype.hasOwnProperty.call(v, 'name') ? v : {...v, name: 'By ' + v.keyX});})), {func: isJSON}],
-	yEntries:	['Axis Y TF entries', JSON.stringify([ // Better use queries to filter by 0 and 1...
-		{y: '1',									keyY: 'Total Tracks',	bProportional: false},
-		{y: '%PLAY_COUNT%',							keyY: 'Listens',		bProportional: false},
-		{name: 'sep'},
-		{y: '%PLAY_COUNT%',							keyY: 'Listens/Track',	bProportional: true},
-		{y: '$ifequal(%FEEDBACK%,1,1$not(0),0)',	keyY: 'Loves/Track',	bProportional: true}, // requires not to ouput true value
-		{y: '$ifequal(%FEEDBACK%,-1,1$not(0),0)',	keyY: 'Hates/Track',	bProportional: true},
-		{y: '$ifequal(%RATING%,5,1$not(0),0)',		keyY: 'Rated 5/Track',	bProportional: true},
-	].map((v) => {return (Object.prototype.hasOwnProperty.call(v, 'name') ? v : {...v, name: 'By ' + v.keyY});})), {func: isJSON}],
-	zEntries:	['Axis Z TF entries', JSON.stringify([
-		{z: '%ALBUM ARTIST%',						keyZ: 'Artist'},
-		{z: '%COMPOSER%',							keyZ: 'Composer'},
-		{z: '%MOOD%',								keyZ: 'Mood'},
-		{z: '%GENRE%',								keyZ: 'Genre'},
-		{z: '%STYLE%',								keyZ: 'Style'},
-		{z: '%RATING%',								keyZ: 'Rating'},
-	].map((v) => {return (Object.prototype.hasOwnProperty.call(v, 'name') ? v : {...v, name: 'By ' + v.keyZ});})), {func: isJSON}],
-	queryEntries:	['Query entries', JSON.stringify([
-		{query: '%LAST_PLAYED% DURING LAST 4 WEEKS',	name: 'Played this month'},
-		{query: '%RATING% EQUAL 5',						name: 'Rated 5 tracks'},
-		{query: '%FEEDBACK% IS 1',						name: 'Loved tracks'},
-		{query: '%FEEDBACK% IS -1',						name: 'Hated tracks'},
-		{name: 'sep'},
-		{query: 'ALL',									name: 'All'},
-	]), {func: isJSON}],
-	bAsync: 	['Data asynchronous calculation', true, {func: isBoolean}],
-	bAutoUpdateCheck: ['Automatically check updates?', globSettings.bAutoUpdateCheck, {func: isBoolean}],
-	bAutoData: ['Automatically update data sources', true, {func: isBoolean}],
+	)), { func: isJSON }],
+	data: ['Data options', JSON.stringify({
+		x: { key: 'Date', tf: '"$year(%DATE%)"' },
+		y: { key: 'Tracks', tf: '1' },
+		z: { key: 'Artist', tf: '%ALBUM ARTIST%' }
+	}), { func: isJSON }],
+	dataQuery: ['Data query', 'ALL', { func: isString }],
+	dataSource: ['Data source', JSON.stringify({ sourceType: 'library', sourceArg: null }), { func: isJSON }],
+	xEntries: ['Axis X TF entries', JSON.stringify([
+		{ x: '$year(%DATE%)', keyX: 'Date' },
+		{ x: '$right($div($year(%DATE%),10)0s,3)', keyX: 'Decade' },
+		{ x: '%BPM%', keyX: 'BPM' },
+		{ x: '%RATING%', keyX: 'Rating' },
+		{ name: 'sep' },
+		{ x: globTags.camelotKey, keyX: 'Camelot Key' }, // helpers_xxx_global.js
+		{ x: globTags.openKey, keyX: 'Open Key' },
+		{ name: 'sep' },
+		{ x: '%MOOD%', keyX: 'Mood' },
+		{ x: '%GENRE%', keyX: 'Genre' },
+		{ x: '%STYLE%', keyX: 'Style' },
+	].map((v) => { return (Object.hasOwn(v, 'name') ? v : { ...v, name: 'By ' + v.keyX }); })), { func: isJSON }],
+	yEntries: ['Axis Y TF entries', JSON.stringify([ // Better use queries to filter by 0 and 1...
+		{ y: '1', keyY: 'Total Tracks', bProportional: false },
+		{ y: '%PLAY_COUNT%', keyY: 'Listens', bProportional: false },
+		{ name: 'sep' },
+		{ y: '%PLAY_COUNT%', keyY: 'Listens/Track', bProportional: true },
+		{ y: '$ifequal(%FEEDBACK%,1,1$not(0),0)', keyY: 'Loves/Track', bProportional: true }, // requires not to ouput true value
+		{ y: '$ifequal(%FEEDBACK%,-1,1$not(0),0)', keyY: 'Hates/Track', bProportional: true },
+		{ y: '$ifequal(%RATING%,5,1$not(0),0)', keyY: 'Rated 5/Track', bProportional: true },
+	].map((v) => { return (Object.hasOwn(v, 'name') ? v : { ...v, name: 'By ' + v.keyY }); })), { func: isJSON }],
+	zEntries: ['Axis Z TF entries', JSON.stringify([
+		{ z: '%ALBUM ARTIST%', keyZ: 'Artist' },
+		{ z: '%COMPOSER%', keyZ: 'Composer' },
+		{ z: '%MOOD%', keyZ: 'Mood' },
+		{ z: '%GENRE%', keyZ: 'Genre' },
+		{ z: '%STYLE%', keyZ: 'Style' },
+		{ z: '%RATING%', keyZ: 'Rating' },
+	].map((v) => { return (Object.hasOwn(v, 'name') ? v : { ...v, name: 'By ' + v.keyZ }); })), { func: isJSON }],
+	queryEntries: ['Query entries', JSON.stringify([
+		{ query: '%LAST_PLAYED% DURING LAST 4 WEEKS', name: 'Played this month' },
+		{ query: '%RATING% EQUAL 5', name: 'Rated 5 tracks' },
+		{ query: '%FEEDBACK% IS 1', name: 'Loved tracks' },
+		{ query: '%FEEDBACK% IS -1', name: 'Hated tracks' },
+		{ name: 'sep' },
+		{ query: 'ALL', name: 'All' },
+	]), { func: isJSON }],
+	bAsync: ['Data asynchronous calculation', true, { func: isBoolean }],
+	bAutoUpdateCheck: ['Automatically check updates?', globSettings.bAutoUpdateCheck, { func: isBoolean }],
+	bAutoData: ['Automatically update data sources', true, { func: isBoolean }],
 };
 Object.keys(properties).forEach(p => properties[p].push(properties[p][1]));
 setProperties(properties, '', 0);
@@ -91,7 +91,7 @@ properties = getPropertiesPairs(properties, '', 0);
 // Update check
 if (properties.bAutoUpdateCheck[1]) {
 	include('helpers\\helpers_xxx_web_update.js');
-	setTimeout(checkUpdate, 120000, {bDownload: globSettings.bAutoUpdateDownload, bOpenWeb: globSettings.bAutoUpdateOpenWeb});
+	setTimeout(checkUpdate, 120000, { bDownload: globSettings.bAutoUpdateDownload, bOpenWeb: globSettings.bAutoUpdateOpenWeb });
 }
 
 /*
@@ -100,7 +100,7 @@ if (properties.bAutoUpdateCheck[1]) {
 const background = new _background({
 	...JSON.parse(properties.background[1]),
 	callbacks: {
-		change: function(config, changeArgs, callbackArgs) {
+		change: function (config, changeArgs, callbackArgs) {
 			if (callbackArgs && callbackArgs.bSaveProperties) {
 				['x', 'y', 'w', 'h'].forEach((key) => delete config[key]);
 				properties.background[1] = JSON.stringify(config);
@@ -121,13 +121,13 @@ const defaultConfig = deepAssign()(
 		data: [],
 		x: 0, y: 0, w: 0, h: 0,
 		tooltipText: '\n\n(L. click to create playlist)\n(Use buttons to configure chart)',
-		configuration: {bSlicePerKey: true},
+		configuration: { bSlicePerKey: true },
 		callbacks: {
-			point:		{onLbtnUp: onLbtnUpPoint},
-			settings:	{onLbtnUp: function(x, y, mask) {onLbtnUpSettings.call(this).btn_up(x, y);}}, // eslint-disable-line no-unused-vars
-			display:	{onLbtnUp: function(x, y, mask) {createStatisticsMenu.call(this).btn_up(x, y, ['sep', createBackgroundMenu.call(background, {menuName: 'Background'}, void(0), {nameColors: true})]);}}, // eslint-disable-line no-unused-vars
-			config:		{
-				change: function(config, changeArgs, callbackArgs) {
+			point: { onLbtnUp: onLbtnUpPoint },
+			settings: { onLbtnUp: function (x, y, mask) { onLbtnUpSettings.call(this).btn_up(x, y); } }, // eslint-disable-line no-unused-vars
+			display: { onLbtnUp: function (x, y, mask) { createStatisticsMenu.call(this).btn_up(x, y, ['sep', createBackgroundMenu.call(background, { menuName: 'Background' }, void (0), { nameColors: true })]); } }, // eslint-disable-line no-unused-vars
+			config: {
+				change: function (config, changeArgs, callbackArgs) {
 					if (callbackArgs && callbackArgs.bSaveProperties) {
 						['x', 'y', 'w', 'h'].forEach((key) => delete config[key]);
 						config.dataManipulation.sort = this.exportSortLabel();
@@ -139,7 +139,7 @@ const defaultConfig = deepAssign()(
 				backgroundColor: background.getColors
 			},
 		},
-		buttons: {xScroll: true, settings: true, display: true, zoom: true},
+		buttons: { xScroll: true, settings: true, display: true, zoom: true },
 		gFont: _gdiFont('Segoe UI', _scale(12))
 	}
 );
@@ -155,25 +155,25 @@ newConfig.forEach((row) => row.forEach((config) => {
 	const dataSource = JSON.parse(properties.dataSource[1]);
 	if (properties.bAsync[1]) {
 		config.dataAsync = () => getDataAsync({
-			option:			'timeline',
-			sourceType:		dataSource.sourceType,
-			sourceArg: 		dataSource.sourceArg || null,
-			x:				_qCond(config.axis.x.tf, true),
-			y:				_qCond(config.axis.y.tf, true),
-			z:				_qCond(config.axis.z.tf, true),
-			query:			query_join([properties.dataQuery[1], config.axis.x.tf + ' PRESENT AND ' + config.axis.z.tf + ' PRESENT'], 'AND'),
-			bProportional:	config.axis.y.bProportional
+			option: 'timeline',
+			sourceType: dataSource.sourceType,
+			sourceArg: dataSource.sourceArg || null,
+			x: _qCond(config.axis.x.tf, true),
+			y: _qCond(config.axis.y.tf, true),
+			z: _qCond(config.axis.z.tf, true),
+			query: query_join([properties.dataQuery[1], config.axis.x.tf + ' PRESENT AND ' + config.axis.z.tf + ' PRESENT'], 'AND'),
+			bProportional: config.axis.y.bProportional
 		});
 	} else {
 		config.data = getData({
-			option:			'timeline',
-			sourceType:		dataSource.sourceType,
-			sourceArg: 		dataSource.sourceArg || null,
-			x:				_qCond(config.axis.x.tf, true),
-			y:				_qCond(config.axis.y.tf, true),
-			z:				_qCond(config.axis.z.tf, true),
-			query:			query_join([properties.dataQuery[1], config.axis.x.tf + ' PRESENT AND ' + config.axis.z.tf + ' PRESENT'], 'AND'),
-			bProportional:	config.axis.y.bProportional
+			option: 'timeline',
+			sourceType: dataSource.sourceType,
+			sourceArg: dataSource.sourceArg || null,
+			x: _qCond(config.axis.x.tf, true),
+			y: _qCond(config.axis.y.tf, true),
+			z: _qCond(config.axis.z.tf, true),
+			query: query_join([properties.dataQuery[1], config.axis.x.tf + ' PRESENT AND ' + config.axis.z.tf + ' PRESENT'], 'AND'),
+			bProportional: config.axis.y.bProportional
 		});
 	}
 }));
@@ -183,14 +183,14 @@ newConfig.forEach((row) => row.forEach((config) => {
 */
 const rows = newConfig.length;
 const columns = newConfig[0].length;
-const nCharts = new Array(rows).fill(1).map(() => {return new Array(columns).fill(1);}).map((row, i) => {
+const nCharts = new Array(rows).fill(1).map(() => { return new Array(columns).fill(1); }).map((row, i) => {
 	return row.map((cell, j) => {
 		const w = window.Width / columns;
 		const h = window.Height / rows * (i + 1);
 		const x = w * j;
 		const y = window.Height / rows * i;
 		const title = window.Name + ' - ' + 'Graph ' + (1 + rows * i + j) + ' {' + newConfig[i][j].axis.x.key + ' - ' + newConfig[i][j].axis.y.key + '}';
-		return new _chart({...defaultConfig, x, y, w, h}).changeConfig({...newConfig[i][j], bPaint: false, title});
+		return new _chart({ ...defaultConfig, x, y, w, h }).changeConfig({ ...newConfig[i][j], bPaint: false, title });
 	});
 });
 const charts = nCharts.flat(Infinity);
@@ -199,29 +199,29 @@ const charts = nCharts.flat(Infinity);
 	Helper to set data
 */
 charts.forEach((chart) => {
-	chart.setData = function(entry = {}) {
+	chart.setData = function (entry = {}) {
 		const dataSource = JSON.parse(properties.dataSource[1]);
 		const newConfig = {
 			[properties.bAsync[1] ? 'dataAsync' : 'data']: (properties.bAsync[1] ? getDataAsync : getData)({
-				option:		'timeline',
-				sourceType:	Object.prototype.hasOwnProperty.call(entry, 'sourceType') ? entry.sourceType : dataSource.sourceType,
-				sourceArg: 	(Object.prototype.hasOwnProperty.call(entry, 'sourceArg') ? entry.sourceType : dataSource.sourceArg) || null,
-				x:			entry.x || _qCond(this.axis.x.tf, true),
-				y:			entry.y || _qCond(this.axis.y.tf, true),
-				z:			entry.z || _qCond(this.axis.z.tf, true),
-				query:		query_join([
-					Object.prototype.hasOwnProperty.call(entry, 'query') ? entry.query : properties.dataQuery[1],
-					(Object.prototype.hasOwnProperty.call(entry, 'z') ? _qCond(entry.z) : this.axis.z.tf) + ' PRESENT AND ' + (Object.prototype.hasOwnProperty.call(entry, 'x') ? _qCond(entry.x) : this.axis.x.tf) + ' PRESENT'
+				option: 'timeline',
+				sourceType: Object.hasOwn(entry, 'sourceType') ? entry.sourceType : dataSource.sourceType,
+				sourceArg: (Object.hasOwn(entry, 'sourceArg') ? entry.sourceType : dataSource.sourceArg) || null,
+				x: entry.x || _qCond(this.axis.x.tf, true),
+				y: entry.y || _qCond(this.axis.y.tf, true),
+				z: entry.z || _qCond(this.axis.z.tf, true),
+				query: query_join([
+					Object.hasOwn(entry, 'query') ? entry.query : properties.dataQuery[1],
+					(Object.hasOwn(entry, 'z') ? _qCond(entry.z) : this.axis.z.tf) + ' PRESENT AND ' + (Object.hasOwn(entry, 'x') ? _qCond(entry.x) : this.axis.x.tf) + ' PRESENT'
 				], 'AND'),
 				bProportional: entry.bProportional
 			}),
 			axis: {}
 		};
-		if (entry.x) {newConfig.axis.x = {key: entry.keyX, tf: _qCond(entry.x)};}
-		if (entry.y) {newConfig.axis.y = {key: entry.keyY, tf: _qCond(entry.y), bProportional: entry.bProportional};}
-		if (entry.z) {newConfig.axis.z = {key: entry.keyZ, tf: _qCond(entry.z)};}
-		this.changeConfig({...newConfig, bPaint: true});
-		this.changeConfig({title: window.Name + ' - ' + 'Graph 1 {' + this.axis.x.key + ' - ' + this.axis.y.key + '}', bPaint: false, callbackArgs: {bSaveProperties: true}});
+		if (entry.x) { newConfig.axis.x = { key: entry.keyX, tf: _qCond(entry.x) }; }
+		if (entry.y) { newConfig.axis.y = { key: entry.keyY, tf: _qCond(entry.y), bProportional: entry.bProportional }; }
+		if (entry.z) { newConfig.axis.z = { key: entry.keyZ, tf: _qCond(entry.z) }; }
+		this.changeConfig({ ...newConfig, bPaint: true });
+		this.changeConfig({ title: window.Name + ' - ' + 'Graph 1 {' + this.axis.x.key + ' - ' + this.axis.y.key + '}', bPaint: false, callbackArgs: { bSaveProperties: true } });
 	};
 });
 
@@ -231,17 +231,17 @@ let selectedPlaylists = -1;
 function refreshData(plsIdx, bForce = false) {
 	let bRefresh = false;
 	if (bForce) {
-		charts.forEach((chart) => {chart.setData();});
+		charts.forEach((chart) => { chart.setData(); });
 		bRefresh = true;
 	} else {
 		const dataSource = JSON.parse(properties.dataSource[1]);
 		if (dataSource.sourceType === 'playingPlaylist' && (playingPlaylist !== plman.PlayingPlaylist || plsIdx === plman.PlayingPlaylist)) {
-			charts.forEach((chart) => {!chart.pop.isEnabled() && chart.setData();});
+			charts.forEach((chart) => { !chart.pop.isEnabled() && chart.setData(); });
 			bRefresh = true;
 		}
 		playingPlaylist = plman.PlayingPlaylist;
 		if ((dataSource.sourceType === 'activePlaylist' || dataSource.sourceType === 'playingPlaylist' && !fb.IsPlaying) && (activePlaylist !== plman.activePlaylist || plsIdx === plman.PlayingPlaylist)) {
-			charts.forEach((chart) => {!chart.pop.isEnabled() && chart.setData();});
+			charts.forEach((chart) => { !chart.pop.isEnabled() && chart.setData(); });
 			bRefresh = true;
 		}
 		activePlaylist = plman.ActivePlaylist;
@@ -249,7 +249,7 @@ function refreshData(plsIdx, bForce = false) {
 			const idxArr = dataSource.sourceArg.reduce((acc, curr) => acc.concat(getPlaylistIndexArray(curr)), []);
 			console.log(dataSource.sourceArg, idxArr, plsIdx, selectedPlaylists);
 			if (selectedPlaylists !== idxArr.length || idxArr.includes(plsIdx)) {
-				charts.forEach((chart) => {!chart.pop.isEnabled() && chart.setData();});
+				charts.forEach((chart) => { !chart.pop.isEnabled() && chart.setData(); });
 				bRefresh = true;
 			}
 			selectedPlaylists = idxArr.length;
@@ -262,84 +262,84 @@ function refreshData(plsIdx, bForce = false) {
 	Callbacks
 */
 addEventListener('on_paint', (gr) => {
-	if (!window.ID) {return;}
-	if (!window.Width || !window.Height) {return;}
+	if (!window.ID) { return; }
+	if (!window.Width || !window.Height) { return; }
 	// extendGR(gr, {Repaint: true}); // helpers_xxx_prototypes_smp.js
 	background.paint(gr);
-	charts.forEach((chart) => {chart.paint(gr);});
-	if (window.debugPainting) {window.drawDebugRectAreas(gr);}
+	charts.forEach((chart) => { chart.paint(gr); });
+	if (window.debugPainting) { window.drawDebugRectAreas(gr); }
 });
 
 addEventListener('on_size', (width, height) => {
-	if (!window.ID) {return;}
-	if (!width || !height) {return;}
-	background.resize({w: width, h: height, bPaint: false});
+	if (!window.ID) { return; }
+	if (!width || !height) { return; }
+	background.resize({ w: width, h: height, bPaint: false });
 	for (let i = 0; i < rows; i++) {
 		for (let j = 0; j < columns; j++) {
 			const w = width / columns;
 			const h = height / rows * (i + 1);
 			const x = w * j;
 			const y = height / rows * i;
-			nCharts[i][j].changeConfig({x, y, w, h, bPaint: false});
+			nCharts[i][j].changeConfig({ x, y, w, h, bPaint: false });
 		}
 	}
 	window.Repaint();
 });
 
 addEventListener('on_mouse_move', (x, y, mask) => {
-	if (!window.ID) {return;}
+	if (!window.ID) { return; }
 	if (mask === MK_LBUTTON) {
 		charts.forEach((chart) => {
-			if (chart.inFocus) {chart.scrollX({x, release: 0x01 /* VK_LBUTTON */, bThrottle: true});}
+			if (chart.inFocus) { chart.scrollX({ x, release: 0x01 /* VK_LBUTTON */, bThrottle: true }); }
 		});
 	} else {
-		charts.some((chart) => {return chart.move(x, y, mask);});
+		charts.some((chart) => { return chart.move(x, y, mask); });
 	}
 });
 
 addEventListener('on_mouse_leave', () => {
-	charts.forEach((chart) => {chart.leave();});
+	charts.forEach((chart) => { chart.leave(); });
 });
 
 addEventListener('on_mouse_rbtn_up', (x, y, mask) => {
-	charts.some((chart) => {return chart.rbtnUp(x,y, mask);});
+	charts.some((chart) => { return chart.rbtnUp(x, y, mask); });
 	return true; // left shift + left windows key will bypass this callback and will open default context menu.
 });
 
 addEventListener('on_mouse_lbtn_up', (x, y, mask) => {
-	if (!window.ID) {return;}
-	charts.some((chart) => {return chart.lbtnUp(x, y, mask);});
+	if (!window.ID) { return; }
+	charts.some((chart) => { return chart.lbtnUp(x, y, mask); });
 });
 
 addEventListener('on_mouse_lbtn_down', (x, y, mask) => {
-	if (!window.ID) {return;}
-	charts.some((chart) => {return chart.lbtnDown(x, y, mask);});
+	if (!window.ID) { return; }
+	charts.some((chart) => { return chart.lbtnDown(x, y, mask); });
 });
 
 addEventListener('on_mouse_lbtn_dblclk', (x, y, mask) => {
-	if (!window.ID) {return;}
-	charts.some((chart) => {return chart.lbtnDblClk(x, y, mask);});
+	if (!window.ID) { return; }
+	charts.some((chart) => { return chart.lbtnDblClk(x, y, mask); });
 });
 
 addEventListener('on_mouse_wheel', (step) => {
-	if (!window.ID) {return;}
-	charts.some((chart) => {return chart.mouseWheel(step);});
+	if (!window.ID) { return; }
+	charts.some((chart) => { return chart.mouseWheel(step); });
 });
 
 addEventListener('on_key_down', (vKey) => {
-	if (!window.ID) {return;}
-	charts.some((chart) => {return chart.keyDown(vKey);});
+	if (!window.ID) { return; }
+	charts.some((chart) => { return chart.keyDown(vKey); });
 });
 
 addEventListener('on_key_up', (vKey) => {
-	if (!window.ID) {return;}
-	charts.some((chart) => {return chart.keyUp(vKey);});
+	if (!window.ID) { return; }
+	charts.some((chart) => { return chart.keyUp(vKey); });
 });
 
 addEventListener('on_playback_new_track', () => { // To show playing now playlist indicator...
-	if (background.coverMode.toLowerCase() !== 'none') {background.updateImageBg();}
-	if (!window.ID) {return;}
-	if (properties.bAutoData[1]) {refreshData();}
+	if (background.coverMode.toLowerCase() !== 'none') { background.updateImageBg(); }
+	if (!window.ID) { return; }
+	if (properties.bAutoData[1]) { refreshData(); }
 });
 
 addEventListener('on_selection_changed', () => {
@@ -358,13 +358,13 @@ addEventListener('on_playlist_switch', () => {
 	if (background.coverMode.toLowerCase() !== 'none' && (!background.coverModeOptions.bNowPlaying || !fb.IsPlaying)) {
 		background.updateImageBg();
 	}
-	if (!window.ID) {return;}
-	if (properties.bAutoData[1]) {refreshData();}
+	if (!window.ID) { return; }
+	if (properties.bAutoData[1]) { refreshData(); }
 });
 
 addEventListener('on_playback_stop', (reason) => {
 	if (reason !== 2) { // Invoked by user or Starting another track
-		if (background.coverMode.toLowerCase() !== 'none' && background.coverModeOptions.bNowPlaying) {background.updateImageBg();}
+		if (background.coverMode.toLowerCase() !== 'none' && background.coverModeOptions.bNowPlaying) { background.updateImageBg(); }
 	}
 });
 
@@ -372,16 +372,16 @@ addEventListener('on_playlists_changed', () => { // To show/hide loaded playlist
 	if (background.coverMode.toLowerCase() !== 'none' && (!background.coverModeOptions.bNowPlaying || !fb.IsPlaying)) {
 		background.updateImageBg();
 	}
-	if (!window.ID) {return;}
-	if (properties.bAutoData[1]) {refreshData();}
+	if (!window.ID) { return; }
+	if (properties.bAutoData[1]) { refreshData(); }
 });
 
 addEventListener('on_playlist_items_added', (idx) => { // eslint-disable-line no-unused-vars
-	if (!window.ID) {return;}
-	if (properties.bAutoData[1]) {refreshData();}
+	if (!window.ID) { return; }
+	if (properties.bAutoData[1]) { refreshData(); }
 });
 
 addEventListener('on_playlist_items_removed', (idx) => { // eslint-disable-line no-unused-vars
-	if (!window.ID) {return;}
-	if (properties.bAutoData[1]) {refreshData();}
+	if (!window.ID) { return; }
+	if (properties.bAutoData[1]) { refreshData(); }
 });

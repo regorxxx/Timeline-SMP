@@ -1,5 +1,5 @@
 'use strict';
-//19/12/23
+//20/12/23
 
 /* exported onLbtnUpPoint, onLbtnUpSettings*/
 
@@ -21,67 +21,77 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 	// Constants
 	const menu = new _menu();
 	// Header
-	menu.newEntry({entryText: this.title, flags: MF_GRAYED});
-	menu.newEntry({entryText: 'sep'});
+	menu.newEntry({ entryText: this.title, flags: MF_GRAYED });
+	menu.newEntry({ entryText: 'sep' });
 	// Menus
 	{	// Playlists
 		const subMenu = [menu.newMenu('Create playlist...'), menu.newMenu('Create AutoPlaylist...')];
-		menu.newEntry({menuName: subMenu[0], entryText: 'De-duplicated and randomized:', flags: MF_GRAYED});
-		menu.newEntry({menuName: subMenu[0], entryText: 'sep'});
-		menu.newEntry({menuName: subMenu[1], entryText: 'Configurable query:', flags: MF_GRAYED});
-		menu.newEntry({menuName: subMenu[1], entryText: 'sep'});
+		menu.newEntry({ menuName: subMenu[0], entryText: 'De-duplicated and randomized:', flags: MF_GRAYED });
+		menu.newEntry({ menuName: subMenu[0], entryText: 'sep' });
+		menu.newEntry({ menuName: subMenu[1], entryText: 'Configurable query:', flags: MF_GRAYED });
+		menu.newEntry({ menuName: subMenu[1], entryText: 'sep' });
 		const currPoints = this.dataDraw.map((serie) => serie.find((newPoint) => newPoint.x === point.x));
 		[
-			{name: 'By ' + this.axis.x.key, query: this.axis.x.tf + ' IS ' + point.x, playlist: 'Timeline: ' + point.x},
-			{name: 'By ' + this.axis.z.key, query: this.axis.z.tf + ' IS ' + point.z, playlist: 'Timeline: ' + point.z},
-			{name: 'By ' + this.axis.x.key + ' and ' + this.axis.z.key, query: this.axis.x.tf + ' IS ' + point.x + ' AND ' + this.axis.z.tf + ' IS ' + point.z,
-				playlist: 'Timeline: ' + point.x + ' - ' + point.z},
-			{name: 'By ' + this.axis.x.key + ' and top ' + this.axis.z.key, query: this.axis.x.tf + ' IS ' + point.x + ' AND ' + _p(currPoints.map((point) => this.axis.z.tf + ' IS ' + point.z).join(' OR ')),
-				playlist: 'Timeline: ' + point.x + ' - Top ' + currPoints.length + ' ' + this.axis.z.key}
+			{ name: 'By ' + this.axis.x.key, query: this.axis.x.tf + ' IS ' + point.x, playlist: 'Timeline: ' + point.x },
+			{ name: 'By ' + this.axis.z.key, query: this.axis.z.tf + ' IS ' + point.z, playlist: 'Timeline: ' + point.z },
+			{
+				name: 'By ' + this.axis.x.key + ' and ' + this.axis.z.key, query: this.axis.x.tf + ' IS ' + point.x + ' AND ' + this.axis.z.tf + ' IS ' + point.z,
+				playlist: 'Timeline: ' + point.x + ' - ' + point.z
+			},
+			{
+				name: 'By ' + this.axis.x.key + ' and top ' + this.axis.z.key, query: this.axis.x.tf + ' IS ' + point.x + ' AND ' + _p(currPoints.map((point) => this.axis.z.tf + ' IS ' + point.z).join(' OR ')),
+				playlist: 'Timeline: ' + point.x + ' - Top ' + currPoints.length + ' ' + this.axis.z.key
+			}
 		].forEach((entry) => {
-			menu.newEntry({menuName: subMenu[0], entryText: entry.name, func: () => {
-				if (checkQuery(entry.query)) {
-					let handleList = fb.GetQueryItems(fb.GetLibraryItems(), entry.query);
-					handleList = removeDuplicatesV2({handleList, sortOutput: '', checkKeys: globTags.remDupl, sortBias: globQuery.remDuplBias, bAdvTitle: true, bPreserveSort: false});
-					sendToPlaylist(handleList, entry.playlist);
+			menu.newEntry({
+				menuName: subMenu[0], entryText: entry.name, func: () => {
+					if (checkQuery(entry.query)) {
+						let handleList = fb.GetQueryItems(fb.GetLibraryItems(), entry.query);
+						handleList = removeDuplicatesV2({ handleList, sortOutput: '', checkKeys: globTags.remDupl, sortBias: globQuery.remDuplBias, bAdvTitle: true, bPreserveSort: false });
+						sendToPlaylist(handleList, entry.playlist);
+					}
 				}
-			}});
-			menu.newEntry({menuName: subMenu[1], entryText: entry.name, func: () => {
-				if (checkQuery(entry.query)) {
-					plman.ActivePlaylist = plman.CreateAutoPlaylist(plman.PlaylistCount, entry.playlist, entry.query);
+			});
+			menu.newEntry({
+				menuName: subMenu[1], entryText: entry.name, func: () => {
+					if (checkQuery(entry.query)) {
+						plman.ActivePlaylist = plman.CreateAutoPlaylist(plman.PlaylistCount, entry.playlist, entry.query);
+					}
 				}
-			}});
+			});
 		});
 	}
-	menu.newEntry({entryText: 'sep'});
-	menu.newEntry({entryText: 'Point statistics', func: () => {
-		const avg = this.data[0]
-			.map((pointArr) => pointArr.map((subPoint) => subPoint.y)).flat(Infinity)
-			.reduce((acc, curr, i) => acc + (curr - acc) / (i + 1), 0);
-		const avgCurr = this.data[0]
-			.map((pointArr) => pointArr.filter((dataPoint) => dataPoint.z === point.z))
-			.map((pointArr) => pointArr.map((subPoint) => subPoint.y)).flat(Infinity)
-			.reduce((acc, curr, i) => acc + (curr - acc) / (i + 1), 0);
-		const libItems = fb.GetLibraryItems();
-		fb.ShowPopupMessage(
-			this.axis.z.key + ':\t' + point.z +
-			'\n' +
-			this.axis.x.key + ':\t' + point.x +
-			'\n' +
-			this.axis.y.key + ':\t' + point.y + ' ' + _p(round(point.y / libItems.Count * 100, 2) + '%') +
-			'\n' +
-			'Average ' + this.axis.y.key + ' (any ' + this.axis.x.key + '): ' + Math.round(avgCurr) + ' ' + _p(round(avgCurr / libItems.Count * 100, 2) + '%') +
-			'\n' +
-			'Total ' + this.axis.y.key + ' (any ' + this.axis.x.key + '): ' + fb.GetQueryItems(libItems, this.axis.z.tf + ' IS ' + point.z).Count +
-			'\n' +
-			'-'.repeat(40) +
-			'\n' +
-			'Global total ' + this.axis.y.key + ': ' + libItems.Count +
-			'\n' +
-			'Global average ' + this.axis.y.key + ' (any ' + this.axis.x.key + '): ' + Math.round(avg) +  ' ' + _p(round(avg / libItems.Count * 100, 2) + '%')
-			, window.Name + ': Point statistics'
-		);
-	}});
+	menu.newEntry({ entryText: 'sep' });
+	menu.newEntry({
+		entryText: 'Point statistics', func: () => {
+			const avg = this.data[0]
+				.map((pointArr) => pointArr.map((subPoint) => subPoint.y)).flat(Infinity)
+				.reduce((acc, curr, i) => acc + (curr - acc) / (i + 1), 0);
+			const avgCurr = this.data[0]
+				.map((pointArr) => pointArr.filter((dataPoint) => dataPoint.z === point.z))
+				.map((pointArr) => pointArr.map((subPoint) => subPoint.y)).flat(Infinity)
+				.reduce((acc, curr, i) => acc + (curr - acc) / (i + 1), 0);
+			const libItems = fb.GetLibraryItems();
+			fb.ShowPopupMessage(
+				this.axis.z.key + ':\t' + point.z +
+				'\n' +
+				this.axis.x.key + ':\t' + point.x +
+				'\n' +
+				this.axis.y.key + ':\t' + point.y + ' ' + _p(round(point.y / libItems.Count * 100, 2) + '%') +
+				'\n' +
+				'Average ' + this.axis.y.key + ' (any ' + this.axis.x.key + '): ' + Math.round(avgCurr) + ' ' + _p(round(avgCurr / libItems.Count * 100, 2) + '%') +
+				'\n' +
+				'Total ' + this.axis.y.key + ' (any ' + this.axis.x.key + '): ' + fb.GetQueryItems(libItems, this.axis.z.tf + ' IS ' + point.z).Count +
+				'\n' +
+				'-'.repeat(40) +
+				'\n' +
+				'Global total ' + this.axis.y.key + ': ' + libItems.Count +
+				'\n' +
+				'Global average ' + this.axis.y.key + ' (any ' + this.axis.x.key + '): ' + Math.round(avg) + ' ' + _p(round(avg / libItems.Count * 100, 2) + '%')
+				, window.Name + ': Point statistics'
+			);
+		}
+	});
 	return menu.btn_up(x, y);
 }
 
@@ -92,9 +102,9 @@ function onLbtnUpSettings() {
 	const inputTF = (axis = 'x') => {
 		axis = axis.toLowerCase();
 		const axisTF = Input.string('string', this.axis[axis].tf, 'Enter tag or TF expression:\n\n' + (axis === 'y' ? 'Expression should output a number per track (and TRUE). For example:\nListens: %PLAY_COUNT%\nRated 5 tracks: $ifequal(%RATING%,5,1$not(0),0)' : 'For example:\n%GENRE%'), window.Name, '%GENRE%');
-		if (axisTF === null) {return;}
-		const axisKey = Input.string('string', capitalizeAll(axisTF.replace(/%/g,'')), 'Enter axis name:', window.Name, 'Date') || Input.lastInput;
-		if (axisKey === null) {return;}
+		if (axisTF === null) { return; }
+		const axisKey = Input.string('string', capitalizeAll(axisTF.replace(/%/g, '')), 'Enter axis name:', window.Name, 'Date') || Input.lastInput;
+		if (axisKey === null) { return; }
 		return {
 			[axis]: axisTF,
 			['key' + axis.toUpperCase()]: axisKey,
@@ -102,27 +112,29 @@ function onLbtnUpSettings() {
 		};
 	};
 	// Header
-	menu.newEntry({entryText: this.title, flags: MF_GRAYED});
-	menu.newEntry({entryText: 'sep'});
+	menu.newEntry({ entryText: this.title, flags: MF_GRAYED });
+	menu.newEntry({ entryText: 'sep' });
 	// Menus
 	{
 		const subMenu = menu.newMenu('Set X-axis data...');
-		menu.newEntry({menuName: subMenu, entryText: 'By TF:', flags: MF_GRAYED});
-		menu.newEntry({menuName: subMenu, entryText: 'sep'});
+		menu.newEntry({ menuName: subMenu, entryText: 'By TF:', flags: MF_GRAYED });
+		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
 		const list = JSON.parse(properties.xEntries[1]);
 		list.forEach((entry) => {
-			if (entry.name === 'sep') {menu.newEntry({menuName: subMenu, entryText: 'sep'});}
+			if (entry.name === 'sep') { menu.newEntry({ menuName: subMenu, entryText: 'sep' }); }
 			else {
-				menu.newEntry({menuName: subMenu, entryText: entry.name, func: () => this.setData(entry)});
-				menu.newCheckMenu(subMenu, entry.name, void(0),  () => this.axis.x.tf === _qCond(entry.x));
+				menu.newEntry({ menuName: subMenu, entryText: entry.name, func: () => this.setData(entry) });
+				menu.newCheckMenu(subMenu, entry.name, void (0), () => this.axis.x.tf === _qCond(entry.x));
 			}
 		});
-		menu.newEntry({menuName: subMenu, entryText: 'sep'});
-		menu.newEntry({menuName: subMenu, entryText: 'By TF...', func: () => {
-			const entry = inputTF('x');
-			if (entry) {this.setData(entry);}
-		}});
-		menu.newEntry({menuName: subMenu, entryText: 'sep'});
+		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+		menu.newEntry({
+			menuName: subMenu, entryText: 'By TF...', func: () => {
+				const entry = inputTF('x');
+				if (entry) { this.setData(entry); }
+			}
+		});
+		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
 		_createSubMenuEditEntries(menu, subMenu, {
 			name: 'Axis X TF entries',
 			list,
@@ -137,22 +149,24 @@ function onLbtnUpSettings() {
 	}
 	{
 		const subMenu = menu.newMenu('Set Y-axis data...');
-		menu.newEntry({menuName: subMenu, entryText: 'By TF:', flags: MF_GRAYED});
-		menu.newEntry({menuName: subMenu, entryText: 'sep'});
+		menu.newEntry({ menuName: subMenu, entryText: 'By TF:', flags: MF_GRAYED });
+		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
 		const list = JSON.parse(properties.yEntries[1]);
 		list.forEach((entry) => {
-			if (entry.name === 'sep') {menu.newEntry({menuName: subMenu, entryText: 'sep'});}
+			if (entry.name === 'sep') { menu.newEntry({ menuName: subMenu, entryText: 'sep' }); }
 			else {
-				menu.newEntry({menuName: subMenu, entryText: entry.name, func: () => this.setData(entry)});
-				menu.newCheckMenu(subMenu, entry.name, void(0),  () => this.axis.y.tf === _qCond(entry.y) && this.axis.y.bProportional === entry.bProportional);
+				menu.newEntry({ menuName: subMenu, entryText: entry.name, func: () => this.setData(entry) });
+				menu.newCheckMenu(subMenu, entry.name, void (0), () => this.axis.y.tf === _qCond(entry.y) && this.axis.y.bProportional === entry.bProportional);
 			}
 		});
-		menu.newEntry({menuName: subMenu, entryText: 'sep'});
-		menu.newEntry({menuName: subMenu, entryText: 'By TF...', func: () => {
-			const entry = inputTF('y');
-			if (entry) {this.setData(entry);}
-		}});
-		menu.newEntry({menuName: subMenu, entryText: 'sep'});
+		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+		menu.newEntry({
+			menuName: subMenu, entryText: 'By TF...', func: () => {
+				const entry = inputTF('y');
+				if (entry) { this.setData(entry); }
+			}
+		});
+		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
 		_createSubMenuEditEntries(menu, subMenu, {
 			name: 'Axis Y TF entries',
 			list,
@@ -167,22 +181,24 @@ function onLbtnUpSettings() {
 	}
 	{
 		const subMenu = menu.newMenu('Set Z-axis data...');
-		menu.newEntry({menuName: subMenu, entryText: 'By TF:', flags: MF_GRAYED});
-		menu.newEntry({menuName: subMenu, entryText: 'sep'});
+		menu.newEntry({ menuName: subMenu, entryText: 'By TF:', flags: MF_GRAYED });
+		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
 		const list = JSON.parse(properties.zEntries[1]);
 		list.forEach((entry) => {
-			if (entry.name === 'sep') {menu.newEntry({menuName: subMenu, entryText: 'sep'});}
+			if (entry.name === 'sep') { menu.newEntry({ menuName: subMenu, entryText: 'sep' }); }
 			else {
-				menu.newEntry({menuName: subMenu, entryText: entry.name, func: () => this.setData(entry)});
-				menu.newCheckMenu(subMenu, entry.name, void(0),  () => this.axis.z.tf === _qCond(entry.z));
+				menu.newEntry({ menuName: subMenu, entryText: entry.name, func: () => this.setData(entry) });
+				menu.newCheckMenu(subMenu, entry.name, void (0), () => this.axis.z.tf === _qCond(entry.z));
 			}
 		});
-		menu.newEntry({menuName: subMenu, entryText: 'sep'});
-		menu.newEntry({menuName: subMenu, entryText: 'By TF...', func: () => {
-			const entry = inputTF('z');
-			if (entry) {this.setData(entry);}
-		}});
-		menu.newEntry({menuName: subMenu, entryText: 'sep'});
+		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+		menu.newEntry({
+			menuName: subMenu, entryText: 'By TF...', func: () => {
+				const entry = inputTF('z');
+				if (entry) { this.setData(entry); }
+			}
+		});
+		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
 		_createSubMenuEditEntries(menu, subMenu, {
 			name: 'Axis Z TF entries',
 			list,
@@ -195,65 +211,71 @@ function onLbtnUpSettings() {
 			}
 		});
 	}
-	menu.newEntry({entryText: 'sep'});
+	menu.newEntry({ entryText: 'sep' });
 	{
 		const subMenu = menu.newMenu('Data source...');
-		menu.newEntry({menuName: subMenu, entryText: 'Select source for tracks:', flags: MF_GRAYED});
-		menu.newEntry({menuName: subMenu, entryText: 'sep'});
+		menu.newEntry({ menuName: subMenu, entryText: 'Select source for tracks:', flags: MF_GRAYED });
+		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
 		const options = [
-			{entryText: 'Library',				 	sourceType: 'library'},
-			{entryText: 'Current playlist', 		sourceType: 'activePlaylist'},
-			{entryText: 'Playing playlist', 		sourceType: 'playingPlaylist'},
-			{entryText: 'Selected playlist(s)....', sourceType: 'playlist', sourceArg: null},
+			{ entryText: 'Library', sourceType: 'library' },
+			{ entryText: 'Current playlist', sourceType: 'activePlaylist' },
+			{ entryText: 'Playing playlist', sourceType: 'playingPlaylist' },
+			{ entryText: 'Selected playlist(s)....', sourceType: 'playlist', sourceArg: null },
 		];
 		options.forEach((option) => {
-			menu.newEntry({menuName: subMenu, entryText: option.entryText, func: () => {
-				if (Object.hasOwn(option, 'sourceArg')) {
-					if (option.sourceArg === null) {
-						const input = Input.string('string', dataSource.sourceArg || '', 'Enter playlist name(s):\n(separated by ;)', window.Name, 'My Playlist;Other Playlist', void(0), true) || Input.lastInput;
-						if (input === null) {return;}
-						dataSource.sourceArg = input.split(';');
-					} else {
-						dataSource.sourceArg = option.sourceArg;
+			menu.newEntry({
+				menuName: subMenu, entryText: option.entryText, func: () => {
+					if (Object.hasOwn(option, 'sourceArg')) {
+						if (option.sourceArg === null) {
+							const input = Input.string('string', dataSource.sourceArg || '', 'Enter playlist name(s):\n(separated by ;)', window.Name, 'My Playlist;Other Playlist', void (0), true) || Input.lastInput;
+							if (input === null) { return; }
+							dataSource.sourceArg = input.split(';');
+						} else {
+							dataSource.sourceArg = option.sourceArg;
+						}
 					}
+					dataSource.sourceType = option.sourceType;
+					properties.dataSource[1] = JSON.stringify(dataSource);
+					overwriteProperties(properties);
+					this.setData({ ...dataSource });
 				}
-				dataSource.sourceType = option.sourceType;
-				properties.dataSource[1] = JSON.stringify(dataSource);
-				overwriteProperties(properties);
-				this.setData({...dataSource});
-			}});
+			});
 		});
 		menu.newCheckMenuLast(() => {
 			const idx = options.findIndex((opt) => opt.sourceType === dataSource.sourceType);
 			return (idx !== -1 ? idx : 0);
 		}, options);
 	}
-	menu.newEntry({entryText: 'sep'});
+	menu.newEntry({ entryText: 'sep' });
 	{
 		const subMenu = menu.newMenu('Filter data...');
-		menu.newEntry({menuName: subMenu, entryText: 'By query:', flags: MF_GRAYED});
-		menu.newEntry({menuName: subMenu, entryText: 'sep'});
+		menu.newEntry({ menuName: subMenu, entryText: 'By query:', flags: MF_GRAYED });
+		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
 		const list = JSON.parse(properties.queryEntries[1]);
 		list.forEach((entry) => {
-			if (entry.name === 'sep') {menu.newEntry({menuName: subMenu, entryText: 'sep'});}
+			if (entry.name === 'sep') { menu.newEntry({ menuName: subMenu, entryText: 'sep' }); }
 			else {
-				menu.newEntry({menuName: subMenu, entryText: entry.name, func: () => {
-					properties.dataQuery[1] = entry.query;
-					overwriteProperties(properties);
-					this.setData(entry);
-				}});
-				menu.newCheckMenu(subMenu, entry.name, void(0), () => properties.dataQuery[1] === entry.query);
+				menu.newEntry({
+					menuName: subMenu, entryText: entry.name, func: () => {
+						properties.dataQuery[1] = entry.query;
+						overwriteProperties(properties);
+						this.setData(entry);
+					}
+				});
+				menu.newCheckMenu(subMenu, entry.name, void (0), () => properties.dataQuery[1] === entry.query);
 			}
 		});
-		menu.newEntry({menuName: subMenu, entryText: 'sep'});
-		menu.newEntry({menuName: subMenu, entryText: 'By query...', func: () => {
-			const input = Input.string('string', properties.dataQuery[1], 'Enter query:', window.Name, 'ALL');
-			if (input === null) {return;}
-			properties.dataQuery[1] = input;
-			overwriteProperties(properties);
-			this.setData({query: input});
-		}});
-		menu.newEntry({menuName: subMenu, entryText: 'sep'});
+		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+		menu.newEntry({
+			menuName: subMenu, entryText: 'By query...', func: () => {
+				const input = Input.string('string', properties.dataQuery[1], 'Enter query:', window.Name, 'ALL');
+				if (input === null) { return; }
+				properties.dataQuery[1] = input;
+				overwriteProperties(properties);
+				this.setData({ query: input });
+			}
+		});
+		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
 		_createSubMenuEditEntries(menu, subMenu, {
 			name: 'Query entries',
 			list,
@@ -267,38 +289,48 @@ function onLbtnUpSettings() {
 		});
 	}
 	{
-		menu.newEntry({entryText: 'sep'});
+		menu.newEntry({ entryText: 'sep' });
 		const subMenu = menu.newMenu('Other settings...');
-		menu.newEntry({menuName: subMenu, entryText: 'Asynchronous calculation', func: () => {
-			properties.bAsync[1] = !properties.bAsync[1];
-			overwriteProperties(properties);
-		}});
-		menu.newCheckMenu(subMenu, 'Asynchronous calculation', void(0), () => properties.bAsync[1]);
-		menu.newEntry({menuName: subMenu, entryText: 'sep'});
-		menu.newEntry({menuName: subMenu, entryText: 'Auto-update data sources', func: () => {
-			properties.bAutoData[1] = !properties.bAutoData[1];
-			overwriteProperties(properties);
-		}, flags: dataSource.sourceType === 'library' ? MF_GRAYED : MF_STRING});
-		menu.newCheckMenuLast(() => properties.bAutoData[1]);
-		menu.newEntry({menuName: subMenu, entryText: 'sep'});
-		menu.newEntry({menuName: subMenu, entryText: 'Automatically check for updates', func: () => {
-			properties.bAutoUpdateCheck[1] = !properties.bAutoUpdateCheck[1];
-			overwriteProperties(properties);
-			if (properties.bAutoUpdateCheck[1]) {
-				if (typeof checkUpdate === 'undefined') {include('helpers\\helpers_xxx_web_update.js');}
-				setTimeout(checkUpdate, 1000, {bDownload: globSettings.bAutoUpdateDownload, bOpenWeb: globSettings.bAutoUpdateOpenWeb, bDisableWarning: false});
+		menu.newEntry({
+			menuName: subMenu, entryText: 'Asynchronous calculation', func: () => {
+				properties.bAsync[1] = !properties.bAsync[1];
+				overwriteProperties(properties);
 			}
-		}});
-		menu.newCheckMenu(subMenu, 'Automatically check for updates', void(0),  () => properties.bAutoUpdateCheck[1]);
-		menu.newEntry({menuName: subMenu, entryText: 'Check for updates...',  func: () => {
-			if (typeof checkUpdate === 'undefined') {include('helpers\\helpers_xxx_web_update.js');}
-			checkUpdate({bDownload: globSettings.bAutoUpdateDownload, bOpenWeb: globSettings.bAutoUpdateOpenWeb, bDisableWarning: false})
-				.then((bFound) => !bFound && fb.ShowPopupMessage('No updates found.', window.Name));
-		}});
+		});
+		menu.newCheckMenu(subMenu, 'Asynchronous calculation', void (0), () => properties.bAsync[1]);
+		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+		menu.newEntry({
+			menuName: subMenu, entryText: 'Auto-update data sources', func: () => {
+				properties.bAutoData[1] = !properties.bAutoData[1];
+				overwriteProperties(properties);
+			}, flags: dataSource.sourceType === 'library' ? MF_GRAYED : MF_STRING
+		});
+		menu.newCheckMenuLast(() => properties.bAutoData[1]);
+		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+		menu.newEntry({
+			menuName: subMenu, entryText: 'Automatically check for updates', func: () => {
+				properties.bAutoUpdateCheck[1] = !properties.bAutoUpdateCheck[1];
+				overwriteProperties(properties);
+				if (properties.bAutoUpdateCheck[1]) {
+					if (typeof checkUpdate === 'undefined') { include('helpers\\helpers_xxx_web_update.js'); }
+					setTimeout(checkUpdate, 1000, { bDownload: globSettings.bAutoUpdateDownload, bOpenWeb: globSettings.bAutoUpdateOpenWeb, bDisableWarning: false });
+				}
+			}
+		});
+		menu.newCheckMenu(subMenu, 'Automatically check for updates', void (0), () => properties.bAutoUpdateCheck[1]);
+		menu.newEntry({
+			menuName: subMenu, entryText: 'Check for updates...', func: () => {
+				if (typeof checkUpdate === 'undefined') { include('helpers\\helpers_xxx_web_update.js'); }
+				checkUpdate({ bDownload: globSettings.bAutoUpdateDownload, bOpenWeb: globSettings.bAutoUpdateOpenWeb, bDisableWarning: false })
+					.then((bFound) => !bFound && fb.ShowPopupMessage('No updates found.', window.Name));
+			}
+		});
 	}
-	menu.newEntry({entryText: 'sep'});
-	menu.newEntry({entryText: 'Force data update', func: () => {
-		this.setData();
-	}});
+	menu.newEntry({ entryText: 'sep' });
+	menu.newEntry({
+		entryText: 'Force data update', func: () => {
+			this.setData();
+		}
+	});
 	return menu;
 }

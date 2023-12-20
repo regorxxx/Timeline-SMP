@@ -1,5 +1,5 @@
 ﻿'use strict';
-//18/12/23
+//20/12/23
 
 /* exported bindMenu */
 
@@ -142,7 +142,7 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 		}
 		menu.newEntry({entryText: 'sep'});
 	}
-	{
+	{ // NOSONAR
 		{
 			const subMenu = menu.newMenu('Values shown...');
 			[

@@ -1,5 +1,5 @@
 'use strict';
-//19/12/23
+//20/12/23
 
 /* exported getData, getDataAsync */
 
@@ -60,38 +60,38 @@ function getData({
 			const bSingleY = !isNaN(y);
 			const serieCounters = bSingleY
 				? Number(y)
-				: fb.TitleFormat(_bt(queryReplaceWithCurrent(y))).EvalWithMetadbs(handleList).map((val) => {return val ? Number(val) : 0;}); // Y
+				: fb.TitleFormat(_bt(queryReplaceWithCurrent(y))).EvalWithMetadbs(handleList).map((val) => { return val ? Number(val) : 0; }); // Y
 			const dic = new Map();
 			xTags.forEach((arr, i) => {
 				arr.forEach((x) => {
-					if (!dic.has(x)) {dic.set(x, {});}
+					if (!dic.has(x)) { dic.set(x, {}); }
 					const val = dic.get(x);
 					serieTags[i].forEach((serie) => {
 						const count = bSingleY ? serieCounters : serieCounters[i];
 						if (Object.hasOwn(val, serie)) {
-							if (count) {val[serie].count += count;}
+							if (count) { val[serie].count += count; }
 							val[serie].total++;
 						} else {
-							val[serie] = {count, total: 1};
+							val[serie] = { count, total: 1 };
 						}
 					});
 					dic.set(x, val);
 				});
 			});
 			dic.forEach((value, key, map) => {
-				map.set(key, Object.entries(value).map((pair) => {return {key: pair[0], ...pair[1] /* count, total */};}).sort((a, b) => {return b.count - a.count;}));
+				map.set(key, Object.entries(value).map((pair) => { return { key: pair[0], ...pair[1] /* count, total */ }; }).sort((a, b) => { return b.count - a.count; }));
 			});
-			data = [[...dic].map((points) => points[1].map((point) => {return {x: points[0], y: (bProportional ? point.count / point.total : point.count), z: point.key};}))];
+			data = [[...dic].map((points) => points[1].map((point) => { return { x: points[0], y: (bProportional ? point.count / point.total : point.count), z: point.key }; }))];
 			break;
 		}
 		case 'tf': {
-			const libraryTags = fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => {return val.split(',');}).flat(Infinity);
+			const libraryTags = fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => { return val.split(','); }).flat(Infinity);
 			const tagCount = new Map();
 			libraryTags.forEach((tag) => {
-				if (!tagCount.has(tag)) {tagCount.set(tag, 1);}
-				else {tagCount.set(tag, tagCount.get(tag) + 1);}
+				if (!tagCount.has(tag)) { tagCount.set(tag, 1); }
+				else { tagCount.set(tag, tagCount.get(tag) + 1); }
 			});
-			data = [[...tagCount].map((point) => {return {x: point[0], y: point[1]};})];
+			data = [[...tagCount].map((point) => { return { x: point[0], y: point[1] }; })];
 			break;
 		}
 		case 'most played': {
@@ -99,10 +99,10 @@ function getData({
 			const playCount = fb.TitleFormat('%play_count%').EvalWithMetadbs(handleList);
 			const tagCount = new Map();
 			libraryTags.forEach((tag, i) => {
-				if (!tagCount.has(tag)) {tagCount.set(tag, Number(playCount[i]));}
-				else {tagCount.set(tag, tagCount.get(tag) + Number(playCount[i]));}
+				if (!tagCount.has(tag)) { tagCount.set(tag, Number(playCount[i])); }
+				else { tagCount.set(tag, tagCount.get(tag) + Number(playCount[i])); }
 			});
-			data = [[...tagCount].map((point) => {return {x: point[0], y: point[1]};})];
+			data = [[...tagCount].map((point) => { return { x: point[0], y: point[1] }; })];
 			break;
 		}
 		case 'most played proportional': {
@@ -111,15 +111,15 @@ function getData({
 			const tagCount = new Map();
 			const keyCount = new Map();
 			libraryTags.forEach((tag, i) => {
-				if (!tagCount.has(tag)) {tagCount.set(tag, Number(playCount[i]));}
-				else {tagCount.set(tag, tagCount.get(tag) + Number(playCount[i]));}
-				if (!keyCount.has(tag)) {keyCount.set(tag, 1);}
-				else {keyCount.set(tag, keyCount.get(tag) + 1);}
+				if (!tagCount.has(tag)) { tagCount.set(tag, Number(playCount[i])); }
+				else { tagCount.set(tag, tagCount.get(tag) + Number(playCount[i])); }
+				if (!keyCount.has(tag)) { keyCount.set(tag, 1); }
+				else { keyCount.set(tag, keyCount.get(tag) + 1); }
 			});
 			keyCount.forEach((value, key) => {
-				if (tagCount.has(key)) {tagCount.set(key, Math.round(tagCount.get(key) / keyCount.get(key)));}
+				if (tagCount.has(key)) { tagCount.set(key, Math.round(tagCount.get(key) / keyCount.get(key))); }
 			});
-			data = [[...tagCount].map((point) => {return {x: point[0], y: point[1]};})];
+			data = [[...tagCount].map((point) => { return { x: point[0], y: point[1] }; })];
 			break;
 		}
 	}
@@ -148,38 +148,38 @@ async function getDataAsync({
 			const bSingleY = !isNaN(y);
 			const serieCounters = bSingleY
 				? Number(y)
-				: (await fb.TitleFormat(_bt(queryReplaceWithCurrent(y))).EvalWithMetadbsAsync(handleList)).map((val) => {return val ? Number(val) : 0;}); // Y
+				: (await fb.TitleFormat(_bt(queryReplaceWithCurrent(y))).EvalWithMetadbsAsync(handleList)).map((val) => { return val ? Number(val) : 0; }); // Y
 			const dic = new Map();
 			xTags.forEach((arr, i) => {
 				arr.forEach((x) => {
-					if (!dic.has(x)) {dic.set(x, {});}
+					if (!dic.has(x)) { dic.set(x, {}); }
 					const val = dic.get(x);
 					serieTags[i].forEach((serie) => {
 						const count = bSingleY ? serieCounters : serieCounters[i];
 						if (Object.hasOwn(val, serie)) {
-							if (count) {val[serie].count += count;}
+							if (count) { val[serie].count += count; }
 							val[serie].total++;
 						} else {
-							val[serie] = {count, total: 1};
+							val[serie] = { count, total: 1 };
 						}
 					});
 					dic.set(x, val);
 				});
 			});
 			dic.forEach((value, key, map) => {
-				map.set(key, Object.entries(value).map((pair) => {return {key: pair[0], ...pair[1] /* count, total */};}).sort((a, b) => {return b.count - a.count;}));
+				map.set(key, Object.entries(value).map((pair) => { return { key: pair[0], ...pair[1] /* count, total */ }; }).sort((a, b) => { return b.count - a.count; }));
 			});
-			data = [[...dic].map((points) => points[1].map((point) => {return {x: points[0], y: (bProportional ? point.count / point.total : point.count), z: point.key};}))];
+			data = [[...dic].map((points) => points[1].map((point) => { return { x: points[0], y: (bProportional ? point.count / point.total : point.count), z: point.key }; }))];
 			break;
 		}
 		case 'tf': {
-			const libraryTags = (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => {return val.split(',');}).flat(Infinity);
+			const libraryTags = (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => { return val.split(','); }).flat(Infinity);
 			const tagCount = new Map();
 			libraryTags.forEach((tag) => {
-				if (!tagCount.has(tag)) {tagCount.set(tag, 1);}
-				else {tagCount.set(tag, tagCount.get(tag) + 1);}
+				if (!tagCount.has(tag)) { tagCount.set(tag, 1); }
+				else { tagCount.set(tag, tagCount.get(tag) + 1); }
 			});
-			data = [[...tagCount].map((point) => {return {x: point[0], y: point[1]};})];
+			data = [[...tagCount].map((point) => { return { x: point[0], y: point[1] }; })];
 			break;
 		}
 		case 'most played': {
@@ -187,10 +187,10 @@ async function getDataAsync({
 			const playCount = await fb.TitleFormat('%PLAY_COUNT%').EvalWithMetadbsAsync(handleList);
 			const tagCount = new Map();
 			libraryTags.forEach((tag, i) => {
-				if (!tagCount.has(tag)) {tagCount.set(tag, Number(playCount[i]));}
-				else {tagCount.set(tag, tagCount.get(tag) + Number(playCount[i]));}
+				if (!tagCount.has(tag)) { tagCount.set(tag, Number(playCount[i])); }
+				else { tagCount.set(tag, tagCount.get(tag) + Number(playCount[i])); }
 			});
-			data = [[...tagCount].map((point) => {return {x: point[0], y: point[1]};})];
+			data = [[...tagCount].map((point) => { return { x: point[0], y: point[1] }; })];
 			break;
 		}
 		case 'most played proportional': {
@@ -199,15 +199,15 @@ async function getDataAsync({
 			const tagCount = new Map();
 			const keyCount = new Map();
 			libraryTags.forEach((tag, i) => {
-				if (!tagCount.has(tag)) {tagCount.set(tag, Number(playCount[i]));}
-				else {tagCount.set(tag, tagCount.get(tag) + Number(playCount[i]));}
-				if (!keyCount.has(tag)) {keyCount.set(tag, 1);}
-				else {keyCount.set(tag, keyCount.get(tag) + 1);}
+				if (!tagCount.has(tag)) { tagCount.set(tag, Number(playCount[i])); }
+				else { tagCount.set(tag, tagCount.get(tag) + Number(playCount[i])); }
+				if (!keyCount.has(tag)) { keyCount.set(tag, 1); }
+				else { keyCount.set(tag, keyCount.get(tag) + 1); }
 			});
 			keyCount.forEach((value, key) => {
-				if (tagCount.has(key)) {tagCount.set(key, Math.round(tagCount.get(key) / keyCount.get(key)));}
+				if (tagCount.has(key)) { tagCount.set(key, Math.round(tagCount.get(key) / keyCount.get(key))); }
 			});
-			data = [[...tagCount].map((point) => {return {x: point[0], y: point[1]};})];
+			data = [[...tagCount].map((point) => { return { x: point[0], y: point[1] }; })];
 			break;
 		}
 	}
@@ -216,11 +216,11 @@ async function getDataAsync({
 
 function getSource(type, arg) {
 	switch (type) {
-		case 'playlist':		return getHandleFromUIPlaylists(arg, false); // [playlist names]
-		case 'playingPlaylist':	return (plman.PlayingPlaylist !== -1 && fb.IsPlaying ? plman.GetPlaylistItems(plman.PlayingPlaylist) : getSource('activePlaylist'));
-		case 'activePlaylist':	return (plman.ActivePlaylist !== -1 ? plman.GetPlaylistItems(plman.ActivePlaylist) : new FbMetadbHandleList());
+		case 'playlist': return getHandleFromUIPlaylists(arg, false); // [playlist names]
+		case 'playingPlaylist': return (plman.PlayingPlaylist !== -1 && fb.IsPlaying ? plman.GetPlaylistItems(plman.PlayingPlaylist) : getSource('activePlaylist'));
+		case 'activePlaylist': return (plman.ActivePlaylist !== -1 ? plman.GetPlaylistItems(plman.ActivePlaylist) : new FbMetadbHandleList());
 		case 'library':
-		default:				return fb.GetLibraryItems();
+		default: return fb.GetLibraryItems();
 	}
 }
 
@@ -229,5 +229,5 @@ function filterSource(query, source) {
 }
 
 function deduplicateSource(source) {
-	return removeDuplicatesV2({handleList: source, checkKeys: globTags.remDupl, sortBias: globQuery.remDuplBias, bPreserveSort: true, bAdvTitle: true});
+	return removeDuplicatesV2({ handleList: source, checkKeys: globTags.remDupl, sortBias: globQuery.remDuplBias, bPreserveSort: true, bAdvTitle: true });
 }

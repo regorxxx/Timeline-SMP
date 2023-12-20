@@ -747,18 +747,26 @@ function _chart({
 					if (this.graph.type !== 'timeline') {
 						if (w / tickW < 30) { // Don't paint labels when they can't be fitted properly
 							const last = xAxisValuesLen - 1;
+							const borderColor = RGBA(...toRGB(invert(xAxisColor, true)), 150);
 							xAxisValues.forEach((valueX, i) => {
+								const xtickH = gr.CalcTextHeight(valueX, this.gFont);
+								const xtickW = gr.CalcTextWidth(valueX, this.gFont);
 								const xLabel = x + i * tickW;
 								if (this.axis.x.labels && (this.graph.type !== 'bars' || !this.axis.x.bAltLabels)) {
 									if (i === 0 && offsetTickText) { // Fix for first label position
-										const flags = DT_LEFT | DT_END_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX;
 										const zeroW = xLabel + offsetTickText + tickW - this.x - this.margin.leftAuto / 2;
+										if (this.axis.x.bAltLabels) { gr.FillSolidRect(this.x + this.margin.leftAuto + xOffsetKey - xtickW / 2 + _scale(2), y + this.axis.y.width * 3 / 2, xtickW + _scale(2), xtickH, borderColor); }
+										const flags = DT_LEFT | DT_END_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX;
 										gr.GdiDrawText(valueX, this.gFont, xAxisColor, this.x + this.margin.leftAuto / 2 + xOffsetKey, y + this.axis.y.width, zeroW, this.h, flags);
 									} else if (i === last) { // Fix for last label position
-										const lastW = xLabel + offsetTickText + tickW > w - this.margin.right ? this.x + w - (xLabel + offsetTickText) + this.margin.right : tickW;
+										const lastW = xLabel + offsetTickText + tickW > w - this.margin.right
+											? this.x + w - (xLabel + offsetTickText) + this.margin.right
+											: tickW;
+										if (this.axis.x.bAltLabels) { gr.FillSolidRect(xLabel + offsetTickText + xOffsetKey + (lastW / 2 - xtickW) + _scale(2), y + this.axis.y.width * 3 / 2, xtickW + _scale(2), xtickH, borderColor); }
 										const flags = DT_CENTER | DT_END_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX;
 										gr.GdiDrawText(valueX, this.gFont, xAxisColor, xLabel + offsetTickText + xOffsetKey, y + this.axis.y.width, lastW - xOffsetKey, this.h, flags);
 									} else {
+										if (this.axis.x.bAltLabels) { gr.FillSolidRect(xLabel - xtickW / 2 - _scale(2), y + this.axis.y.width * 3 / 2, xtickW + _scale(2), xtickH, borderColor); }
 										const flags = DT_CENTER | DT_END_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX;
 										gr.GdiDrawText(valueX, this.gFont, xAxisColor, xLabel + offsetTickText, y + this.axis.y.width, tickW, this.h, flags);
 									}

@@ -14,6 +14,7 @@
 ### Changed
 - Code cleanup.
 - Data: sorting is now set by default to 'natural|x' when changing from distributions to standard graphs.
+- UI: added alt. labels for scatter and line charts. It just adds a background.
 ### Removed
 ### Fixed
 - Data: fixed crash using data filters.

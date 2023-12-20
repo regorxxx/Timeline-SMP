@@ -20,6 +20,7 @@
 - Data: fixed logging about sorting being set while using distributions.
 - UI: fix zoom while using normal distribution.
 - UI: data offset to the right while using normal distribution in some cases.
+- UI: fix alt. labels when using bars charts. Now behave similar to timeline chart, but being displayed on the vertical axis.
 - Minor fixes.
 
 ## [1.0.0] - 2023-12-17

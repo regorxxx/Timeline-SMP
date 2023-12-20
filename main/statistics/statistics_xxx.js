@@ -625,13 +625,20 @@ function _chart({
 			case 'bars': // NOSONAR [fallthrough]
 				if (this.axis.x.show && this.axis.x.labels && this.axis.x.bAltLabels && this.graph.type !== 'timeline') {
 					if (w / tickW < 30) { // Don't paint labels when they can't be fitted properly
+						const yLabel = (y - h) / 2;
 						xAxisValues.forEach((valueX, i) => {
-							const xLabel = x + i * tickW;
+							let xLabel = x + i * tickW;
 							valueX = this.configuration.bAltVerticalText ? valueX.flip() : valueX;
 							const xTickW = gr.CalcTextWidth(valueX, this.gFont);
+							const xtickH = gr.CalcTextHeight(valueX, this.gFont);
+							// Draw line and rectangle
+							const borderColor = RGBA(...toRGB(invert(xAxisColor, true)), 150);
+							gr.DrawLine(xLabel, y, xLabel, yLabel, this.axis.x.width / 2, xAxisColor);
+							xLabel -= (i === 0 ? 0 : xtickH / 2);
+							gr.FillSolidRect(xLabel, yLabel - xTickW - _scale(5), xtickH, xTickW + _scale(5), borderColor);
 							if (this.configuration.bAltVerticalText) { // Flip chars
 								gr.SetTextRenderingHint(TextRenderingHint.ClearTypeGridFit);
-								gr.DrawString(valueX, this.gFont, xAxisColor, xLabel, y - xTickW - this.axis.x.width, tickW, this.h, StringFormatFlags.DirectionVertical);
+								gr.DrawString(valueX, this.gFont, xAxisColor, xLabel, yLabel - xTickW - this.axis.x.width, tickW, this.h, StringFormatFlags.DirectionVertical);
 								gr.SetTextRenderingHint(TextRenderingHint.SystemDefault);
 							} else {
 								const keyH = gr.CalcTextHeight(valueX, this.gFont);
@@ -644,7 +651,7 @@ function _chart({
 								img.RotateFlip(RotateFlipType.Rotate90FlipXY);
 								img.ReleaseGraphics(_gr);
 								gr.SetInterpolationMode(InterpolationMode.NearestNeighbor);
-								gr.DrawImage(img, xLabel, y - xTickW - this.axis.x.width, keyH, xTickW, 0, 0, img.Width, img.Height);
+								gr.DrawImage(img, xLabel, yLabel - xTickW - this.axis.x.width, keyH, xTickW, 0, 0, img.Width, img.Height);
 								gr.SetInterpolationMode(InterpolationMode.Default);
 							}
 						});

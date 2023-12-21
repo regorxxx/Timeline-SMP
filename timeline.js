@@ -1,12 +1,12 @@
 ﻿'use strict';
-//19/12/23
+//21/12/23
 
 include('main\\statistics\\statistics_xxx.js');
 /* global _chart:readable */
 include('main\\statistics\\statistics_xxx_menu.js');
 /* global createStatisticsMenu:readable */
 include('main\\timeline\\timeline_helpers.js');
-/* global _gdiFont:readable, MK_LBUTTON:readable, deepAssign:readable, RGB:readable, isJSON:readable, _scale:readable, isString:readable, globTags:readable, isBoolean:readable, globSettings:readable, setProperties:readable, getPropertiesPairs:readable, checkUpdate:readable, overwriteProperties:readable, getDataAsync:readable, _qCond:readable, query_join:readable, getData:readable, getPlaylistIndexArray:readable */
+/* global globTags:readable, globQuery:readable, _gdiFont:readable, MK_LBUTTON:readable, deepAssign:readable, RGB:readable, isJSON:readable, _scale:readable, isString:readable, globTags:readable, isBoolean:readable, globSettings:readable, setProperties:readable, getPropertiesPairs:readable, checkUpdate:readable, overwriteProperties:readable, getDataAsync:readable, _qCond:readable, query_join:readable, getData:readable, getPlaylistIndexArray:readable, _t:readable, isArrayEqual:readable */
 include('main\\timeline\\timeline_menus.js');
 /* global onLbtnUpPoint:readable, onLbtnUpSettings:readable, createBackgroundMenu:readable */
 include('main\\window\\window_xxx_background.js');
@@ -36,53 +36,59 @@ let properties = {
 		}
 	)), { func: isJSON }],
 	data: ['Data options', JSON.stringify({
-		x: { key: 'Date', tf: '"$year(%DATE%)"' },
+		x: { key: 'Date', tf: _qCond(_t(globTags.bpm)) },
 		y: { key: 'Tracks', tf: '1' },
-		z: { key: 'Artist', tf: '%ALBUM ARTIST%' }
+		z: { key: 'Artist', tf: _qCond(globTags.artist) }
 	}), { func: isJSON }],
 	dataQuery: ['Data query', 'ALL', { func: isString }],
 	dataSource: ['Data source', JSON.stringify({ sourceType: 'library', sourceArg: null }), { func: isJSON }],
 	xEntries: ['Axis X TF entries', JSON.stringify([
-		{ x: '$year(%DATE%)', keyX: 'Date' },
-		{ x: '$right($div($year(%DATE%),10)0s,3)', keyX: 'Decade' },
-		{ x: '%BPM%', keyX: 'BPM' },
-		{ x: '%RATING%', keyX: 'Rating' },
+		{ x: _t(globTags.date), keyX: 'Date' },
+		{ x: '$right($div(' + _t(globTags.date) + ',10)0s,3)', keyX: 'Decade' },
+		{ x: _t(globTags.bpm), keyX: 'BPM' },
+		{ x: _t(globTags.rating), keyX: 'Rating' },
 		{ name: 'sep' },
-		{ x: globTags.camelotKey, keyX: 'Camelot Key' }, // helpers_xxx_global.js
-		{ x: globTags.openKey, keyX: 'Open Key' },
+		{ x: _t(globTags.camelotKey), keyX: 'Camelot Key' }, // helpers_xxx_global.js
+		{ x: _t(globTags.openKey), keyX: 'Open Key' },
 		{ name: 'sep' },
-		{ x: '%MOOD%', keyX: 'Mood' },
-		{ x: '%GENRE%', keyX: 'Genre' },
-		{ x: '%STYLE%', keyX: 'Style' },
+		{ x: _t(globTags.mood), keyX: 'Mood' },
+		{ x: _t(globTags.genre), keyX: 'Genre' },
+		{ x: _t(globTags.style), keyX: 'Style' },
 	].map((v) => { return (Object.hasOwn(v, 'name') ? v : { ...v, name: 'By ' + v.keyX }); })), { func: isJSON }],
 	yEntries: ['Axis Y TF entries', JSON.stringify([ // Better use queries to filter by 0 and 1...
 		{ y: '1', keyY: 'Total Tracks', bProportional: false },
-		{ y: '%PLAY_COUNT%', keyY: 'Listens', bProportional: false },
+		{ y: globTags.playCount, keyY: 'Listens', bProportional: false },
 		{ name: 'sep' },
-		{ y: '%PLAY_COUNT%', keyY: 'Listens/Track', bProportional: true },
-		{ y: '$ifequal(%FEEDBACK%,1,1$not(0),0)', keyY: 'Loves/Track', bProportional: true }, // requires not to ouput true value
-		{ y: '$ifequal(%FEEDBACK%,-1,1$not(0),0)', keyY: 'Hates/Track', bProportional: true },
-		{ y: '$ifequal(%RATING%,5,1$not(0),0)', keyY: 'Rated 5/Track', bProportional: true },
+		{ y: globTags.playCount, keyY: 'Listens/Track', bProportional: true },
+		{ y: globTags.isLoved, keyY: 'Loves/Track', bProportional: true }, // requires not to ouput true value
+		{ y: globTags.isHated, keyY: 'Hates/Track', bProportional: true },
+		{ y: globTags.isRatedTop, keyY: 'Rated 5/Track', bProportional: true },
 	].map((v) => { return (Object.hasOwn(v, 'name') ? v : { ...v, name: 'By ' + v.keyY }); })), { func: isJSON }],
 	zEntries: ['Axis Z TF entries', JSON.stringify([
-		{ z: '%ALBUM ARTIST%', keyZ: 'Artist' },
+		{ z: globTags.artist, keyZ: 'Artist' },
 		{ z: '%COMPOSER%', keyZ: 'Composer' },
-		{ z: '%MOOD%', keyZ: 'Mood' },
-		{ z: '%GENRE%', keyZ: 'Genre' },
-		{ z: '%STYLE%', keyZ: 'Style' },
-		{ z: '%RATING%', keyZ: 'Rating' },
+		{ z: _t(globTags.mood), keyZ: 'Mood' },
+		{ z: _t(globTags.genre), keyZ: 'Genre' },
+		{ z: _t(globTags.style), keyZ: 'Style' },
+		{ z: _t(globTags.rating), keyZ: 'Rating' },
 	].map((v) => { return (Object.hasOwn(v, 'name') ? v : { ...v, name: 'By ' + v.keyZ }); })), { func: isJSON }],
 	queryEntries: ['Query entries', JSON.stringify([
-		{ query: '%LAST_PLAYED% DURING LAST 4 WEEKS', name: 'Played this month' },
-		{ query: '%RATING% EQUAL 5', name: 'Rated 5 tracks' },
-		{ query: '%FEEDBACK% IS 1', name: 'Loved tracks' },
-		{ query: '%FEEDBACK% IS -1', name: 'Hated tracks' },
+		{ query: globQuery.recent, name: 'Played this month' },
+		{ query: globQuery.ratingTop, name: 'Rated 5 tracks' },
+		{ query: globQuery.loved, name: 'Loved tracks' },
+		{ query: globQuery.hated, name: 'Hated tracks' },
 		{ name: 'sep' },
 		{ query: 'ALL', name: 'All' },
 	]), { func: isJSON }],
 	bAsync: ['Data asynchronous calculation', true, { func: isBoolean }],
 	bAutoUpdateCheck: ['Automatically check updates?', globSettings.bAutoUpdateCheck, { func: isBoolean }],
 	bAutoData: ['Automatically update data sources', true, { func: isBoolean }],
+	playingTF: ['Update data on playback by TF', JSON.stringify([
+		'PLAY_COUNT',
+		'LASTFM_PLAY_COUNT',
+		'LAST_PLAYED_ENHANCED',
+		'LAST_PLAYED'
+	]), { func: isJSON }],
 };
 Object.keys(properties).forEach(p => properties[p].push(properties[p][1]));
 setProperties(properties, '', 0);
@@ -235,22 +241,44 @@ function refreshData(plsIdx, bForce = false) {
 		bRefresh = true;
 	} else {
 		const dataSource = JSON.parse(properties.dataSource[1]);
+		// Don't update playing playlist sources unless the filter or data TF
+		// points to specific tags which are also updated during playback
+		const playingTF = JSON.parse(properties.playingTF[1]).map((tag) => tag.toUpperCase());
+		const needsUpdateByTf = (chart) => {
+			return isArrayEqual(playingTF, ['*'])
+				? true
+				: playingTF.some((tag) => {
+					return properties.dataQuery[1].toUpperCase().includes(tag) || ['x', 'y', 'z'].some((axis) => {
+						return chart.axis[axis].tf.toUpperCase().includes(tag);
+					});
+				});
+		};
+		const updateCharts = () => {
+			let bRefresh = false;
+			charts.forEach((chart) => {
+				if (!chart.pop.isEnabled() && needsUpdateByTf(chart)) {
+					chart.setData();
+					bRefresh = true;
+				}
+			});
+			return bRefresh;
+		};
 		if (dataSource.sourceType === 'playingPlaylist' && (playingPlaylist !== plman.PlayingPlaylist || plsIdx === plman.PlayingPlaylist)) {
-			charts.forEach((chart) => { !chart.pop.isEnabled() && chart.setData(); });
-			bRefresh = true;
+			bRefresh = updateCharts();
+			console.log(bRefresh);
 		}
 		playingPlaylist = plman.PlayingPlaylist;
-		if ((dataSource.sourceType === 'activePlaylist' || dataSource.sourceType === 'playingPlaylist' && !fb.IsPlaying) && (activePlaylist !== plman.activePlaylist || plsIdx === plman.PlayingPlaylist)) {
-			charts.forEach((chart) => { !chart.pop.isEnabled() && chart.setData(); });
-			bRefresh = true;
+		if ((dataSource.sourceType === 'activePlaylist' || dataSource.sourceType === 'playingPlaylist' && !fb.IsPlaying) && (activePlaylist !== plman.ActivePlaylist || plsIdx === plman.PlayingPlaylist)) {
+			bRefresh = updateCharts();
+			console.log(bRefresh);
 		}
 		activePlaylist = plman.ActivePlaylist;
 		if (dataSource.sourceType === 'playlist') {
 			const idxArr = dataSource.sourceArg.reduce((acc, curr) => acc.concat(getPlaylistIndexArray(curr)), []);
 			console.log(dataSource.sourceArg, idxArr, plsIdx, selectedPlaylists);
 			if (selectedPlaylists !== idxArr.length || idxArr.includes(plsIdx)) {
-				charts.forEach((chart) => { !chart.pop.isEnabled() && chart.setData(); });
-				bRefresh = true;
+				bRefresh = updateCharts();
+				console.log(bRefresh);
 			}
 			selectedPlaylists = idxArr.length;
 		}
@@ -339,7 +367,7 @@ addEventListener('on_key_up', (vKey) => {
 addEventListener('on_playback_new_track', () => { // To show playing now playlist indicator...
 	if (background.coverMode.toLowerCase() !== 'none') { background.updateImageBg(); }
 	if (!window.ID) { return; }
-	if (properties.bAutoData[1]) { refreshData(); }
+	if (properties.bAutoData[1]) { refreshData(plman.PlayingPlaylist); }
 });
 
 addEventListener('on_selection_changed', () => {
@@ -378,10 +406,10 @@ addEventListener('on_playlists_changed', () => { // To show/hide loaded playlist
 
 addEventListener('on_playlist_items_added', (idx) => { // eslint-disable-line no-unused-vars
 	if (!window.ID) { return; }
-	if (properties.bAutoData[1]) { refreshData(); }
+	if (properties.bAutoData[1]) { refreshData(idx); }
 });
 
 addEventListener('on_playlist_items_removed', (idx) => { // eslint-disable-line no-unused-vars
 	if (!window.ID) { return; }
-	if (properties.bAutoData[1]) { refreshData(); }
+	if (properties.bAutoData[1]) { refreshData(idx); }
 });

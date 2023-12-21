@@ -12,12 +12,15 @@
 ## [Unreleased][]
 ### Added
 ### Changed
-- Code cleanup.
+- Data: all default tags, queries and TF entries now use the settings found at '.\foobar2000\js_data\presets\global\' files. Reset defaults to update entries.
+- Data: enhanced sources data auto-update to only run during playback when needed. For ex. when the axis TF or filter contains tags associated to changes during playback, like %PLAY_COUNT%. It can also be set to never update during playback or to always update using ("*") as tag.
 - Data: sorting is now set by default to 'natural|x' when changing from distributions to standard graphs.
 - UI: added alt. labels for scatter and line charts. It just adds a background.
 - UI: optimized repainting to use less resources.
+- Code cleanup.
 ### Removed
 ### Fixed
+- Data: fixed some cases where playlists sources were not updated during playback.
 - Data: fixed crash using data filters.
 - Data: fixed logging about sorting being set while using distributions.
 - UI: fix zoom while using normal distribution.

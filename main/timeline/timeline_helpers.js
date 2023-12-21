@@ -1,11 +1,11 @@
 'use strict';
-//20/12/23
+//21/12/23
 
 /* exported getData, getDataAsync */
 
-/* global globQuery:readable */
+/* global globQuery:readable, globTags:readable, */
 include('..\\..\\helpers\\helpers_xxx_prototypes.js');
-/* global _t:readable, _bt:readable, globTags:readable */
+/* global _t:readable, _bt:readable */
 include('..\\..\\helpers\\helpers_xxx_tags.js');
 /* global queryReplaceWithCurrent:readable */
 include('..\\..\\helpers\\helpers_xxx_playlists.js');
@@ -96,7 +96,7 @@ function getData({
 		}
 		case 'most played': {
 			const libraryTags = fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList);
-			const playCount = fb.TitleFormat('%play_count%').EvalWithMetadbs(handleList);
+			const playCount = fb.TitleFormat(globTags.playCount).EvalWithMetadbs(handleList);
 			const tagCount = new Map();
 			libraryTags.forEach((tag, i) => {
 				if (!tagCount.has(tag)) { tagCount.set(tag, Number(playCount[i])); }
@@ -107,7 +107,7 @@ function getData({
 		}
 		case 'most played proportional': {
 			const libraryTags = fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList);
-			const playCount = fb.TitleFormat('%play_count%').EvalWithMetadbs(handleList);
+			const playCount = fb.TitleFormat(globTags.playCount).EvalWithMetadbs(handleList);
 			const tagCount = new Map();
 			const keyCount = new Map();
 			libraryTags.forEach((tag, i) => {
@@ -184,7 +184,7 @@ async function getDataAsync({
 		}
 		case 'most played': {
 			const libraryTags = await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList);
-			const playCount = await fb.TitleFormat('%PLAY_COUNT%').EvalWithMetadbsAsync(handleList);
+			const playCount = await fb.TitleFormat(globTags.playCount).EvalWithMetadbsAsync(handleList);
 			const tagCount = new Map();
 			libraryTags.forEach((tag, i) => {
 				if (!tagCount.has(tag)) { tagCount.set(tag, Number(playCount[i])); }
@@ -195,7 +195,7 @@ async function getDataAsync({
 		}
 		case 'most played proportional': {
 			const libraryTags = await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList);
-			const playCount = await fb.TitleFormat('%PLAY_COUNT%').EvalWithMetadbsAsync(handleList);
+			const playCount = await fb.TitleFormat(globTags.playCount).EvalWithMetadbsAsync(handleList);
 			const tagCount = new Map();
 			const keyCount = new Map();
 			libraryTags.forEach((tag, i) => {

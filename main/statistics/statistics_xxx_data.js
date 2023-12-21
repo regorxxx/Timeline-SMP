@@ -1,5 +1,5 @@
 ﻿'use strict';
-//20/12/23
+//21/12/23
 
 /* exported getDataAsync, getData */
 
@@ -28,7 +28,7 @@ async function getDataAsync(option = 'TF', tf = 'GENRE') {
 		case 'most played': {
 			const handleList = fb.GetLibraryItems();
 			const libraryTags = await fb.TitleFormat(_bt(tf)).EvalWithMetadbsAsync(handleList);
-			const playCount = await fb.TitleFormat('$max(%PLAY_COUNT%,%LASTFM_PLAY_COUNT%)').EvalWithMetadbsAsync(handleList);
+			const playCount = await fb.TitleFormat('$max(%PLAY_COUNT%,%LASTFM_PLAY_COUNT%,0)').EvalWithMetadbsAsync(handleList);
 			const tagCount = new Map();
 			libraryTags.forEach((tag, i) => {
 				if (!tagCount.has(tag)) { tagCount.set(tag, Number(playCount[i])); }
@@ -40,7 +40,7 @@ async function getDataAsync(option = 'TF', tf = 'GENRE') {
 		case 'most played proportional': {
 			const handleList = fb.GetLibraryItems();
 			const libraryTags = await fb.TitleFormat(_bt(tf)).EvalWithMetadbsAsync(handleList);
-			const playCount = await fb.TitleFormat('$max(%PLAY_COUNT%,%LASTFM_PLAY_COUNT%)').EvalWithMetadbsAsync(handleList);
+			const playCount = await fb.TitleFormat('$max(%PLAY_COUNT%,%LASTFM_PLAY_COUNT%,0)').EvalWithMetadbsAsync(handleList);
 			const tagCount = new Map();
 			const keyCount = new Map();
 			libraryTags.forEach((tag, i) => {
@@ -96,7 +96,7 @@ function getData(option = 'TF', tf = 'GENRE') {
 		case 'most played': {
 			const handleList = fb.GetLibraryItems();
 			const libraryTags = fb.TitleFormat(_bt(tf)).EvalWithMetadbs(handleList);
-			const playCount = fb.TitleFormat('$max(%PLAY_COUNT%,%LASTFM_PLAY_COUNT%)').EvalWithMetadbs(handleList);
+			const playCount = fb.TitleFormat('$max(%PLAY_COUNT%,%LASTFM_PLAY_COUNT%,0)').EvalWithMetadbs(handleList);
 			const tagCount = new Map();
 			libraryTags.forEach((tag, i) => {
 				if (!tagCount.has(tag)) { tagCount.set(tag, Number(playCount[i])); }
@@ -108,7 +108,7 @@ function getData(option = 'TF', tf = 'GENRE') {
 		case 'most played proportional': {
 			const handleList = fb.GetLibraryItems();
 			const libraryTags = fb.TitleFormat(_bt(tf)).EvalWithMetadbs(handleList);
-			const playCount = fb.TitleFormat('$max(%PLAY_COUNT%,%LASTFM_PLAY_COUNT%)').EvalWithMetadbs(handleList);
+			const playCount = fb.TitleFormat('$max(%PLAY_COUNT%,%LASTFM_PLAY_COUNT%,0)').EvalWithMetadbs(handleList);
 			const tagCount = new Map();
 			const keyCount = new Map();
 			libraryTags.forEach((tag, i) => {

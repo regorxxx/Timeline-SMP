@@ -3,7 +3,7 @@
 
 /* exported onLbtnUpPoint, onLbtnUpSettings*/
 
-/* global _p:readable, checkQuery:readable, globTags:readable, globQuery:readable, round:readable, capitalizeAll:readable, properties:readable, WshShell:readable, popup:readable, _qCond:readable, overwriteProperties:readable, checkUpdate:readable, globSettings:readable */
+/* global _p:readable, checkQuery:readable, globTags:readable, globQuery:readable, round:readable, capitalizeAll:readable, properties:readable, WshShell:readable, popup:readable, _qCond:readable, overwriteProperties:readable, checkUpdate:readable, globSettings:readable , isArrayEqual:readable, _b:readable */
 include('..\\..\\helpers\\helpers_xxx_playlists.js');
 /* global sendToPlaylist:readable */
 include('..\\..\\helpers\\helpers_xxx_input.js');
@@ -101,7 +101,7 @@ function onLbtnUpSettings() {
 	const dataSource = JSON.parse(properties.dataSource[1]);
 	const inputTF = (axis = 'x') => {
 		axis = axis.toLowerCase();
-		const axisTF = Input.string('string', this.axis[axis].tf, 'Enter tag or TF expression:\n\n' + (axis === 'y' ? 'Expression should output a number per track (and TRUE). For example:\nListens: %PLAY_COUNT%\nRated 5 tracks: $ifequal(%RATING%,5,1$not(0),0)' : 'For example:\n%GENRE%'), window.Name, '%GENRE%');
+		const axisTF = Input.string('string', this.axis[axis].tf, 'Enter tag or TF expression:\n\n' + (axis === 'y' ? 'Expression should output a number per track (and TRUE). For example:\nListens: $max(%PLAY_COUNT%,%LASTFM_PLAY_COUNT%,0)\nRated 5 tracks: $ifequal(%RATING%,5,1$not(0),0)' : 'For example:\n%GENRE%'), window.Name, '%GENRE%');
 		if (axisTF === null) { return; }
 		const axisKey = Input.string('string', capitalizeAll(axisTF.replace(/%/g, '')), 'Enter axis name:', window.Name, 'Date') || Input.lastInput;
 		if (axisKey === null) { return; }
@@ -306,6 +306,20 @@ function onLbtnUpSettings() {
 			}, flags: dataSource.sourceType === 'library' ? MF_GRAYED : MF_STRING
 		});
 		menu.newCheckMenuLast(() => properties.bAutoData[1]);
+		const playingTF = JSON.parse(properties.playingTF[1]).map((tag) => tag.toUpperCase());
+		const bAlways = isArrayEqual(playingTF, ['*']);
+		const playingTFTip = bAlways
+			? 'Always'
+			: playingTF.length ? 'Tags' : 'Never';
+		menu.newEntry({
+			menuName: subMenu, entryText: 'On playback only by TF...' + '\t' + _b(playingTFTip), func: () => {
+				const input = Input.json('array strings', playingTF, 'Enter tags:\n(Use ["*"] for all tags)', window.Name, '["PLAY_COUNT"]');
+				if (input === null) { return; }
+				properties.playingTF[1] = JSON.stringify(input.map((tag) => tag.toUpperCase()));
+				overwriteProperties(properties);
+			}, flags: dataSource.sourceType === 'library' || !properties.bAutoData[1] ? MF_GRAYED : MF_STRING
+		});
+		menu.newCheckMenuLast(() => properties.playingTF[1].length);
 		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
 		menu.newEntry({
 			menuName: subMenu, entryText: 'Automatically check for updates', func: () => {

@@ -873,20 +873,36 @@ function _chart({
 		Callbacks
 	*/
 
-	this.sizePoint = (point /* pointCoords */) => {
+	this.sizePoint = (point /* pointCoords */, bWithOffset = false) => {
+		const size = { x: void (0), y: void (0), w: void (0), h: void (0) };
+		let bEntireChart = false;
 		switch (this.graph.type) {
 			case 'doughnut':
 			case 'pie': {
 				const r = point.r2;
 				const bToLeft = point.alpha1 > Math.PI / 2 && point.alpha1 < Math.PI * 3 / 2 || point.alpha2 > Math.PI / 2 && point.alpha2 < Math.PI * 3 / 2;
+				const bTop = point.alpha1 > Math.PI || point.alpha2 > Math.PI;
+				bEntireChart = point.alpha2 - point.alpha1 > Math.PI;
 				const x = point.c.x + (bToLeft ? -1 : 0) * point.r2;
-				const y = point.c.y;
-				return { x, y, w: r };
+				const y = point.c.y + (bTop ? -1 : 0) * point.r2;
+				size.x = x;
+				size.y = y;
+				size.w = bEntireChart ? 2 * r : r;
+				size.h = bEntireChart ? 2 * r : r;
+				break;
 			}
 			default: {
-				return { x: point.x, y: point.y, w: point.w, h: point.h };
+				size.x = point.x;
+				size.y = point.y;
+				size.w = point.w;
+				size.h = point.h;
 			}
 		}
+		if (bWithOffset && !bEntireChart) {
+			size.x -= size.w * 0.25;
+			size.w *= 1.5;
+		}
+		return size;
 	};
 
 	this.distanceToPoint = (x, y, point /* pointCoords */) => {
@@ -970,75 +986,58 @@ function _chart({
 		if (!window.ID) { return false; }
 		if (this.trace(x, y)) {
 			let bHand = false;
-			let bPaint = false;
 			let ttText = '';
 			this.mx = x;
 			this.my = y;
-			if (!this.inFocus) { bPaint = true; }
 			this.inFocus = true;
 			if (this.pop.isEnabled()) { this.pop.move(x, y); }
 			else {
 				if (this.buttons.xScroll) {
-					const bHover = this.leftBtn.hover || this.rightBtn.hover;
 					if (this.leftBtn.move(x, y) || this.rightBtn.move(x, y)) {
 						bHand = true;
-						bPaint = true;
 						ttText = 'L. Click to scroll on X-axis...\nDouble L. Click to jump to ' + (this.rightBtn.hover ? 'right' : 'left');
-					} else if ((this.leftBtn.hover || this.rightBtn.hover) !== bHover) { bPaint = true; }
+					}
 				}
 				if (this.buttons.settings) {
-					const bHover = this.settingsBtn.hover;
 					if (this.settingsBtn.move(x, y)) {
 						bHand = true;
-						bPaint = true;
 						ttText = 'Main settings...';
-					} else if (this.settingsBtn.hover !== bHover) { bPaint = true; }
+					}
 				}
 				if (this.buttons.display) {
-					const bHover = this.displayBtn.hover;
 					if (this.displayBtn.move(x, y)) {
 						bHand = true;
-						bPaint = true;
 						ttText = 'Display settings...';
-					} else if (this.displayBtn.hover !== bHover) { bPaint = true; }
+					}
 				}
 				if (this.buttons.zoom) {
-					const bHover = this.zoomBtn.hover;
 					if (this.zoomBtn.move(x, y)) {
 						bHand = true;
-						bPaint = true;
 						ttText = 'Press Shift to zoom out...\nDouble CLick for max zoom in/out';
-					} else if (this.zoomBtn.hover !== bHover) { bPaint = true; }
+					}
 				}
 				if (this.buttons.custom) {
-					const bHover = this.customBtn.hover;
 					if (this.customBtn.move(x, y)) {
 						bHand = true;
-						bPaint = true;
 						ttText = this.callbacks.custom.tooltip
 							? isFunction(this.callbacks.custom.tooltip) ? this.callbacks.custom.tooltip() : this.callbacks.custom.tooltip
 							: '';
-					} else if (this.customBtn.hover !== bHover) { bPaint = true; }
+					}
 				}
 				const [serie, idx] = this.tracePoint(x, y, true);
 				const bPoint = serie !== -1 && idx !== -1;
-				bPaint = bPaint || this.currPoint[0] !== serie || this.currPoint[1] !== idx;
+				const bPaint = this.currPoint[0] !== serie || this.currPoint[1] !== idx;
 				if (bPaint) {
-					let xPoint = 0;
-					let wPoint = this.width;
+					let coords;
 					// Repaint around current point
 					if (bPoint) {
-						const coords = this.sizePoint(this.dataCoords[serie][idx]);
-						xPoint = coords.x - coords.w * 0.25;
-						wPoint = coords.w * 1.5;
+						coords = this.sizePoint(this.dataCoords[serie][idx], true);
+						this.repaint(...Object.values(coords));
 					}
-					this.repaint(xPoint, void (0), wPoint, void (0));
 					// Repaint around old point
-					if (bPoint && this.currPoint[0] !== -1 && this.currPoint[1] !== -1) {
-						const coords = this.sizePoint(this.dataCoords[this.currPoint[0]][this.currPoint[1]]);
-						xPoint = coords.x - coords.w * 0.25;
-						wPoint = coords.w * 1.5;
-						this.repaint(xPoint, void (0), wPoint, void (0));
+					if (this.currPoint[0] !== -1 && this.currPoint[1] !== -1) {
+						coords = this.sizePoint(this.dataCoords[this.currPoint[0]][this.currPoint[1]], true);
+						this.repaint(...Object.values(coords));
 					}
 				}
 				if (!bHand && !ttText) {
@@ -1074,9 +1073,7 @@ function _chart({
 			let xPoint = 0;
 			let wPoint = this.width;
 			if (this.currPoint[0] !== -1 && this.currPoint[1] !== -1) {
-				const coords = this.sizePoint(this.dataCoords[this.currPoint[0]][this.currPoint[1]]);
-				xPoint = coords.x - coords.w * 0.25;
-				wPoint = coords.w * 1.5;
+				({ x: xPoint, w: wPoint } = this.sizePoint(this.dataCoords[this.currPoint[0]][this.currPoint[1]], true));
 			}
 			this.currPoint = [-1, -1];
 			this.repaint(xPoint, void (0), wPoint, void (0));

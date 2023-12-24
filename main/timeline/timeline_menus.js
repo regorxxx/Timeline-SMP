@@ -1,5 +1,5 @@
 'use strict';
-//20/12/23
+//24/12/23
 
 /* exported onLbtnUpPoint, onLbtnUpSettings*/
 
@@ -124,7 +124,7 @@ function onLbtnUpSettings() {
 			if (entry.name === 'sep') { menu.newEntry({ menuName: subMenu, entryText: 'sep' }); }
 			else {
 				menu.newEntry({ menuName: subMenu, entryText: entry.name, func: () => this.setData(entry) });
-				menu.newCheckMenu(subMenu, entry.name, void (0), () => this.axis.x.tf === _qCond(entry.x));
+				menu.newCheckMenuLast(() => this.axis.x.tf === _qCond(entry.x));
 			}
 		});
 		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
@@ -156,7 +156,7 @@ function onLbtnUpSettings() {
 			if (entry.name === 'sep') { menu.newEntry({ menuName: subMenu, entryText: 'sep' }); }
 			else {
 				menu.newEntry({ menuName: subMenu, entryText: entry.name, func: () => this.setData(entry) });
-				menu.newCheckMenu(subMenu, entry.name, void (0), () => this.axis.y.tf === _qCond(entry.y) && this.axis.y.bProportional === entry.bProportional);
+				menu.newCheckMenuLast(() => this.axis.y.tf === _qCond(entry.y) && this.axis.y.bProportional === entry.bProportional);
 			}
 		});
 		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
@@ -188,7 +188,7 @@ function onLbtnUpSettings() {
 			if (entry.name === 'sep') { menu.newEntry({ menuName: subMenu, entryText: 'sep' }); }
 			else {
 				menu.newEntry({ menuName: subMenu, entryText: entry.name, func: () => this.setData(entry) });
-				menu.newCheckMenu(subMenu, entry.name, void (0), () => this.axis.z.tf === _qCond(entry.z));
+				menu.newCheckMenuLast(() => this.axis.z.tf === _qCond(entry.z));
 			}
 		});
 		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
@@ -262,7 +262,7 @@ function onLbtnUpSettings() {
 						this.setData(entry);
 					}
 				});
-				menu.newCheckMenu(subMenu, entry.name, void (0), () => properties.dataQuery[1] === entry.query);
+				menu.newCheckMenuLast(() => properties.dataQuery[1] === entry.query);
 			}
 		});
 		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
@@ -297,7 +297,7 @@ function onLbtnUpSettings() {
 				overwriteProperties(properties);
 			}
 		});
-		menu.newCheckMenu(subMenu, 'Asynchronous calculation', void (0), () => properties.bAsync[1]);
+		menu.newCheckMenuLast(() => properties.bAsync[1]);
 		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
 		menu.newEntry({
 			menuName: subMenu, entryText: 'Auto-update data sources', func: () => {
@@ -331,7 +331,7 @@ function onLbtnUpSettings() {
 				}
 			}
 		});
-		menu.newCheckMenu(subMenu, 'Automatically check for updates', void (0), () => properties.bAutoUpdateCheck[1]);
+		menu.newCheckMenuLast(() => properties.bAutoUpdateCheck[1]);
 		menu.newEntry({
 			menuName: subMenu, entryText: 'Check for updates...', func: () => {
 				if (typeof checkUpdate === 'undefined') { include('helpers\\helpers_xxx_web_update.js'); }

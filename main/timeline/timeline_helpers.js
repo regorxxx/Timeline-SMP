@@ -1,5 +1,5 @@
 'use strict';
-//21/12/23
+//27/12/23
 
 /* exported getData, getDataAsync */
 
@@ -9,7 +9,7 @@ include('..\\..\\helpers\\helpers_xxx_prototypes.js');
 include('..\\..\\helpers\\helpers_xxx_tags.js');
 /* global queryReplaceWithCurrent:readable */
 include('..\\..\\helpers\\helpers_xxx_playlists.js');
-/* global getHandleFromUIPlaylists:readable */
+/* global getHandlesFromUIPlaylists:readable */
 include('..\\filter_and_query\\remove_duplicates.js');
 /* global removeDuplicatesV2:readable */
 
@@ -216,7 +216,7 @@ async function getDataAsync({
 
 function getSource(type, arg) {
 	switch (type) {
-		case 'playlist': return getHandleFromUIPlaylists(arg, false); // [playlist names]
+		case 'playlist': return getHandlesFromUIPlaylists(arg, false); // [playlist names]
 		case 'playingPlaylist': return (plman.PlayingPlaylist !== -1 && fb.IsPlaying ? plman.GetPlaylistItems(plman.PlayingPlaylist) : getSource('activePlaylist'));
 		case 'activePlaylist': return (plman.ActivePlaylist !== -1 ? plman.GetPlaylistItems(plman.ActivePlaylist) : new FbMetadbHandleList());
 		case 'library':

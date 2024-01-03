@@ -1,5 +1,5 @@
 ﻿'use strict';
-//21/12/23
+//03/01/24
 
 include('main\\statistics\\statistics_xxx.js');
 /* global _chart:readable */
@@ -66,7 +66,7 @@ let properties = {
 	].map((v) => { return (Object.hasOwn(v, 'name') ? v : { ...v, name: 'By ' + v.keyY }); })), { func: isJSON }],
 	zEntries: ['Axis Z TF entries', JSON.stringify([
 		{ z: globTags.artist, keyZ: 'Artist' },
-		{ z: '%COMPOSER%', keyZ: 'Composer' },
+		{ z: _t(globTags.composer), keyZ: 'Composer' },
 		{ z: _t(globTags.mood), keyZ: 'Mood' },
 		{ z: _t(globTags.genre), keyZ: 'Genre' },
 		{ z: _t(globTags.style), keyZ: 'Style' },

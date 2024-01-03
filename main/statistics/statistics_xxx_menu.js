@@ -1,5 +1,5 @@
 ﻿'use strict';
-//20/12/23
+//03/01/24
 
 /* exported bindMenu */
 
@@ -213,6 +213,11 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 			[
 				{ isEq: null, key: this.axis.x.bAltLabels, value: null, newValue: !this.axis.x.bAltLabels, entryText: 'Alt. X labels' },
 			].forEach(createMenuOption('axis', ['x', 'bAltLabels'], subMenuTwo, true));
+			if (this.graph.type === 'timeline') {
+				[
+					{ isEq: null, key: this.graphSpecs.timeline.bAxisCenteredX, value: null, newValue: !this.graphSpecs.timeline.bAxisCenteredX, entryText: 'Center X tick' },
+				].forEach(createMenuOption('graphSpecs', ['timeline', 'bAxisCenteredX'], subMenuTwo, true));
+			}
 		}
 		{
 			const subMenuTwo = menu.newMenu('Titles...', subMenu);

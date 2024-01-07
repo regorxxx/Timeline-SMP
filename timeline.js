@@ -1,12 +1,12 @@
 ﻿'use strict';
-//03/01/24
+//07/01/24
 
 include('main\\statistics\\statistics_xxx.js');
 /* global _chart:readable */
 include('main\\statistics\\statistics_xxx_menu.js');
 /* global createStatisticsMenu:readable */
 include('main\\timeline\\timeline_helpers.js');
-/* global globTags:readable, globQuery:readable, _gdiFont:readable, MK_LBUTTON:readable, deepAssign:readable, RGB:readable, isJSON:readable, _scale:readable, isString:readable, globTags:readable, isBoolean:readable, globSettings:readable, setProperties:readable, getPropertiesPairs:readable, checkUpdate:readable, overwriteProperties:readable, getDataAsync:readable, _qCond:readable, query_join:readable, getData:readable, getPlaylistIndexArray:readable, _t:readable, isArrayEqual:readable */
+/* global globTags:readable, globQuery:readable, _gdiFont:readable, MK_LBUTTON:readable, deepAssign:readable, RGB:readable, isJSON:readable, _scale:readable, isString:readable, globTags:readable, isBoolean:readable, globSettings:readable, setProperties:readable, getPropertiesPairs:readable, checkUpdate:readable, overwriteProperties:readable, getDataAsync:readable, _qCond:readable, queryJoin:readable, getData:readable, getPlaylistIndexArray:readable, _t:readable, isArrayEqual:readable */
 include('main\\timeline\\timeline_menus.js');
 /* global onLbtnUpPoint:readable, onLbtnUpSettings:readable, createBackgroundMenu:readable */
 include('main\\window\\window_xxx_background.js');
@@ -167,7 +167,7 @@ newConfig.forEach((row) => row.forEach((config) => {
 			x: _qCond(config.axis.x.tf, true),
 			y: _qCond(config.axis.y.tf, true),
 			z: _qCond(config.axis.z.tf, true),
-			query: query_join([properties.dataQuery[1], config.axis.x.tf + ' PRESENT AND ' + config.axis.z.tf + ' PRESENT'], 'AND'),
+			query: queryJoin([properties.dataQuery[1], config.axis.x.tf + ' PRESENT AND ' + config.axis.z.tf + ' PRESENT'], 'AND'),
 			bProportional: config.axis.y.bProportional
 		});
 	} else {
@@ -178,7 +178,7 @@ newConfig.forEach((row) => row.forEach((config) => {
 			x: _qCond(config.axis.x.tf, true),
 			y: _qCond(config.axis.y.tf, true),
 			z: _qCond(config.axis.z.tf, true),
-			query: query_join([properties.dataQuery[1], config.axis.x.tf + ' PRESENT AND ' + config.axis.z.tf + ' PRESENT'], 'AND'),
+			query: queryJoin([properties.dataQuery[1], config.axis.x.tf + ' PRESENT AND ' + config.axis.z.tf + ' PRESENT'], 'AND'),
 			bProportional: config.axis.y.bProportional
 		});
 	}
@@ -215,7 +215,7 @@ charts.forEach((chart) => {
 				x: entry.x || _qCond(this.axis.x.tf, true),
 				y: entry.y || _qCond(this.axis.y.tf, true),
 				z: entry.z || _qCond(this.axis.z.tf, true),
-				query: query_join([
+				query: queryJoin([
 					Object.hasOwn(entry, 'query') ? entry.query : properties.dataQuery[1],
 					(Object.hasOwn(entry, 'z') ? _qCond(entry.z) : this.axis.z.tf) + ' PRESENT AND ' + (Object.hasOwn(entry, 'x') ? _qCond(entry.x) : this.axis.x.tf) + ' PRESENT'
 				], 'AND'),
@@ -265,20 +265,16 @@ function refreshData(plsIdx, bForce = false) {
 		};
 		if (dataSource.sourceType === 'playingPlaylist' && (playingPlaylist !== plman.PlayingPlaylist || plsIdx === plman.PlayingPlaylist)) {
 			bRefresh = updateCharts();
-			console.log(bRefresh);
 		}
 		playingPlaylist = plman.PlayingPlaylist;
 		if ((dataSource.sourceType === 'activePlaylist' || dataSource.sourceType === 'playingPlaylist' && !fb.IsPlaying) && (activePlaylist !== plman.ActivePlaylist || plsIdx === plman.PlayingPlaylist)) {
 			bRefresh = updateCharts();
-			console.log(bRefresh);
 		}
 		activePlaylist = plman.ActivePlaylist;
 		if (dataSource.sourceType === 'playlist') {
 			const idxArr = dataSource.sourceArg.reduce((acc, curr) => acc.concat(getPlaylistIndexArray(curr)), []);
-			console.log(dataSource.sourceArg, idxArr, plsIdx, selectedPlaylists);
 			if (selectedPlaylists !== idxArr.length || idxArr.includes(plsIdx)) {
 				bRefresh = updateCharts();
-				console.log(bRefresh);
 			}
 			selectedPlaylists = idxArr.length;
 		}

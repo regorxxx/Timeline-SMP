@@ -21,10 +21,12 @@
 - Data: sorting is now set by default to 'natural|x' when changing from distributions to standard graphs.
 - UI: added alt. labels for scatter and line charts. It just adds a background.
 - UI: optimized repainting to use less resources.
+- Helpers: updated helpers.
 - Code cleanup.
 ### Removed
 ### Fixed
 - Data: fixed some cases where playlists sources were not updated during playback.
+- Data: fixed improper handling of multi-value tags in some cases.
 - Data: fixed crash using data filters.
 - Data: fixed logging about sorting being set while using distributions.
 - UI: fix zoom while using normal distribution.

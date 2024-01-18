@@ -1,5 +1,5 @@
 'use strict';
-//27/12/23
+//18/01/24
 
 /* exported getData, getDataAsync */
 
@@ -12,6 +12,8 @@ include('..\\..\\helpers\\helpers_xxx_playlists.js');
 /* global getHandlesFromUIPlaylists:readable */
 include('..\\filter_and_query\\remove_duplicates.js');
 /* global removeDuplicatesV2:readable */
+include('..\\search\\top_tracks_from_date.js');
+/* global getPlayCount:readable */
 
 /*
 	Data to feed the charts:
@@ -53,14 +55,15 @@ function getData({
 		case 'timeline': { // 3D {x, y, z}, x and z can be exchanged
 			const xTags = noSplitTags.has(x.toUpperCase())
 				? fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => [val])
-				: fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => val.split(',')); // X
+				: fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => val.split(', ')); // X
 			const serieTags = noSplitTags.has(z.toUpperCase())
 				? fb.TitleFormat(_bt(z)).EvalWithMetadbs(handleList).map((val) => [val])
-				: fb.TitleFormat(_bt(z)).EvalWithMetadbs(handleList).map((val) => val.split(',')); // Z
+				: fb.TitleFormat(_bt(z)).EvalWithMetadbs(handleList).map((val) => val.split(', ')); // Z
 			const bSingleY = !isNaN(y);
 			const serieCounters = bSingleY
 				? Number(y)
-				: fb.TitleFormat(_bt(queryReplaceWithCurrent(y))).EvalWithMetadbs(handleList).map((val) => { return val ? Number(val) : 0; }); // Y
+				: fb.TitleFormat(_bt(queryReplaceWithCurrent(y))).EvalWithMetadbs(handleList)
+					.map((val) => { return val ? Number(val) : 0; }); // Y
 			const dic = new Map();
 			xTags.forEach((arr, i) => {
 				arr.forEach((x) => {
@@ -85,7 +88,8 @@ function getData({
 			break;
 		}
 		case 'tf': {
-			const libraryTags = fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => { return val.split(','); }).flat(Infinity);
+			const libraryTags = fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList)
+				.map((val) => { return val.split(', '); }).flat(Infinity);
 			const tagCount = new Map();
 			libraryTags.forEach((tag) => {
 				if (!tagCount.has(tag)) { tagCount.set(tag, 1); }
@@ -126,8 +130,23 @@ function getData({
 	return data;
 }
 
+/**
+ *
+ * @param {object} [o] - arguments
+ * @param {string} o.option - [='tf'] timeline|tf|playcount|playcount proportional
+ * @param {?*} o.optionArg - Optional arg for 'playcount' options', see getPlayCount()
+ * @param {string} o.x - [='genre'] X asis TF
+ * @param {string|number} o.y - [=1] Y asis TF. Not used on 'playcount options
+ * @param {string} o.z - [='artist'] Z asis TF. Only used on 'timeline' option (3D)
+ * @param {string} o.query - [='ALL'] Query to filter the source
+ * @param {string} o.sourceType - [='library'] playlist|playingPlaylist|activePlaylist|handleList|library
+ * @param {?*} o.sourceArg - Optional arg for source, see getSource()
+ * @param {boolean} o.bProportional - [=false] Calculate Y count proportional to population
+ * @param {boolean} o.bRemoveDuplicates - [=true] Remove duplicates from source
+ * @returns {promise.<Array.<Array,Array>>} Array of series with points [[{x, y, [z]},...], ...]
+ */
 async function getDataAsync({
-	option = 'tf',
+	option = 'tf', optionArg = null,
 	x = 'genre', y = 1, z = 'artist',
 	query = 'ALL', sourceType = 'library', sourceArg = null,
 	bProportional = false,
@@ -141,14 +160,15 @@ async function getDataAsync({
 		case 'timeline': { // 3D {x, y, z}, x and z can be exchanged
 			const xTags = noSplitTags.has(x.toUpperCase())
 				? (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => [val])
-				: (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => val.split(',')); // X
+				: (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => val.split(', ')); // X
 			const serieTags = noSplitTags.has(z.toUpperCase())
 				? (await fb.TitleFormat(_bt(z)).EvalWithMetadbsAsync(handleList)).map((val) => [val])
-				: (await fb.TitleFormat(_bt(z)).EvalWithMetadbsAsync(handleList)).map((val) => val.split(',')); //Z
+				: (await fb.TitleFormat(_bt(z)).EvalWithMetadbsAsync(handleList)).map((val) => val.split(', ')); //Z
 			const bSingleY = !isNaN(y);
 			const serieCounters = bSingleY
 				? Number(y)
-				: (await fb.TitleFormat(_bt(queryReplaceWithCurrent(y))).EvalWithMetadbsAsync(handleList)).map((val) => { return val ? Number(val) : 0; }); // Y
+				: (await fb.TitleFormat(_bt(queryReplaceWithCurrent(y))).EvalWithMetadbsAsync(handleList))
+					.map((val) => { return val ? Number(val) : 0; }); // Y
 			const dic = new Map();
 			xTags.forEach((arr, i) => {
 				arr.forEach((x) => {
@@ -173,7 +193,8 @@ async function getDataAsync({
 			break;
 		}
 		case 'tf': {
-			const libraryTags = (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => { return val.split(','); }).flat(Infinity);
+			const libraryTags = (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList))
+				.map((val) => { return val.split(', '); }).flat(Infinity);
 			const tagCount = new Map();
 			libraryTags.forEach((tag) => {
 				if (!tagCount.has(tag)) { tagCount.set(tag, 1); }
@@ -182,20 +203,26 @@ async function getDataAsync({
 			data = [[...tagCount].map((point) => { return { x: point[0], y: point[1] }; })];
 			break;
 		}
-		case 'most played': {
-			const libraryTags = await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList);
-			const playCount = await fb.TitleFormat(globTags.playCount).EvalWithMetadbsAsync(handleList);
+		case 'playcount': {
+			const libraryTags = (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => { return val.split(', '); });
+			const playCount = optionArg
+				? getPlayCount(handleList, ...optionArg).map((V) => V.playCount)
+				: await fb.TitleFormat(globTags.playCount).EvalWithMetadbsAsync(handleList);
 			const tagCount = new Map();
-			libraryTags.forEach((tag, i) => {
-				if (!tagCount.has(tag)) { tagCount.set(tag, Number(playCount[i])); }
-				else { tagCount.set(tag, tagCount.get(tag) + Number(playCount[i])); }
+			libraryTags.forEach((arr, i) => {
+				arr.forEach((tag) => {
+					if (!tagCount.has(tag)) { tagCount.set(tag, Number(playCount[i])); }
+					else { tagCount.set(tag, tagCount.get(tag) + Number(playCount[i])); }
+				});
 			});
 			data = [[...tagCount].map((point) => { return { x: point[0], y: point[1] }; })];
 			break;
 		}
-		case 'most played proportional': {
-			const libraryTags = await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList);
-			const playCount = await fb.TitleFormat(globTags.playCount).EvalWithMetadbsAsync(handleList);
+		case 'playcount proportional': {
+			const libraryTags = (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => { return val.split(', '); });
+			const playCount = optionArg
+				? getPlayCount(handleList, ...optionArg).map((V) => V.playCount)
+				: await fb.TitleFormat(globTags.playCount).EvalWithMetadbsAsync(handleList);
 			const tagCount = new Map();
 			const keyCount = new Map();
 			libraryTags.forEach((tag, i) => {
@@ -210,6 +237,9 @@ async function getDataAsync({
 			data = [[...tagCount].map((point) => { return { x: point[0], y: point[1] }; })];
 			break;
 		}
+		default: {
+			throw new Error('Non recognized option:' + option);
+		}
 	}
 	return data;
 }
@@ -219,6 +249,7 @@ function getSource(type, arg) {
 		case 'playlist': return getHandlesFromUIPlaylists(arg, false); // [playlist names]
 		case 'playingPlaylist': return (plman.PlayingPlaylist !== -1 && fb.IsPlaying ? plman.GetPlaylistItems(plman.PlayingPlaylist) : getSource('activePlaylist'));
 		case 'activePlaylist': return (plman.ActivePlaylist !== -1 ? plman.GetPlaylistItems(plman.ActivePlaylist) : new FbMetadbHandleList());
+		case 'handleList': return arg;
 		case 'library':
 		default: return fb.GetLibraryItems();
 	}

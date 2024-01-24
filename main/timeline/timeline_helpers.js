@@ -143,6 +143,7 @@ function getData({
  * @param {?*} o.sourceArg - Optional arg for source, see getSource()
  * @param {boolean} o.bProportional - [=false] Calculate Y count proportional to population
  * @param {boolean} o.bRemoveDuplicates - [=true] Remove duplicates from source
+ * @param {boolean} o.bIncludeHandles - [=true] Include associated handle per point
  * @returns {promise.<Array.<Array,Array>>} Array of series with points [[{x, y, [z]},...], ...]
  */
 async function getDataAsync({
@@ -150,7 +151,8 @@ async function getDataAsync({
 	x = 'genre', y = 1, z = 'artist',
 	query = 'ALL', sourceType = 'library', sourceArg = null,
 	bProportional = false,
-	bRemoveDuplicates = true
+	bRemoveDuplicates = true,
+	bIncludeHandles = false
 } = {}) {
 	const noSplitTags = new Set(['ALBUM']); noSplitTags.forEach((tag) => noSplitTags.add(_t(tag)));
 	const source = filterSource(query, getSource(sourceType, sourceArg));
@@ -209,13 +211,21 @@ async function getDataAsync({
 				? getPlayCount(handleList, ...optionArg).map((V) => V.playCount)
 				: await fb.TitleFormat(globTags.playCount).EvalWithMetadbsAsync(handleList);
 			const tagCount = new Map();
+			const handlesMap = new Map();
 			libraryTags.forEach((arr, i) => {
 				arr.forEach((tag) => {
 					if (!tagCount.has(tag)) { tagCount.set(tag, Number(playCount[i])); }
 					else { tagCount.set(tag, tagCount.get(tag) + Number(playCount[i])); }
+					if (bIncludeHandles) {
+						const handles = handlesMap.get(tag);
+						if (!handles) { handlesMap.set(tag, [handleList[i]]); }
+						else { handles.push(handleList[i]); }
+					}
 				});
 			});
-			data = [[...tagCount].map((point) => { return { x: point[0], y: point[1] }; })];
+			data = [[...tagCount].map((point) => {
+				return { x: point[0], y: point[1], ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {}) };
+			})];
 			break;
 		}
 		case 'playcount proportional': {

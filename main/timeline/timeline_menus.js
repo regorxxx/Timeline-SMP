@@ -1,5 +1,5 @@
 'use strict';
-//24/12/23
+//26/01/24
 
 /* exported onLbtnUpPoint, onLbtnUpSettings*/
 
@@ -220,7 +220,7 @@ function onLbtnUpSettings() {
 			{ entryText: 'Library', sourceType: 'library' },
 			{ entryText: 'Current playlist', sourceType: 'activePlaylist' },
 			{ entryText: 'Playing playlist', sourceType: 'playingPlaylist' },
-			{ entryText: 'Selected playlist(s)....', sourceType: 'playlist', sourceArg: null },
+			{ entryText: 'Selected playlist(s)...', sourceType: 'playlist', sourceArg: null },
 		];
 		options.forEach((option) => {
 			menu.newEntry({
@@ -319,7 +319,7 @@ function onLbtnUpSettings() {
 				overwriteProperties(properties);
 			}, flags: dataSource.sourceType === 'library' || !properties.bAutoData[1] ? MF_GRAYED : MF_STRING
 		});
-		menu.newCheckMenuLast(() => properties.playingTF[1].length);
+		menu.newCheckMenuLast(() => !!properties.playingTF[1].length);
 		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
 		menu.newEntry({
 			menuName: subMenu, entryText: 'Automatically check for updates', func: () => {

@@ -1,5 +1,5 @@
 ﻿'use strict';
-//07/01/24
+//26/01/24
 
 include('main\\statistics\\statistics_xxx.js');
 /* global _chart:readable */
@@ -211,7 +211,7 @@ charts.forEach((chart) => {
 			[properties.bAsync[1] ? 'dataAsync' : 'data']: (properties.bAsync[1] ? getDataAsync : getData)({
 				option: 'timeline',
 				sourceType: Object.hasOwn(entry, 'sourceType') ? entry.sourceType : dataSource.sourceType,
-				sourceArg: (Object.hasOwn(entry, 'sourceArg') ? entry.sourceType : dataSource.sourceArg) || null,
+				sourceArg: (Object.hasOwn(entry, 'sourceArg') ? entry.sourceArg : dataSource.sourceArg) || null,
 				x: entry.x || _qCond(this.axis.x.tf, true),
 				y: entry.y || _qCond(this.axis.y.tf, true),
 				z: entry.z || _qCond(this.axis.z.tf, true),
@@ -234,7 +234,7 @@ charts.forEach((chart) => {
 let playingPlaylist = plman.PlayingPlaylist;
 let activePlaylist = plman.ActivePlaylist;
 let selectedPlaylists = -1;
-function refreshData(plsIdx, bForce = false) {
+function refreshData(plsIdx, callback, bForce = false) {
 	let bRefresh = false;
 	if (bForce) {
 		charts.forEach((chart) => { chart.setData(); });
@@ -253,27 +253,43 @@ function refreshData(plsIdx, bForce = false) {
 					});
 				});
 		};
-		const updateCharts = () => {
+		const updateCharts = (bForce) => {
 			let bRefresh = false;
 			charts.forEach((chart) => {
-				if (!chart.pop.isEnabled() && needsUpdateByTf(chart)) {
+				if (!chart.pop.isEnabled() && (bForce || needsUpdateByTf(chart))) {
 					chart.setData();
 					bRefresh = true;
 				}
 			});
 			return bRefresh;
 		};
-		if (dataSource.sourceType === 'playingPlaylist' && (playingPlaylist !== plman.PlayingPlaylist || plsIdx === plman.PlayingPlaylist)) {
-			bRefresh = updateCharts();
+		const bPlaying = dataSource.sourceType === 'playingPlaylist';
+		const bActive = dataSource.sourceType === 'activePlaylist' || bPlaying && !fb.IsPlaying;
+		const bPlaylistChanged = ['on_playlist_items_removed', 'on_playlist_items_added'].includes(callback);
+		if (bPlaylistChanged && (bActive || bPlaying)) {
+			if ((activePlaylist !== plman.ActivePlaylist || plsIdx === plman.PlayingPlaylist)) {
+				bRefresh = updateCharts(true);
+			}
+		}
+		if (callback === 'on_playback_new_track' && bPlaying) {
+			if (playingPlaylist !== plman.PlayingPlaylist) {
+				bRefresh = updateCharts(true);
+			} else if (plsIdx === plman.PlayingPlaylist) {
+				bRefresh = updateCharts();
+			}
 		}
 		playingPlaylist = plman.PlayingPlaylist;
-		if ((dataSource.sourceType === 'activePlaylist' || dataSource.sourceType === 'playingPlaylist' && !fb.IsPlaying) && (activePlaylist !== plman.ActivePlaylist || plsIdx === plman.PlayingPlaylist)) {
+		if (callback === 'on_playlist_switch' && bActive) {
+			bRefresh = updateCharts(true);
+		} else if (bActive && (activePlaylist !== plman.ActivePlaylist || plsIdx === plman.PlayingPlaylist)) {
 			bRefresh = updateCharts();
 		}
 		activePlaylist = plman.ActivePlaylist;
 		if (dataSource.sourceType === 'playlist') {
 			const idxArr = dataSource.sourceArg.reduce((acc, curr) => acc.concat(getPlaylistIndexArray(curr)), []);
-			if (selectedPlaylists !== idxArr.length || idxArr.includes(plsIdx)) {
+			if (bPlaylistChanged && idxArr.includes(plsIdx)) {
+				bRefresh = updateCharts(true);
+			} else if (selectedPlaylists !== idxArr.length || idxArr.includes(plsIdx)) {
 				bRefresh = updateCharts();
 			}
 			selectedPlaylists = idxArr.length;
@@ -363,7 +379,7 @@ addEventListener('on_key_up', (vKey) => {
 addEventListener('on_playback_new_track', () => { // To show playing now playlist indicator...
 	if (background.coverMode.toLowerCase() !== 'none') { background.updateImageBg(); }
 	if (!window.ID) { return; }
-	if (properties.bAutoData[1]) { refreshData(plman.PlayingPlaylist); }
+	if (properties.bAutoData[1]) { refreshData(plman.PlayingPlaylist, 'on_playback_new_track'); }
 });
 
 addEventListener('on_selection_changed', () => {
@@ -383,7 +399,7 @@ addEventListener('on_playlist_switch', () => {
 		background.updateImageBg();
 	}
 	if (!window.ID) { return; }
-	if (properties.bAutoData[1]) { refreshData(); }
+	if (properties.bAutoData[1]) { refreshData(-1, 'on_playlist_switch'); }
 });
 
 addEventListener('on_playback_stop', (reason) => {
@@ -397,15 +413,15 @@ addEventListener('on_playlists_changed', () => { // To show/hide loaded playlist
 		background.updateImageBg();
 	}
 	if (!window.ID) { return; }
-	if (properties.bAutoData[1]) { refreshData(); }
+	if (properties.bAutoData[1]) { refreshData(-1, 'on_playlists_changed'); }
 });
 
 addEventListener('on_playlist_items_added', (idx) => { // eslint-disable-line no-unused-vars
 	if (!window.ID) { return; }
-	if (properties.bAutoData[1]) { refreshData(idx); }
+	if (properties.bAutoData[1]) { refreshData(idx, 'on_playlist_items_added'); }
 });
 
 addEventListener('on_playlist_items_removed', (idx) => { // eslint-disable-line no-unused-vars
 	if (!window.ID) { return; }
-	if (properties.bAutoData[1]) { refreshData(idx); }
+	if (properties.bAutoData[1]) { refreshData(idx, 'on_playlist_items_removed'); }
 });

@@ -1,5 +1,5 @@
 'use strict';
-//26/01/24
+//09/02/24
 
 /* exported getData, getDataAsync */
 
@@ -8,12 +8,16 @@ include('..\\..\\helpers\\helpers_xxx_prototypes.js');
 /* global _t:readable, _bt:readable */
 include('..\\..\\helpers\\helpers_xxx_tags.js');
 /* global queryReplaceWithCurrent:readable */
+include('..\\..\\helpers\\helpers_xxx_file.js');
+/* global _isFile:readable, folders:readable, _jsonParseFileCheck:readable, utf8:readable */
 include('..\\..\\helpers\\helpers_xxx_playlists.js');
 /* global getHandlesFromUIPlaylists:readable */
 include('..\\filter_and_query\\remove_duplicates.js');
 /* global removeDuplicatesV2:readable */
 include('..\\search\\top_tracks_from_date.js');
 /* global getPlayCount:readable */
+include('..\\search_by_distance\\search_by_distance_extra.js');
+/* global getCountryISO:readable, music_graph_descriptors_countries:readable */
 
 /*
 	Data to feed the charts:
@@ -58,7 +62,7 @@ include('..\\search\\top_tracks_from_date.js');
  * @returns {<Array.<Array,Array>>} Array of series with points [[{x, y, [z]},...], ...]
  */
 function getData({
-	option = 'tf',
+	option = 'tf', optionArg = null,
 	x = 'genre', y = 1, z = 'artist',
 	query = 'ALL', sourceType = 'library', sourceArg = null,
 	bProportional = false,
@@ -112,8 +116,9 @@ function getData({
 			break;
 		}
 		case 'tf': {
-			const libraryTags = fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList)
-				.map((val) => { return val.split(', '); });
+			const libraryTags = noSplitTags.has(x.toUpperCase())
+				? fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => [val])
+				: fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => val.split(', '));
 			const tagCount = new Map();
 			const handlesMap = new Map();
 			libraryTags.forEach((arr, i) => {
@@ -131,8 +136,12 @@ function getData({
 			break;
 		}
 		case 'playcount': {
-			const libraryTags = fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => { return val.split(', '); });
-			const playCount = fb.TitleFormat(globTags.playCount).EvalWithMetadbs(handleList);
+			const libraryTags = noSplitTags.has(x.toUpperCase())
+				? fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => [val])
+				: fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => val.split(', '));
+			const playCount = optionArg
+				? getPlayCount(handleList, ...optionArg).map((V) => V.playCount)
+				: fb.TitleFormat(globTags.playCount).EvalWithMetadbs(handleList);
 			const tagCount = new Map();
 			const handlesMap = new Map();
 			libraryTags.forEach((arr, i) => {
@@ -150,8 +159,12 @@ function getData({
 			break;
 		}
 		case 'playcount proportional': {
-			const libraryTags = fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => { return val.split(', '); });
-			const playCount = fb.TitleFormat(globTags.playCount).EvalWithMetadbs(handleList);
+			const libraryTags = noSplitTags.has(x.toUpperCase())
+				? fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => [val])
+				: fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => val.split(', '));
+			const playCount = optionArg
+				? getPlayCount(handleList, ...optionArg).map((V) => V.playCount)
+				: fb.TitleFormat(globTags.playCount).EvalWithMetadbs(handleList);
 			const tagCount = new Map();
 			const keyCount = new Map();
 			const handlesMap = new Map();
@@ -172,6 +185,44 @@ function getData({
 				if (tagCount.has(key)) { tagCount.set(key, Math.round(tagCount.get(key) / keyCount.get(key))); }
 			});
 			data = [[...tagCount].map((point) => { return { x: point[0], y: point[1], ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {}) }; })];
+			break;
+		}
+		case 'playcount wordlmap':
+		case 'playcount wordlmap region': {
+			const file = (_isFile(fb.FoobarPath + 'portable_mode_enabled') ? '.\\profile\\' + folders.dataName : folders.data) + 'worldMap.json';
+			const worldMapData = _jsonParseFileCheck(file, 'Library json', window.Name, utf8).map((point) => { return { id: point.artist, country: (point.val.slice(-1) ||[''])[0] }; });
+			const libraryTags = noSplitTags.has(x.toUpperCase())
+				? fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => [val])
+				: fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => val.split(', '));
+			const playCount = optionArg
+				? getPlayCount(handleList, ...optionArg).map((V) => V.playCount)
+				: fb.TitleFormat(globTags.playCount).EvalWithMetadbs(handleList);
+			const tagCount = new Map();
+			const handlesMap = new Map();
+			libraryTags.forEach((arr, i) => {
+				arr.forEach((tag) => {
+					const idData = worldMapData.find((data) => data.id === tag);
+					if (idData) {
+						const isoCode = getCountryISO(idData.country);
+						if (isoCode) {
+							const id = idData
+								? option === 'playcount wordlmap region'
+									? music_graph_descriptors_countries.getFirstNodeRegion(isoCode)
+									: idData.country
+								: null;
+							if (!id) { return; }
+							if (!tagCount.has(id)) { tagCount.set(id, Number(playCount[i])); }
+							else { tagCount.set(id, tagCount.get(id) + Number(playCount[i])); }
+							if (bIncludeHandles) {
+								const handles = handlesMap.get(tag);
+								if (!handles) { handlesMap.set(tag, [handleList[i]]); }
+								else { handles.push(handleList[i]); }
+							}
+						}
+					}
+				});
+			});
+			data = [[...tagCount].map((point) => { return { x: point[0], y: point[1] }; })];
 			break;
 		}
 	}
@@ -202,7 +253,7 @@ async function getDataAsync({
 	bRemoveDuplicates = true,
 	bIncludeHandles = false
 } = {}) {
-	const noSplitTags = new Set(['ALBUM']); noSplitTags.forEach((tag) => noSplitTags.add(_t(tag)));
+	const noSplitTags = new Set(['ALBUM', 'TITLE']); noSplitTags.forEach((tag) => noSplitTags.add(_t(tag)));
 	const source = filterSource(query, getSource(sourceType, sourceArg));
 	const handleList = bRemoveDuplicates ? deduplicateSource(source) : source;
 	let data;
@@ -249,8 +300,9 @@ async function getDataAsync({
 			break;
 		}
 		case 'tf': {
-			const libraryTags = (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList))
-				.map((val) => { return val.split(', '); });
+			const libraryTags = noSplitTags.has(x.toUpperCase())
+				? (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => [val])
+				: (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => val.split(', '));
 			const tagCount = new Map();
 			const handlesMap = new Map();
 			libraryTags.forEach((arr, i) => {
@@ -268,7 +320,9 @@ async function getDataAsync({
 			break;
 		}
 		case 'playcount': {
-			const libraryTags = (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => { return val.split(', '); });
+			const libraryTags = noSplitTags.has(x.toUpperCase())
+				? (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => [val])
+				: (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => val.split(', '));
 			const playCount = optionArg
 				? getPlayCount(handleList, ...optionArg).map((V) => V.playCount)
 				: await fb.TitleFormat(globTags.playCount).EvalWithMetadbsAsync(handleList);
@@ -291,7 +345,9 @@ async function getDataAsync({
 			break;
 		}
 		case 'playcount proportional': {
-			const libraryTags = (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => { return val.split(', '); });
+			const libraryTags = noSplitTags.has(x.toUpperCase())
+				? (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => [val])
+				: (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => val.split(', '));
 			const playCount = optionArg
 				? getPlayCount(handleList, ...optionArg).map((V) => V.playCount)
 				: await fb.TitleFormat(globTags.playCount).EvalWithMetadbsAsync(handleList);
@@ -315,6 +371,44 @@ async function getDataAsync({
 				if (tagCount.has(key)) { tagCount.set(key, Math.round(tagCount.get(key) / keyCount.get(key))); }
 			});
 			data = [[...tagCount].map((point) => { return { x: point[0], y: point[1], ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {}) }; })];
+			break;
+		}
+		case 'playcount wordlmap':
+		case 'playcount wordlmap region': {
+			const file = (_isFile(fb.FoobarPath + 'portable_mode_enabled') ? '.\\profile\\' + folders.dataName : folders.data) + 'worldMap.json';
+			const worldMapData = _jsonParseFileCheck(file, 'Library json', window.Name, utf8).map((point) => { return { id: point.artist, country: (point.val.slice(-1) ||[''])[0] }; });
+			const libraryTags = noSplitTags.has(x.toUpperCase())
+				? (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => [val])
+				: (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => val.split(', '));
+			const playCount = optionArg
+				? getPlayCount(handleList, ...optionArg).map((V) => V.playCount)
+				: await fb.TitleFormat(globTags.playCount).EvalWithMetadbsAsync(handleList);
+			const tagCount = new Map();
+			const handlesMap = new Map();
+			libraryTags.forEach((arr, i) => {
+				arr.forEach((tag) => {
+					const idData = worldMapData.find((data) => data.id === tag);
+					if (idData) {
+						const isoCode = getCountryISO(idData.country);
+						if (isoCode) {
+							const id = idData
+								? option === 'playcount wordlmap region'
+									? music_graph_descriptors_countries.getFirstNodeRegion(isoCode)
+									: idData.country
+								: null;
+							if (!id) { return; }
+							if (!tagCount.has(id)) { tagCount.set(id, Number(playCount[i])); }
+							else { tagCount.set(id, tagCount.get(id) + Number(playCount[i])); }
+							if (bIncludeHandles) {
+								const handles = handlesMap.get(tag);
+								if (!handles) { handlesMap.set(tag, [handleList[i]]); }
+								else { handles.push(handleList[i]); }
+							}
+						}
+					}
+				});
+			});
+			data = [[...tagCount].map((point) => { return { x: point[0], y: point[1] }; })];
 			break;
 		}
 		default: {

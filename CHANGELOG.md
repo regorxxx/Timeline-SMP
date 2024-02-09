@@ -22,6 +22,7 @@
 - UI: added alt. labels for scatter and line charts. It just adds a background.
 - UI: optimized repainting to use less resources.
 - Helpers: updated helpers.
+- Console: improved log file formatting on windows text editors which parse new lines only with CR+LF instead of LF.
 - Code cleanup.
 ### Removed
 ### Fixed

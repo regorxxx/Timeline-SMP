@@ -400,13 +400,21 @@ CALL :copy_folder main\timeline
 CALL :copy_folder main\statistics
 CALL :check_folder main\filter_and_query
 CALL :copy_file main\filter_and_query\remove_duplicates.js
+CALL :check_folder main\music_graph
+CALL :copy_file main\music_graph\music_graph_descriptors_xxx_countries.js
+CALL :copy_file main\music_graph\music_graph_descriptors_xxx_helper.js
+CALL :copy_file main\music_graph\music_graph_xxx.js
+CALL :copy_file main\music_graph\music_graph_descriptors_xxx_culture.js
+CALL :copy_file main\music_graph\music_graph_descriptors_xxx.js
+CALL :check_folder main\search
+CALL :copy_file main\search\top_tracks_from_date.js
+CALL :check_folder main\search_by_distance
+CALL :copy_file main\search_by_distance\search_by_distance_culture.js
 CALL :check_folder main\window
 CALL :copy_file main\window\window_xxx_button.js
 CALL :copy_file main\window\window_xxx_background.js
 CALL :copy_file main\window\window_xxx_background_menu.js
 CALL :copy_file main\window\window_xxx_helpers.js
-CALL :check_folder main\search
-CALL :copy_file main\search\top_tracks_from_date.js
 CALL :delete_file main\statistics\statistics_xxx_helper_fallback.js
 REM helpers
 CALL :check_folder helpers
@@ -442,6 +450,11 @@ CALL :copy_folder helpers-external\bitmasksorterjs
 CALL :copy_folder helpers-external\natsort
 CALL :copy_folder helpers-external\chroma.js
 CALL :copy_folder helpers-external\namethatcolor
+CALL :check_folder helpers-external\ngraph
+CALL :copy_file helpers-external\ngraph\ngrpah_LICENSE
+CALL :copy_file helpers-external\ngraph\README_xxx.txt
+CALL :copy_file helpers-external\ngraph\README.md
+CALL :copy_file helpers-external\ngraph\ngraph.graph.js
 CALL :delete_file helpers-external\chroma.js\chroma-ultra-light.min.js
 REM package info, zip and report
 CALL :finish

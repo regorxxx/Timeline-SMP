@@ -16,7 +16,7 @@ include('..\\filter_and_query\\remove_duplicates.js');
 /* global removeDuplicatesV2:readable */
 include('..\\search\\top_tracks_from_date.js');
 /* global getPlayCount:readable */
-include('..\\search_by_distance\\search_by_distance_extra.js');
+include('..\\search_by_distance\\search_by_distance_culture.js');
 /* global getCountryISO:readable, music_graph_descriptors_countries:readable */
 
 /*

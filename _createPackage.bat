@@ -400,6 +400,8 @@ CALL :copy_folder main\timeline
 CALL :copy_folder main\statistics
 CALL :check_folder main\filter_and_query
 CALL :copy_file main\filter_and_query\remove_duplicates.js
+CALL :check_folder main\map
+CALL :copy_file main\map\region_xxx.js
 CALL :check_folder main\music_graph
 CALL :copy_file main\music_graph\music_graph_descriptors_xxx_countries.js
 CALL :copy_file main\music_graph\music_graph_descriptors_xxx_helper.js
@@ -415,6 +417,8 @@ CALL :copy_file main\window\window_xxx_button.js
 CALL :copy_file main\window\window_xxx_background.js
 CALL :copy_file main\window\window_xxx_background_menu.js
 CALL :copy_file main\window\window_xxx_helpers.js
+CALL :check_folder main\world_map
+CALL :copy_file main\world_map\world_map_tables.js
 CALL :delete_file main\statistics\statistics_xxx_helper_fallback.js
 REM helpers
 CALL :check_folder helpers
@@ -434,6 +438,7 @@ CALL :copy_file helpers\helpers_xxx_playlists.js
 CALL :copy_file helpers\helpers_xxx_properties.js
 CALL :copy_file helpers\helpers_xxx_prototypes.js
 CALL :copy_file helpers\helpers_xxx_prototypes_smp.js
+CALL :copy_file helpers\helpers_xxx_statistics.js
 CALL :copy_file helpers\helpers_xxx_so.js
 CALL :copy_file helpers\helpers_xxx_tags.js
 CALL :copy_file helpers\helpers_xxx_tags_cache.js

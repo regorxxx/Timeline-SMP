@@ -1,5 +1,5 @@
 'use strict';
-//09/02/24
+//13/02/24
 
 /* exported getData, getDataAsync */
 
@@ -190,7 +190,7 @@ function getData({
 		case 'playcount wordlmap':
 		case 'playcount wordlmap region': {
 			const file = (_isFile(fb.FoobarPath + 'portable_mode_enabled') ? '.\\profile\\' + folders.dataName : folders.data) + 'worldMap.json';
-			const worldMapData = _jsonParseFileCheck(file, 'Library json', window.Name, utf8).map((point) => { return { id: point.artist, country: (point.val.slice(-1) ||[''])[0] }; });
+			const worldMapData = _jsonParseFileCheck(file, 'Library json', window.Name, utf8).map((point) => { return { id: point.artist, country: (point.val.slice(-1) || [''])[0] }; });
 			const libraryTags = noSplitTags.has(x.toUpperCase())
 				? fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => [val])
 				: fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => val.split(', '));
@@ -376,7 +376,7 @@ async function getDataAsync({
 		case 'playcount wordlmap':
 		case 'playcount wordlmap region': {
 			const file = (_isFile(fb.FoobarPath + 'portable_mode_enabled') ? '.\\profile\\' + folders.dataName : folders.data) + 'worldMap.json';
-			const worldMapData = _jsonParseFileCheck(file, 'Library json', window.Name, utf8).map((point) => { return { id: point.artist, country: (point.val.slice(-1) ||[''])[0] }; });
+			const worldMapData = _jsonParseFileCheck(file, 'Library json', window.Name, utf8).map((point) => { return { id: point.artist, country: (point.val.slice(-1) || [''])[0] }; });
 			const libraryTags = noSplitTags.has(x.toUpperCase())
 				? (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => [val])
 				: (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => val.split(', '));
@@ -408,7 +408,57 @@ async function getDataAsync({
 					}
 				});
 			});
-			data = [[...tagCount].map((point) => { return { x: point[0], y: point[1] }; })];
+			data = [[...tagCount].map((point) => { return { x: point[0], y: point[1], ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {}) }; })];
+			break;
+		}
+		case 'playcount wordlmap city': {
+			const file = (_isFile(fb.FoobarPath + 'portable_mode_enabled') ? '.\\profile\\' + folders.dataName : folders.data) + 'worldMap.json';
+			const worldMapData = _jsonParseFileCheck(file, 'Library json', window.Name, utf8).map((point) => { return { id: point.artist, city: point.val[0] || '', country: (point.val.slice(-1) || [''])[0] }; });
+			const libraryTags = noSplitTags.has(x.toUpperCase())
+				? (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => [val])
+				: (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => val.split(', '));
+			const playCount = optionArg
+				? getPlayCount(handleList, ...optionArg).map((V) => V.playCount)
+				: await fb.TitleFormat(globTags.playCount).EvalWithMetadbsAsync(handleList);
+			const tagCount = new Map();
+			const cityMap = new Map();
+			const handlesMap = new Map();
+			libraryTags.forEach((arr, i) => {
+				arr.forEach((tag) => {
+					const idData = worldMapData.find((data) => data.id === tag);
+					if (idData && idData.city && idData.city !== idData.country) {
+						const id = idData.city;
+						if (idData.country) {
+							const pointTags = cityMap.get(id);
+							if (!pointTags) {
+								cityMap.set(id, { country: idData.country, artists: new Map([[idData.id, Number(playCount[i])]]) });
+							} else {
+								pointTags.artists.set(idData.id, (pointTags.artists.get(idData.id) || 0) + Number(playCount[i]));
+							}
+						}
+						if (!id) { return; }
+						if (!tagCount.has(id)) { tagCount.set(id, Number(playCount[i])); }
+						else { tagCount.set(id, tagCount.get(id) + Number(playCount[i])); }
+						if (bIncludeHandles) {
+							const handles = handlesMap.get(tag);
+							if (!handles) { handlesMap.set(tag, [handleList[i]]); }
+							else { handles.push(handleList[i]); }
+						}
+					}
+				});
+			});
+			data = [[...tagCount].map((point) => {
+				const tags = cityMap.get(point[0]);
+				return {
+					x: point[0],
+					y: point[1],
+					country: tags.country,
+					artists: [...tags.artists]
+						.sort((a, b) => b[1] - a[1])
+						.map((a) => { return { artist: a[0], listens: [1] }; }),
+					...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {})
+				};
+			})];
 			break;
 		}
 		default: {

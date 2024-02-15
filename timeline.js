@@ -1,19 +1,23 @@
 ﻿'use strict';
-//26/01/24
+//15/02/24
 
+if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '1.0.0', features: { drag_n_drop: false, grab_focus: true } }); }
+
+include('helpers\\helpers_xxx.js');
+/* global globTags:readable, globQuery:readable, globProfiler:readable */
 include('main\\statistics\\statistics_xxx.js');
 /* global _chart:readable */
 include('main\\statistics\\statistics_xxx_menu.js');
 /* global createStatisticsMenu:readable */
 include('main\\timeline\\timeline_helpers.js');
-/* global globTags:readable, globQuery:readable, _gdiFont:readable, MK_LBUTTON:readable, deepAssign:readable, RGB:readable, isJSON:readable, _scale:readable, isString:readable, globTags:readable, isBoolean:readable, globSettings:readable, setProperties:readable, getPropertiesPairs:readable, checkUpdate:readable, overwriteProperties:readable, getDataAsync:readable, _qCond:readable, queryJoin:readable, getData:readable, getPlaylistIndexArray:readable, _t:readable, isArrayEqual:readable */
+/* global  _gdiFont:readable, MK_LBUTTON:readable, deepAssign:readable, RGB:readable, isJSON:readable, _scale:readable, isString:readable, isBoolean:readable, globSettings:readable, setProperties:readable, getPropertiesPairs:readable, checkUpdate:readable, overwriteProperties:readable, getDataAsync:readable, _qCond:readable, queryJoin:readable, getData:readable, getPlaylistIndexArray:readable, _t:readable, isArrayEqual:readable */
 include('main\\timeline\\timeline_menus.js');
 /* global onLbtnUpPoint:readable, onLbtnUpSettings:readable, createBackgroundMenu:readable */
 include('main\\window\\window_xxx_background.js');
 /* global _background:readable */
 include('helpers\\helpers_xxx_properties.js');
 
-if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '1.0.0', features: { drag_n_drop: false, grab_focus: true } }); }
+globProfiler.Print('helpers');
 
 let properties = {
 	background: ['Background options', JSON.stringify(deepAssign()(
@@ -150,6 +154,8 @@ const defaultConfig = deepAssign()(
 	}
 );
 
+globProfiler.Print('settings');
+
 const newConfig = [
 	[ // Row
 		{
@@ -230,6 +236,7 @@ charts.forEach((chart) => {
 		this.changeConfig({ title: window.Name + ' - ' + 'Graph 1 {' + this.axis.x.key + ' - ' + this.axis.y.key + '}', bPaint: false, callbackArgs: { bSaveProperties: true } });
 	};
 });
+globProfiler.Print('charts');
 
 let playingPlaylist = plman.PlayingPlaylist;
 let activePlaylist = plman.ActivePlaylist;
@@ -425,3 +432,5 @@ addEventListener('on_playlist_items_removed', (idx) => { // eslint-disable-line 
 	if (!window.ID) { return; }
 	if (properties.bAutoData[1]) { refreshData(idx, 'on_playlist_items_removed'); }
 });
+
+globProfiler.Print('callbacks');

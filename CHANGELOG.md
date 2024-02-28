@@ -2,6 +2,7 @@
 
 ## [Table of Contents]
 - [Unreleased](#unreleased)
+- [1.1.0](#110---2023-02-28)
 - [1.0.0](#100---2023-12-17)
 - [0.9.0](#090---2023-12-11)
 - [0.8.1](#081---2023-12-08)
@@ -10,6 +11,12 @@
 - [0.6.0](#060---2023-11-15)
 
 ## [Unreleased][]
+### Added
+### Changed
+### Removed
+### Fixed
+
+## [1.1.0] - 2023-02-28
 ### Added
 - UI: added setting to center X-label ticks on 'timeline' chart type.
 - Configuration: added COMPOSER to the list of global tags.
@@ -36,6 +43,7 @@
 - UI: data offset to the right while using normal distribution in some cases.
 - UI: fix alt. labels when using bars charts. Now behave similar to timeline chart, but being displayed on the vertical axis.
 - Minor fixes.
+
 
 ## [1.0.0] - 2023-12-17
 ### Added
@@ -100,7 +108,8 @@
 ### Removed
 ### Fixed
 
-[Unreleased]: https://github.com/regorxxx/World-Map-SMP/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/regorxxx/World-Map-SMP/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/regorxxx/World-Map-SMP/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/regorxxx/World-Map-SMP/compare/v0.9.0...v1.0.0
 [0.9.0]: https://github.com/regorxxx/World-Map-SMP/compare/v0.8.1...v0.9.0
 [0.8.1]: https://github.com/regorxxx/World-Map-SMP/compare/v0.8.0...v0.8.1

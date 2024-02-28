@@ -1,5 +1,5 @@
 'use strict';
-//26/02/24
+//27/02/24
 
 /* exported getData, getDataAsync */
 
@@ -390,8 +390,8 @@ async function getDataAsync({
 			const libraryTags = noSplitTags.has(x.toUpperCase())
 				? (await fb.TitleFormat(xTag).EvalWithMetadbsAsync(handleList)).map((val) => [val])
 				: (await fb.TitleFormat(xTag).EvalWithMetadbsAsync(handleList)).map((val) => val.split(/, ?/));
-			const playCount = optionArg
-				? getPlayCount(handleList, ...optionArg).map((V) => V.playCount)
+			const playCount = optionArg && optionArg.timePeriod
+				? getPlayCount(handleList, optionArg.timePeriod, optionArg.timeKey, optionArg.fromDate).map((V) => V.playCount)
 				: await fb.TitleFormat(globTags.playCount).EvalWithMetadbsAsync(handleList);
 			const tagCount = new Map();
 			const keyCount = new Map();
@@ -432,8 +432,8 @@ async function getDataAsync({
 			const libraryTags = noSplitTags.has(x.toUpperCase())
 				? (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => [val])
 				: (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => val.split(/, ?/));
-			const playCount = optionArg
-				? getPlayCount(handleList, ...optionArg).map((V) => V.playCount)
+			const playCount = optionArg && optionArg.timePeriod
+				? getPlayCount(handleList, optionArg.timePeriod, optionArg.timeKey, optionArg.fromDate).map((V) => V.playCount)
 				: await fb.TitleFormat(globTags.playCount).EvalWithMetadbsAsync(handleList);
 			const tagCount = new Map();
 			const handlesMap = new Map();
@@ -469,8 +469,8 @@ async function getDataAsync({
 			const libraryTags = noSplitTags.has(x.toUpperCase())
 				? (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => [val])
 				: (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => val.split(/, ?/));
-			const playCount = optionArg
-				? getPlayCount(handleList, ...optionArg).map((V) => V.playCount)
+			const playCount = optionArg && optionArg.timePeriod
+				? getPlayCount(handleList, optionArg.timePeriod, optionArg.timeKey, optionArg.fromDate).map((V) => V.playCount)
 				: await fb.TitleFormat(globTags.playCount).EvalWithMetadbsAsync(handleList);
 			const tagCount = new Map();
 			const cityMap = new Map();

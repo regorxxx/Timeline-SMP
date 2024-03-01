@@ -1,10 +1,12 @@
 ﻿'use strict';
-//28/02/24
+//01/03/24
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '1.1.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
 include('helpers\\helpers_xxx.js');
 /* global globTags:readable, globQuery:readable, globProfiler:readable */
+include('helpers\\helpers_xxx_prototypes_smp.js');
+/* global extendGR:readable */
 include('main\\statistics\\statistics_xxx.js');
 /* global _chart:readable */
 include('main\\statistics\\statistics_xxx_menu.js');
@@ -311,7 +313,7 @@ function refreshData(plsIdx, callback, bForce = false) {
 addEventListener('on_paint', (gr) => {
 	if (!window.ID) { return; }
 	if (!window.Width || !window.Height) { return; }
-	// extendGR(gr, {Repaint: true}); // helpers_xxx_prototypes_smp.js
+	if (globSettings.bDebugPaint) { extendGR(gr, { Repaint: true }); }
 	background.paint(gr);
 	charts.forEach((chart) => { chart.paint(gr); });
 	if (window.debugPainting) { window.drawDebugRectAreas(gr); }

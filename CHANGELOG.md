@@ -2,6 +2,7 @@
 
 ## [Table of Contents]
 - [Unreleased](#unreleased)
+- [1.2.0](#110---2023-03-15)
 - [1.1.0](#110---2023-02-28)
 - [1.0.0](#100---2023-12-17)
 - [0.9.0](#090---2023-12-11)
@@ -12,7 +13,14 @@
 
 ## [Unreleased][]
 ### Added
+### Changed
+### Removed
+### Fixed
+
+## [1.2.0] - 2023-03-15
+### Added
 - Configuration: expanded user configurable file at '[FOOBAR PROFILE FOLDER]\js_data\presets\global\globSettings.json' with a new setting for panel repaint debugging purpose. Disabled by default.
+- Configuration: expanded user configurable file at '[FOOBAR PROFILE FOLDER]\js_data\presets\global\globSettings.json' with a new setting to check OS features on every panel startup. Enabled by default. This has been the default behavior since OS' features check was implemented, but it can now be disabled to improve init performance a bit, specially at foobar2000 startup (since it seems to hang in some cases when running it on slow HDDs or systems).
 ### Changed
 - Helpers: updated helpers.
 ### Removed
@@ -110,7 +118,8 @@
 ### Removed
 ### Fixed
 
-[Unreleased]: https://github.com/regorxxx/World-Map-SMP/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/regorxxx/World-Map-SMP/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/regorxxx/World-Map-SMP/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/regorxxx/World-Map-SMP/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/regorxxx/World-Map-SMP/compare/v0.9.0...v1.0.0
 [0.9.0]: https://github.com/regorxxx/World-Map-SMP/compare/v0.8.1...v0.9.0

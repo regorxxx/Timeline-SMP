@@ -1,5 +1,5 @@
 'use strict';
-//27/02/24
+//21/03/24
 
 /* exported getData, getDataAsync */
 
@@ -74,6 +74,9 @@ function getData({
 	bIncludeHandles = false
 } = {}) {
 	const noSplitTags = new Set(['ALBUM']); noSplitTags.forEach((tag) => noSplitTags.add(_t(tag)));
+	const dedupByIdTags = new Set(['TITLE']); dedupByIdTags.forEach((tag) => noSplitTags.add(_t(tag)));
+	const idChars = ['\u200b', '\u200c', '\u200d', '\u200e', '\u200f', '\u2060'];
+	const idCharsRegExp = new RegExp(idChars.join('|'), 'gi');
 	const source = filterSource(query, getSource(sourceType, sourceArg));
 	const handleList = bRemoveDuplicates ? deduplicateSource(source) : source;
 	let data;
@@ -140,40 +143,83 @@ function getData({
 			break;
 		}
 		case 'playcount': {
+			const bUseId = dedupByIdTags.has(x);
+			const bIncludeSkip = optionArg && optionArg.bSkipCount;
+			const xTag = _bt(x) +
+				(bUseId ? '||$if3(%MUSICBRAINZ_TRACKID%,%MUSICBRAINZ_ALBUMARTISTID%,%ARTIST%)' : '');
 			const libraryTags = noSplitTags.has(x.toUpperCase())
-				? fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => [val])
-				: fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => val.split(/, ?/));
-			const playCount = optionArg
-				? getPlayCount(handleList, ...optionArg).map((V) => V.playCount)
+				? fb.TitleFormat(xTag).EvalWithMetadbs(handleList).map((val) => [val])
+				: fb.TitleFormat(xTag).EvalWithMetadbs(handleList).map((val) => val.split(/, ?/));
+			const playCount = optionArg && optionArg.timePeriod
+				? getPlayCount(handleList, optionArg.timePeriod, optionArg.timeKey, optionArg.fromDate).map((v) => v.playCount)
 				: fb.TitleFormat(globTags.playCount).EvalWithMetadbs(handleList);
+			const skipCount = bIncludeSkip
+				? optionArg.timePeriod
+					? getSkipCount(handleList, optionArg.timePeriod, optionArg.timeKey, optionArg.fromDate).map((v) => v.skipCount)
+					: fb.TitleFormat(globTags.skipCount).EvalWithMetadbs(handleList)
+				: null;
 			const tagCount = new Map();
-			const handlesMap = new Map();
+			const idMap = new Map();
 			libraryTags.forEach((arr, i) => {
 				arr.forEach((tag) => {
-					if (!tagCount.has(tag)) { tagCount.set(tag, Number(playCount[i])); }
-					else { tagCount.set(tag, tagCount.get(tag) + Number(playCount[i])); }
-					if (bIncludeHandles) {
-						const handles = handlesMap.get(tag);
-						if (!handles) { handlesMap.set(tag, [handleList[i]]); }
-						else { handles.push(handleList[i]); }
+					if (bUseId) {
+						let id = '';
+						[tag, id] = tag.split('||');
+						if (id) {
+							if (!idMap.has(id)) { idMap.set(id, idChars.shuffle().join('')); }
+							id = idMap.get(id);
+						} else { id = ''; }
+						tag += id;
+					}
+					const entry = tagCount.get(tag);
+					if (!entry) {
+						tagCount.set(tag, {
+							playCount: Number(playCount[i]),
+							handles: bIncludeHandles ? [handleList[i]] : null,
+							skipCount: bIncludeSkip ? Number(skipCount[i]) : null,
+						});
+					} else {
+						entry.playCount += Number(playCount[i]);
+						if (bIncludeHandles) { entry.handles.push(handleList[i]); }
+						if (bIncludeSkip) { entry.skipCount += Number(skipCount[i]); }
 					}
 				});
 			});
-			data = [[...tagCount].map((point) => { return { x: point[0], y: point[1], ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {}) }; })];
+			data = [[...tagCount].map((point) => {
+				return {
+					x: point[0].replace(idCharsRegExp, ''),
+					y: point[1].playCount,
+					...(bIncludeHandles ? { handle: point[1].handles } : {}),
+					...(bIncludeSkip ? { skipCount: point[1].skipCount } : {}),
+				};
+			})];
 			break;
 		}
 		case 'playcount proportional': {
+			const bUseId = dedupByIdTags.has(x);
+			const xTag = _bt(x) +
+				(bUseId ? '||$if3(%MUSICBRAINZ_TRACKID%,%MUSICBRAINZ_ALBUMARTISTID%,%ARTIST%)' : '');
 			const libraryTags = noSplitTags.has(x.toUpperCase())
-				? fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => [val])
-				: fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => val.split(/, ?/));
-			const playCount = optionArg
-				? getPlayCount(handleList, ...optionArg).map((V) => V.playCount)
+				? fb.TitleFormat(xTag).EvalWithMetadbs(handleList).map((val) => [val])
+				: fb.TitleFormat(xTag).EvalWithMetadbs(handleList).map((val) => val.split(/, ?/));
+			const playCount = optionArg && optionArg.timePeriod
+				? getPlayCount(handleList, optionArg.timePeriod, optionArg.timeKey, optionArg.fromDate).map((v) => v.playCount)
 				: fb.TitleFormat(globTags.playCount).EvalWithMetadbs(handleList);
 			const tagCount = new Map();
 			const keyCount = new Map();
 			const handlesMap = new Map();
+			const idMap = new Map();
 			libraryTags.forEach((arr, i) => {
 				arr.forEach((tag) => {
+					if (bUseId) {
+						let id = '';
+						[tag, id] = tag.split('||');
+						if (id) {
+							if (!idMap.has(id)) { idMap.set(id, idChars.shuffle().join('')); }
+							id = idMap.get(id);
+						} else { id = ''; }
+						tag += id;
+					}
 					if (!tagCount.has(tag)) { tagCount.set(tag, Number(playCount[i])); }
 					else { tagCount.set(tag, tagCount.get(tag) + Number(playCount[i])); }
 					if (!keyCount.has(tag)) { keyCount.set(tag, 1); }
@@ -188,7 +234,7 @@ function getData({
 			keyCount.forEach((value, key) => {
 				if (tagCount.has(key)) { tagCount.set(key, Math.round(tagCount.get(key) / keyCount.get(key))); }
 			});
-			data = [[...tagCount].map((point) => { return { x: point[0], y: point[1], ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {}) }; })];
+			data = [[...tagCount].map((point) => { return { x: point[0].replace(idCharsRegExp, ''), y: point[1], ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {}) }; })];
 			break;
 		}
 		case 'playcount wordlmap':
@@ -198,8 +244,8 @@ function getData({
 			const libraryTags = noSplitTags.has(x.toUpperCase())
 				? fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => [val])
 				: fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => val.split(/, ?/));
-			const playCount = optionArg
-				? getPlayCount(handleList, ...optionArg).map((V) => V.playCount)
+			const playCount = optionArg && optionArg.timePeriod
+				? getPlayCount(handleList, optionArg.timePeriod, optionArg.timeKey, optionArg.fromDate).map((V) => V.playCount)
 				: fb.TitleFormat(globTags.playCount).EvalWithMetadbs(handleList);
 			const tagCount = new Map();
 			const handlesMap = new Map();
@@ -226,8 +272,61 @@ function getData({
 					}
 				});
 			});
-			data = [[...tagCount].map((point) => { return { x: point[0], y: point[1] }; })];
+			data = [[...tagCount].map((point) => { return { x: point[0], y: point[1], ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {})  }; })];
 			break;
+		}
+		case 'playcount wordlmap city': {
+			const file = (_isFile(fb.FoobarPath + 'portable_mode_enabled') ? '.\\profile\\' + folders.dataName : folders.data) + 'worldMap.json';
+			const worldMapData = _jsonParseFileCheck(file, 'Library json', window.Name, utf8).map((point) => { return { id: point.artist, city: point.val[0] || '', country: (point.val.slice(-1) || [''])[0] }; });
+			const libraryTags = noSplitTags.has(x.toUpperCase())
+				? fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => [val])
+				: fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => val.split(/, ?/));
+			const playCount = optionArg && optionArg.timePeriod
+				? getPlayCount(handleList, optionArg.timePeriod, optionArg.timeKey, optionArg.fromDate).map((v) => v.playCount)
+				: fb.TitleFormat(globTags.playCount).EvalWithMetadbs(handleList);
+			const tagCount = new Map();
+			const cityMap = new Map();
+			const handlesMap = new Map();
+			libraryTags.forEach((arr, i) => {
+				arr.forEach((tag) => {
+					const idData = worldMapData.find((data) => data.id === tag);
+					if (idData && idData.city && idData.city !== idData.country) {
+						const id = idData.city;
+						if (idData.country) {
+							const pointTags = cityMap.get(id);
+							if (!pointTags) {
+								cityMap.set(id, { country: idData.country, artists: new Map([[idData.id, Number(playCount[i])]]) });
+							} else {
+								pointTags.artists.set(idData.id, (pointTags.artists.get(idData.id) || 0) + Number(playCount[i]));
+							}
+						}
+						if (!id) { return; }
+						if (!tagCount.has(id)) { tagCount.set(id, Number(playCount[i])); }
+						else { tagCount.set(id, tagCount.get(id) + Number(playCount[i])); }
+						if (bIncludeHandles) {
+							const handles = handlesMap.get(tag);
+							if (!handles) { handlesMap.set(tag, [handleList[i]]); }
+							else { handles.push(handleList[i]); }
+						}
+					}
+				});
+			});
+			data = [[...tagCount].map((point) => {
+				const tags = cityMap.get(point[0]);
+				return {
+					x: point[0],
+					y: point[1],
+					country: tags.country,
+					artists: [...tags.artists]
+						.sort((a, b) => b[1] - a[1])
+						.map((a) => { return { artist: a[0], listens: a[1] }; }),
+					...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {})
+				};
+			})];
+			break;
+		}
+		default: {
+			throw new Error('Non recognized option:' + option);
 		}
 	}
 	return data;
@@ -339,11 +438,11 @@ async function getDataAsync({
 				? (await fb.TitleFormat(xTag).EvalWithMetadbsAsync(handleList)).map((val) => [val])
 				: (await fb.TitleFormat(xTag).EvalWithMetadbsAsync(handleList)).map((val) => val.split(/, ?/));
 			const playCount = optionArg && optionArg.timePeriod
-				? getPlayCount(handleList, optionArg.timePeriod, optionArg.timeKey, optionArg.fromDate).map((V) => V.playCount)
+				? getPlayCount(handleList, optionArg.timePeriod, optionArg.timeKey, optionArg.fromDate).map((v) => v.playCount)
 				: await fb.TitleFormat(globTags.playCount).EvalWithMetadbsAsync(handleList);
 			const skipCount = bIncludeSkip
 				? optionArg.timePeriod
-					? getSkipCount(handleList, optionArg.timePeriod, optionArg.timeKey, optionArg.fromDate).map((V) => V.skipCount)
+					? getSkipCount(handleList, optionArg.timePeriod, optionArg.timeKey, optionArg.fromDate).map((v) => v.skipCount)
 					: await fb.TitleFormat(globTags.skipCount).EvalWithMetadbsAsync(handleList)
 				: null;
 			const tagCount = new Map();
@@ -391,7 +490,7 @@ async function getDataAsync({
 				? (await fb.TitleFormat(xTag).EvalWithMetadbsAsync(handleList)).map((val) => [val])
 				: (await fb.TitleFormat(xTag).EvalWithMetadbsAsync(handleList)).map((val) => val.split(/, ?/));
 			const playCount = optionArg && optionArg.timePeriod
-				? getPlayCount(handleList, optionArg.timePeriod, optionArg.timeKey, optionArg.fromDate).map((V) => V.playCount)
+				? getPlayCount(handleList, optionArg.timePeriod, optionArg.timeKey, optionArg.fromDate).map((v) => v.playCount)
 				: await fb.TitleFormat(globTags.playCount).EvalWithMetadbsAsync(handleList);
 			const tagCount = new Map();
 			const keyCount = new Map();
@@ -433,7 +532,7 @@ async function getDataAsync({
 				? (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => [val])
 				: (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => val.split(/, ?/));
 			const playCount = optionArg && optionArg.timePeriod
-				? getPlayCount(handleList, optionArg.timePeriod, optionArg.timeKey, optionArg.fromDate).map((V) => V.playCount)
+				? getPlayCount(handleList, optionArg.timePeriod, optionArg.timeKey, optionArg.fromDate).map((v) => v.playCount)
 				: await fb.TitleFormat(globTags.playCount).EvalWithMetadbsAsync(handleList);
 			const tagCount = new Map();
 			const handlesMap = new Map();
@@ -470,7 +569,7 @@ async function getDataAsync({
 				? (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => [val])
 				: (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => val.split(/, ?/));
 			const playCount = optionArg && optionArg.timePeriod
-				? getPlayCount(handleList, optionArg.timePeriod, optionArg.timeKey, optionArg.fromDate).map((V) => V.playCount)
+				? getPlayCount(handleList, optionArg.timePeriod, optionArg.timeKey, optionArg.fromDate).map((v) => v.playCount)
 				: await fb.TitleFormat(globTags.playCount).EvalWithMetadbsAsync(handleList);
 			const tagCount = new Map();
 			const cityMap = new Map();

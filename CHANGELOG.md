@@ -15,6 +15,7 @@
 ## [Unreleased][]
 ### Added
 ### Changed
+- Helpers: improved performance of duplicates removal in multiple places.
 ### Removed
 ### Fixed
 

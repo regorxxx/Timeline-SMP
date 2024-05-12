@@ -1,5 +1,5 @@
 'use strict';
-//26/01/24
+//09/05/24
 
 /* exported onLbtnUpPoint, onLbtnUpSettings*/
 
@@ -13,7 +13,7 @@ include('..\\..\\helpers\\menu_xxx.js');
 include('..\\..\\helpers\\menu_xxx_extras.js');
 /* global _createSubMenuEditEntries:readable */
 include('..\\filter_and_query\\remove_duplicates.js');
-/* global removeDuplicatesV2:readable */
+/* global removeDuplicates:readable */
 include('..\\window\\window_xxx_background_menu.js');
 include('..\\..\\helpers-external\\namethatcolor\\ntc.js'); // For createBackgroundMenu() on createStatisticsMenu() call
 
@@ -47,7 +47,7 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 				menuName: subMenu[0], entryText: entry.name, func: () => {
 					if (checkQuery(entry.query)) {
 						let handleList = fb.GetQueryItems(fb.GetLibraryItems(), entry.query);
-						handleList = removeDuplicatesV2({ handleList, sortOutput: '', checkKeys: globTags.remDupl, sortBias: globQuery.remDuplBias, bAdvTitle: true, bPreserveSort: false });
+						handleList = removeDuplicates({ handleList, sortOutput: '', checkKeys: globTags.remDupl, sortBias: globQuery.remDuplBias, bAdvTitle: true, bMultiple: true, bPreserveSort: false });
 						sendToPlaylist(handleList, entry.playlist);
 					}
 				}

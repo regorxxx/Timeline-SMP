@@ -1,5 +1,5 @@
 'use strict';
-//21/03/24
+//07/05/24
 
 /* exported getData, getDataAsync */
 
@@ -13,7 +13,7 @@ include('..\\..\\helpers\\helpers_xxx_file.js');
 include('..\\..\\helpers\\helpers_xxx_playlists.js');
 /* global getHandlesFromUIPlaylists:readable */
 include('..\\filter_and_query\\remove_duplicates.js');
-/* global removeDuplicatesV2:readable */
+/* global removeDuplicates:readable */
 include('..\\search\\top_tracks_from_date.js');
 /* global getPlayCount:readable, getSkipCount:readable */
 include('..\\search_by_distance\\search_by_distance_culture.js');
@@ -635,5 +635,5 @@ function filterSource(query, source) {
 }
 
 function deduplicateSource(source) {
-	return removeDuplicatesV2({ handleList: source, checkKeys: globTags.remDupl, sortBias: globQuery.remDuplBias, bPreserveSort: true, bAdvTitle: true });
+	return removeDuplicates({ handleList: source, checkKeys: globTags.remDupl, sortBias: globQuery.remDuplBias, bPreserveSort: true, bAdvTitle: true });
 }

@@ -14,6 +14,7 @@
 
 ## [Unreleased][]
 ### Added
+- UI: added album art caching for panel background whenever selecting/playing track changes but belongs to the same album. It checks for same album name and parent directory. 
 ### Changed
 - Helpers: improved performance of duplicates removal in multiple places.
 ### Removed

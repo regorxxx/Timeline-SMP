@@ -19,6 +19,7 @@
 - Helpers: improved performance of duplicates removal in multiple places.
 ### Removed
 ### Fixed
+- Configuration: .json files at 'foobar2000\js_data\presets\global' not being saved with the calculated properties based on user values from other files.
 
 ## [1.3.0] - 2023-03-21
 ### Added

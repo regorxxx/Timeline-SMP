@@ -1,5 +1,5 @@
 'use strict';
-//07/05/24
+//22/07/24
 
 /* exported getData, getDataAsync */
 
@@ -79,6 +79,7 @@ function getData({
 	const idCharsRegExp = new RegExp(idChars.join('|'), 'gi');
 	const source = filterSource(query, getSource(sourceType, sourceArg));
 	const handleList = bRemoveDuplicates ? deduplicateSource(source) : source;
+	if ((typeof z === 'undefined' || z === null || !z.length) && option === 'timeline') { option = 'tf'; }
 	let data;
 	switch (option) {
 		case 'timeline': { // 3D {x, y, z}, x and z can be exchanged
@@ -272,7 +273,7 @@ function getData({
 					}
 				});
 			});
-			data = [[...tagCount].map((point) => { return { x: point[0], y: point[1], ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {})  }; })];
+			data = [[...tagCount].map((point) => { return { x: point[0], y: point[1], ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {}) }; })];
 			break;
 		}
 		case 'playcount wordlmap city': {
@@ -366,6 +367,7 @@ async function getDataAsync({
 	const idCharsRegExp = new RegExp(idChars.join('|'), 'gi');
 	const source = filterSource(query, getSource(sourceType, sourceArg));
 	const handleList = bRemoveDuplicates ? deduplicateSource(source) : source;
+	if ((typeof z === 'undefined' || z === null || !z.length) && option === 'timeline') { option = 'tf'; }
 	let data;
 	switch (option) {
 		case 'timeline': { // 3D {x, y, z}, x and z can be exchanged

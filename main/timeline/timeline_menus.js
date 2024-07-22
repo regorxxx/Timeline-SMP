@@ -1,5 +1,5 @@
 'use strict';
-//09/05/24
+//22/07/24
 
 /* exported onLbtnUpPoint, onLbtnUpSettings*/
 
@@ -117,7 +117,7 @@ function onLbtnUpSettings() {
 	// Menus
 	{
 		const subMenu = menu.newMenu('Set X-axis data...');
-		menu.newEntry({ menuName: subMenu, entryText: 'By TF:', flags: MF_GRAYED });
+		menu.newEntry({ menuName: subMenu, entryText: 'X-axis:', flags: MF_GRAYED });
 		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
 		const list = JSON.parse(properties.xEntries[1]);
 		list.forEach((entry) => {
@@ -149,7 +149,7 @@ function onLbtnUpSettings() {
 	}
 	{
 		const subMenu = menu.newMenu('Set Y-axis data...');
-		menu.newEntry({ menuName: subMenu, entryText: 'By TF:', flags: MF_GRAYED });
+		menu.newEntry({ menuName: subMenu, entryText: 'Y-axis:', flags: MF_GRAYED });
 		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
 		const list = JSON.parse(properties.yEntries[1]);
 		list.forEach((entry) => {
@@ -181,7 +181,7 @@ function onLbtnUpSettings() {
 	}
 	{
 		const subMenu = menu.newMenu('Set Z-axis data...');
-		menu.newEntry({ menuName: subMenu, entryText: 'By TF:', flags: MF_GRAYED });
+		menu.newEntry({ menuName: subMenu, entryText: 'Z-axis:', flags: MF_GRAYED });
 		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
 		const list = JSON.parse(properties.zEntries[1]);
 		list.forEach((entry) => {
@@ -191,6 +191,14 @@ function onLbtnUpSettings() {
 				menu.newCheckMenuLast(() => this.axis.z.tf === _qCond(entry.z));
 			}
 		});
+		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+		menu.newEntry({
+			menuName: subMenu, entryText: 'None (disable axis)', func: () => {
+				this.axis.z = {};
+				this.setData();
+			}
+		});
+		menu.newCheckMenuLast(() => !Object.hasOwn(this.axis.z, 'tf'));
 		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
 		menu.newEntry({
 			menuName: subMenu, entryText: 'By TF...', func: () => {

@@ -16,11 +16,13 @@
 ### Added
 - UI: added album art caching for panel background whenever selecting/playing track changes but belongs to the same album. It checks for same album name and parent directory. 
 ### Changed
+- Data: Z-axis can now be disabled, thus allowing to create standard charts for general statistics purposes (for ex. # Tracks per BPM).
+- Data: better handling of async data (and switching between sync and async data).
+- Data: better handling of complex TF expressions and empty values.
 - Helpers: improved performance of duplicates removal in multiple places.
 ### Removed
 ### Fixed
 - Configuration: .json files at 'foobar2000\js_data\presets\global' not being saved with the calculated properties based on user values from other files.
-
 ## [1.3.0] - 2023-03-21
 ### Added
 ### Changed

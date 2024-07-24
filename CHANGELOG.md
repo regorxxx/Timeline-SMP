@@ -2,6 +2,7 @@
 
 ## [Table of Contents]
 - [Unreleased](#unreleased)
+- [1.4.0](#130---2023-07-24)
 - [1.3.0](#130---2023-03-21)
 - [1.2.0](#120---2023-03-15)
 - [1.1.0](#110---2023-02-28)
@@ -14,6 +15,13 @@
 
 ## [Unreleased][]
 ### Added
+### Changed
+### Removed
+### Fixed
+
+## [1.4.0] - 2023-07-24
+### Added
+- Presets: added 'BPM (range)' preset to X axis.
 - UI: added album art caching for panel background whenever selecting/playing track changes but belongs to the same album. It checks for same album name and parent directory. 
 ### Changed
 - Data: Z-axis can now be disabled, thus allowing to create standard charts for general statistics purposes (for ex. # Tracks per BPM).
@@ -132,7 +140,8 @@
 ### Removed
 ### Fixed
 
-[Unreleased]: https://github.com/regorxxx/World-Map-SMP/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/regorxxx/World-Map-SMP/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/regorxxx/World-Map-SMP/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/regorxxx/World-Map-SMP/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/regorxxx/World-Map-SMP/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/regorxxx/World-Map-SMP/compare/v1.0.0...v1.1.0

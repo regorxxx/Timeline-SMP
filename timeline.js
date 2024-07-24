@@ -1,5 +1,5 @@
 ﻿'use strict';
-//21/03/24
+//22/07/24
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '1.3.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
@@ -52,6 +52,7 @@ let properties = {
 		{ x: _t(globTags.date), keyX: 'Date' },
 		{ x: '$right($div(' + _t(globTags.date) + ',10)0s,3)', keyX: 'Decade' },
 		{ x: _t(globTags.bpm), keyX: 'BPM' },
+		{ x: '$mul($div(' + _t(globTags.bpm) + ',10),10)s', keyX: 'BPM (range)' },
 		{ x: _t(globTags.rating), keyX: 'Rating' },
 		{ name: 'sep' },
 		{ x: _t(globTags.camelotKey), keyX: 'Camelot Key' }, // helpers_xxx_global.js
@@ -167,29 +168,41 @@ const newConfig = [
 ];
 newConfig.forEach((row) => row.forEach((config) => {
 	const dataSource = JSON.parse(properties.dataSource[1]);
+	const bHasX = Object.hasOwn(config.axis.x, 'tf') && config.axis.x.tf.length;
+	const bHasY = Object.hasOwn(config.axis.y, 'tf') && config.axis.y.tf.length;
+	const bHasZ = Object.hasOwn(config.axis.z, 'tf') && config.axis.z.tf.length;
 	if (properties.bAsync[1]) {
 		config.dataAsync = () => getDataAsync({
-			option: 'timeline',
+			option: bHasZ ? 'timeline' : 'tf',
 			sourceType: dataSource.sourceType,
 			sourceArg: dataSource.sourceArg || null,
-			x: _qCond(config.axis.x.tf, true),
-			y: _qCond(config.axis.y.tf, true),
-			z: _qCond(config.axis.z.tf, true),
-			query: queryJoin([properties.dataQuery[1], config.axis.x.tf + ' PRESENT AND ' + config.axis.z.tf + ' PRESENT'], 'AND'),
+			x: bHasX ? _qCond(config.axis.x.tf, true) : '',
+			y: bHasY ? _qCond(config.axis.y.tf, true) : '',
+			z: bHasZ ?_qCond(config.axis.z.tf, true) : '',
+			query: queryJoin([
+				properties.dataQuery[1],
+				bHasX ? config.axis.x.tf + ' PRESENT' : '',
+				bHasZ ? config.axis.z.tf + ' PRESENT' : ''
+			], 'AND'),
 			bProportional: config.axis.y.bProportional
 		});
 	} else {
 		config.data = getData({
-			option: 'timeline',
+			option: bHasZ ? 'timeline' : 'tf',
 			sourceType: dataSource.sourceType,
 			sourceArg: dataSource.sourceArg || null,
-			x: _qCond(config.axis.x.tf, true),
-			y: _qCond(config.axis.y.tf, true),
-			z: _qCond(config.axis.z.tf, true),
-			query: queryJoin([properties.dataQuery[1], config.axis.x.tf + ' PRESENT AND ' + config.axis.z.tf + ' PRESENT'], 'AND'),
+			x: bHasX ? _qCond(config.axis.x.tf, true) : '',
+			y: bHasY ? _qCond(config.axis.y.tf, true) : '',
+			z: bHasZ ?_qCond(config.axis.z.tf, true) : '',
+			query: queryJoin([
+				properties.dataQuery[1],
+				bHasX ? config.axis.x.tf + ' PRESENT' : '',
+				bHasZ ? config.axis.z.tf + ' PRESENT' : ''
+			], 'AND'),
 			bProportional: config.axis.y.bProportional
 		});
 	}
+	if (!bHasZ) { config.graph = { multi: false }; }
 }));
 
 /*
@@ -214,26 +227,34 @@ const charts = nCharts.flat(Infinity);
 */
 charts.forEach((chart) => {
 	chart.setData = function (entry = {}) {
+		const bHasX = Object.hasOwn(entry, 'x') && entry.x.length;
+		const bHasY = Object.hasOwn(entry, 'y') && entry.y.length;
+		const bHasZ = Object.hasOwn(entry, 'z') && entry.z.length;
+		const bHasTfX = Object.hasOwn(this.axis.x, 'tf') && this.axis.x.tf.length;
+		const bHasTfZ = Object.hasOwn(this.axis.z, 'tf') && this.axis.z.tf.length;
 		const dataSource = JSON.parse(properties.dataSource[1]);
 		const newConfig = {
 			[properties.bAsync[1] ? 'dataAsync' : 'data']: (properties.bAsync[1] ? getDataAsync : getData)({
-				option: 'timeline',
+				option: bHasTfZ || bHasZ ? 'timeline' : 'tf',
 				sourceType: Object.hasOwn(entry, 'sourceType') ? entry.sourceType : dataSource.sourceType,
 				sourceArg: (Object.hasOwn(entry, 'sourceArg') ? entry.sourceArg : dataSource.sourceArg) || null,
-				x: entry.x || _qCond(this.axis.x.tf, true),
-				y: entry.y || _qCond(this.axis.y.tf, true),
-				z: entry.z || _qCond(this.axis.z.tf, true),
+				x: bHasX ? entry.x : _qCond(this.axis.x.tf || '', true),
+				y: bHasY ? entry.y : _qCond(this.axis.y.tf || '', true),
+				z: bHasZ ? entry.z : _qCond(this.axis.z.tf || '', true),
 				query: queryJoin([
 					Object.hasOwn(entry, 'query') ? entry.query : properties.dataQuery[1],
-					(Object.hasOwn(entry, 'z') ? _qCond(entry.z) : this.axis.z.tf) + ' PRESENT AND ' + (Object.hasOwn(entry, 'x') ? _qCond(entry.x) : this.axis.x.tf) + ' PRESENT'
+					bHasTfX || bHasX ? (bHasX ? _qCond(entry.x) : this.axis.x.tf) + ' PRESENT' : '',
+					bHasTfZ || bHasZ ? (bHasZ ? _qCond(entry.z) : this.axis.z.tf) + ' PRESENT' : ''
 				], 'AND'),
 				bProportional: entry.bProportional
 			}),
-			axis: {}
+			axis: {},
 		};
-		if (entry.x) { newConfig.axis.x = { key: entry.keyX, tf: _qCond(entry.x) }; }
-		if (entry.y) { newConfig.axis.y = { key: entry.keyY, tf: _qCond(entry.y), bProportional: entry.bProportional }; }
-		if (entry.z) { newConfig.axis.z = { key: entry.keyZ, tf: _qCond(entry.z) }; }
+		if (bHasX) { newConfig.axis.x = { key: entry.keyX, tf: _qCond(entry.x) }; }
+		if (bHasY) { newConfig.axis.y = { key: entry.keyY, tf: _qCond(entry.y), bProportional: entry.bProportional }; }
+		if (bHasZ) { newConfig.axis.z = { key: entry.keyZ, tf: _qCond(entry.z) }; }
+		if (bHasZ || bHasTfZ) { newConfig.graph = { multi: true }; }
+		else { newConfig.graph = { multi: false }; }
 		this.changeConfig({ ...newConfig, bPaint: true });
 		this.changeConfig({ title: window.Name + ' - ' + 'Graph 1 {' + this.axis.x.key + ' - ' + this.axis.y.key + '}', bPaint: false, callbackArgs: { bSaveProperties: true } });
 	};

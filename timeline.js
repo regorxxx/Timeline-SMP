@@ -1,5 +1,5 @@
 ﻿'use strict';
-//24/07/24
+//09/08/24
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '1.4.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
@@ -210,8 +210,8 @@ newConfig.forEach((row) => row.forEach((config) => {
 */
 const rows = newConfig.length;
 const columns = newConfig[0].length;
-const nCharts = new Array(rows).fill(1).map(() => { return new Array(columns).fill(1); }).map((row, i) => {
-	return row.map((cell, j) => {
+const nCharts = Array.from({length: rows}, (row, i) => {
+	return Array.from({length: columns}, (cell, j) => {
 		const w = window.Width / columns;
 		const h = window.Height / rows * (i + 1);
 		const x = w * j;

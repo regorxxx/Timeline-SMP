@@ -1,5 +1,5 @@
 'use strict';
-//22/07/24
+//09/08/24
 
 /* exported getData, getDataAsync */
 
@@ -120,7 +120,7 @@ function getData({
 			dic.forEach((value, key, map) => {
 				map.set(key, Object.entries(value).map((pair) => { return { key: pair[0], ...pair[1] /* count, total */ }; }).sort((a, b) => { return b.count - a.count; }));
 			});
-			data = [[...dic].map((points) => points[1].map((point) => { return { x: points[0], y: (bProportional ? point.count / point.total : point.count), z: point.key, ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {}) }; }))];
+			data = [Array.from(dic, (points) => points[1].map((point) => { return { x: points[0], y: (bProportional ? point.count / point.total : point.count), z: point.key, ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {}) }; }))];
 			break;
 		}
 		case 'tf': {
@@ -140,7 +140,7 @@ function getData({
 					}
 				});
 			});
-			data = [[...tagCount].map((point) => { return { x: point[0], y: point[1], ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {}) }; })];
+			data = [Array.from(tagCount, (point) => { return { x: point[0], y: point[1], ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {}) }; })];
 			break;
 		}
 		case 'playcount': {
@@ -186,7 +186,7 @@ function getData({
 					}
 				});
 			});
-			data = [[...tagCount].map((point) => {
+			data = [Array.from(tagCount, (point) => {
 				return {
 					x: point[0].replace(idCharsRegExp, ''),
 					y: point[1].playCount,
@@ -235,7 +235,7 @@ function getData({
 			keyCount.forEach((value, key) => {
 				if (tagCount.has(key)) { tagCount.set(key, Math.round(tagCount.get(key) / keyCount.get(key))); }
 			});
-			data = [[...tagCount].map((point) => { return { x: point[0].replace(idCharsRegExp, ''), y: point[1], ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {}) }; })];
+			data = [Array.from(tagCount, (point) => { return { x: point[0].replace(idCharsRegExp, ''), y: point[1], ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {}) }; })];
 			break;
 		}
 		case 'playcount wordlmap':
@@ -273,7 +273,7 @@ function getData({
 					}
 				});
 			});
-			data = [[...tagCount].map((point) => { return { x: point[0], y: point[1], ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {}) }; })];
+			data = [Array.from(tagCount, (point) => { return { x: point[0], y: point[1], ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {}) }; })];
 			break;
 		}
 		case 'playcount wordlmap city': {
@@ -312,7 +312,7 @@ function getData({
 					}
 				});
 			});
-			data = [[...tagCount].map((point) => {
+			data = [Array.from(tagCount, (point) => {
 				const tags = cityMap.get(point[0]);
 				return {
 					x: point[0],
@@ -408,7 +408,7 @@ async function getDataAsync({
 			dic.forEach((value, key, map) => {
 				map.set(key, Object.entries(value).map((pair) => { return { key: pair[0], ...pair[1] /* count, total */ }; }).sort((a, b) => { return b.count - a.count; }));
 			});
-			data = [[...dic].map((points) => points[1].map((point) => { return { x: points[0], y: (bProportional ? point.count / point.total : point.count), z: point.key, ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {}) }; }))];
+			data = [Array.from(dic, (points) => points[1].map((point) => { return { x: points[0], y: (bProportional ? point.count / point.total : point.count), z: point.key, ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {}) }; }))];
 			break;
 		}
 		case 'tf': {
@@ -428,7 +428,7 @@ async function getDataAsync({
 					}
 				});
 			});
-			data = [[...tagCount].map((point) => { return { x: point[0], y: point[1], ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {}) }; })];
+			data = [Array.from(tagCount, (point) => { return { x: point[0], y: point[1], ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {}) }; })];
 			break;
 		}
 		case 'playcount': {
@@ -474,7 +474,7 @@ async function getDataAsync({
 					}
 				});
 			});
-			data = [[...tagCount].map((point) => {
+			data = [Array.from(tagCount, (point) => {
 				return {
 					x: point[0].replace(idCharsRegExp, ''),
 					y: point[1].playCount,
@@ -523,7 +523,7 @@ async function getDataAsync({
 			keyCount.forEach((value, key) => {
 				if (tagCount.has(key)) { tagCount.set(key, Math.round(tagCount.get(key) / keyCount.get(key))); }
 			});
-			data = [[...tagCount].map((point) => { return { x: point[0].replace(idCharsRegExp, ''), y: point[1], ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {}) }; })];
+			data = [Array.from(tagCount, (point) => { return { x: point[0].replace(idCharsRegExp, ''), y: point[1], ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {}) }; })];
 			break;
 		}
 		case 'playcount wordlmap':
@@ -561,7 +561,7 @@ async function getDataAsync({
 					}
 				});
 			});
-			data = [[...tagCount].map((point) => { return { x: point[0], y: point[1], ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {}) }; })];
+			data = [Array.from(tagCount, (point) => { return { x: point[0], y: point[1], ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {}) }; })];
 			break;
 		}
 		case 'playcount wordlmap city': {
@@ -600,7 +600,7 @@ async function getDataAsync({
 					}
 				});
 			});
-			data = [[...tagCount].map((point) => {
+			data = [Array.from(tagCount, (point) => {
 				const tags = cityMap.get(point[0]);
 				return {
 					x: point[0],

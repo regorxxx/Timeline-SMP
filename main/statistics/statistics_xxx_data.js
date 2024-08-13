@@ -1,5 +1,5 @@
 ﻿'use strict';
-//21/12/23
+//09/08/24
 
 /* exported getDataAsync, getData */
 
@@ -22,7 +22,7 @@ async function getDataAsync(option = 'TF', tf = 'GENRE') {
 				if (!tagCount.has(tag)) { tagCount.set(tag, 1); }
 				else { tagCount.set(tag, tagCount.get(tag) + 1); }
 			});
-			data = [[...tagCount].map((point) => { return { x: point[0], y: point[1] }; })];
+			data = [Array.from(tagCount, (point) => { return { x: point[0], y: point[1] }; })];
 			break;
 		}
 		case 'most played': {
@@ -34,7 +34,7 @@ async function getDataAsync(option = 'TF', tf = 'GENRE') {
 				if (!tagCount.has(tag)) { tagCount.set(tag, Number(playCount[i])); }
 				else { tagCount.set(tag, tagCount.get(tag) + Number(playCount[i])); }
 			});
-			data = [[...tagCount].map((point) => { return { x: point[0], y: point[1] }; })];
+			data = [Array.from(tagCount, (point) => { return { x: point[0], y: point[1] }; })];
 			break;
 		}
 		case 'most played proportional': {
@@ -52,7 +52,7 @@ async function getDataAsync(option = 'TF', tf = 'GENRE') {
 			keyCount.forEach((value, key) => {
 				if (tagCount.has(key)) { tagCount.set(key, Math.round(tagCount.get(key) / keyCount.get(key))); }
 			});
-			data = [[...tagCount].map((point) => { return { x: point[0], y: point[1] }; })];
+			data = [Array.from(tagCount, (point) => { return { x: point[0], y: point[1] }; })];
 			break;
 		}
 		case 'most played from date': {
@@ -66,7 +66,7 @@ async function getDataAsync(option = 'TF', tf = 'GENRE') {
 					else { tagCount.set(tag, tagCount.get(tag) + Number(playCount[i])); }
 				});
 			});
-			data = [[...tagCount].map((point) => { return { x: point[0], y: point[1] }; })];
+			data = [Array.from(tagCount, (point) => { return { x: point[0], y: point[1] }; })];
 			break;
 		}
 	}
@@ -90,7 +90,7 @@ function getData(option = 'TF', tf = 'GENRE') {
 				if (!tagCount.has(tag)) { tagCount.set(tag, 1); }
 				else { tagCount.set(tag, tagCount.get(tag) + 1); }
 			});
-			data = [[...tagCount].map((point) => { return { x: point[0], y: point[1] }; })];
+			data = [Array.from(tagCount, (point) => { return { x: point[0], y: point[1] }; })];
 			break;
 		}
 		case 'most played': {
@@ -102,7 +102,7 @@ function getData(option = 'TF', tf = 'GENRE') {
 				if (!tagCount.has(tag)) { tagCount.set(tag, Number(playCount[i])); }
 				else { tagCount.set(tag, tagCount.get(tag) + Number(playCount[i])); }
 			});
-			data = [[...tagCount].map((point) => { return { x: point[0], y: point[1] }; })];
+			data = [Array.from(tagCount, (point) => { return { x: point[0], y: point[1] }; })];
 			break;
 		}
 		case 'most played proportional': {
@@ -120,7 +120,7 @@ function getData(option = 'TF', tf = 'GENRE') {
 			keyCount.forEach((value, key) => {
 				if (tagCount.has(key)) { tagCount.set(key, Math.round(tagCount.get(key) / keyCount.get(key))); }
 			});
-			data = [[...tagCount].map((point) => { return { x: point[0], y: point[1] }; })];
+			data = [Array.from(tagCount, (point) => { return { x: point[0], y: point[1] }; })];
 			break;
 		}
 		case 'most played from date': {
@@ -134,7 +134,7 @@ function getData(option = 'TF', tf = 'GENRE') {
 					else { tagCount.set(tag, tagCount.get(tag) + Number(playCount[i])); }
 				});
 			});
-			data = [[...tagCount].map((point) => { return { x: point[0], y: point[1] }; })];
+			data = [Array.from(tagCount, (point) => { return { x: point[0], y: point[1] }; })];
 			break;
 		}
 	}
@@ -192,8 +192,8 @@ const newConfig = [
 
 grid.rows = newConfig.length;
 grid.columns = newConfig[0].length;
-grid.cells = new Array(grid.rows).fill(1).map(() => { return new Array(grid.columns).fill(1); }).map((row, i) => {
-	return row.map((cell, j) => {
+grid.cells = Array.from({length: grid.rows}, (row, i) => {
+	return Array.from({length: grid.columns}, (cell, j) => {
 		const w = window.Width / grid.columns;
 		const h = window.Height / grid.rows * (i + 1);
 		const x = w * j;

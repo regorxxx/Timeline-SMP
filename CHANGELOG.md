@@ -19,6 +19,7 @@
 - Helpers: updated helpers.
 ### Removed
 ### Fixed
+- Crash opening the point menu on libraries not fully tagged.
 
 ## [1.4.0] - 2023-07-24
 ### Added

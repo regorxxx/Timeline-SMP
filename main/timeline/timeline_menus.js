@@ -1,5 +1,5 @@
 'use strict';
-//22/07/24
+//12/08/24
 
 /* exported onLbtnUpPoint, onLbtnUpSettings*/
 
@@ -30,7 +30,7 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 		menu.newEntry({ menuName: subMenu[0], entryText: 'sep' });
 		menu.newEntry({ menuName: subMenu[1], entryText: 'Configurable query:', flags: MF_GRAYED });
 		menu.newEntry({ menuName: subMenu[1], entryText: 'sep' });
-		const currPoints = this.dataDraw.map((serie) => serie.find((newPoint) => newPoint.x === point.x));
+		const currPoints = this.dataDraw.map((serie) => serie.find((newPoint) => newPoint.x === point.x)).filter(Boolean);
 		[
 			{ name: 'By ' + this.axis.x.key, query: this.axis.x.tf + ' IS ' + point.x, playlist: 'Timeline: ' + point.x },
 			{ name: 'By ' + this.axis.z.key, query: this.axis.z.tf + ' IS ' + point.z, playlist: 'Timeline: ' + point.z },
@@ -39,7 +39,7 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 				playlist: 'Timeline: ' + point.x + ' - ' + point.z
 			},
 			{
-				name: 'By ' + this.axis.x.key + ' and top ' + this.axis.z.key, query: this.axis.x.tf + ' IS ' + point.x + ' AND ' + _p(currPoints.map((point) => this.axis.z.tf + ' IS ' + point.z).join(' OR ')),
+				name: 'By ' + this.axis.x.key + ' and top ' + this.axis.z.key, query: this.axis.x.tf + ' IS ' + point.x + ' AND ' + _p(currPoints.map((newPoint) => this.axis.z.tf + ' IS ' + newPoint.z).join(' OR ')),
 				playlist: 'Timeline: ' + point.x + ' - Top ' + currPoints.length + ' ' + this.axis.z.key
 			}
 		].forEach((entry) => {

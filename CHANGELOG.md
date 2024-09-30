@@ -17,6 +17,7 @@
 ## [Unreleased][]
 ### Added
 ### Changed
+- UI: axis TF entries can now be cloned or updated with current settings.
 - Helpers: updated helpers.
 ### Removed
 ### Fixed

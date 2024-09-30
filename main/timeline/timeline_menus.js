@@ -1,5 +1,5 @@
 'use strict';
-//12/08/24
+//25/09/24
 
 /* exported onLbtnUpPoint, onLbtnUpSettings*/
 
@@ -99,17 +99,26 @@ function onLbtnUpSettings() {
 	// Constants
 	const menu = new _menu();
 	const dataSource = JSON.parse(properties.dataSource[1]);
-	const inputTF = (axis = 'x') => {
+	const inputTF = (axis = 'x', bCopyCurrent = false) => {
 		axis = axis.toLowerCase();
-		const axisTF = Input.string('string', this.axis[axis].tf, 'Enter tag or TF expression:\n\n' + (axis === 'y' ? 'Expression should output a number per track (and TRUE). For example:\nListens: $max(%PLAY_COUNT%,%LASTFM_PLAY_COUNT%,0)\nRated 5 tracks: $ifequal(%RATING%,5,1$not(0),0)' : 'For example:\n%GENRE%'), window.Name, '%GENRE%');
-		if (axisTF === null) { return; }
-		const axisKey = Input.string('string', capitalizeAll(axisTF.replace(/%/g, '')), 'Enter axis name:', window.Name, 'Date') || Input.lastInput;
-		if (axisKey === null) { return; }
-		return {
-			[axis]: axisTF,
-			['key' + axis.toUpperCase()]: axisKey,
-			bProportional: axis === 'y' && WshShell.Popup('Proportional to total number of tracks per serie?', 0, window.Name, popup.question + popup.yes_no) === popup.yes
-		};
+		if (bCopyCurrent) {
+			const keyAxis = 'key' + axis.toUpperCase();
+			return {
+				[axis]: this.axis[axis].tf,
+				[keyAxis]: this.axis[axis][keyAxis],
+				bProportional: this.axis[axis].bProportional
+			};
+		} else {
+			const axisTF = Input.string('string', this.axis[axis].tf, 'Enter tag or TF expression:\n\n' + (axis === 'y' ? 'Expression should output a number per track (and TRUE). For example:\nListens: $max(%PLAY_COUNT%,%LASTFM_PLAY_COUNT%,0)\nRated 5 tracks: $ifequal(%RATING%,5,1$not(0),0)' : 'For example:\n%GENRE%'), window.Name, '%GENRE%');
+			if (axisTF === null) { return; }
+			const axisKey = Input.string('string', capitalizeAll(axisTF.replace(/%/g, '')), 'Enter axis name:', window.Name, 'Date') || Input.lastInput;
+			if (axisKey === null) { return; }
+			return {
+				[axis]: axisTF,
+				['key' + axis.toUpperCase()]: axisKey,
+				bProportional: axis === 'y' && WshShell.Popup('Proportional to total number of tracks per serie?', 0, window.Name, popup.question + popup.yes_no) === popup.yes
+			};
+		}
 	};
 	// Header
 	menu.newEntry({ entryText: this.title, flags: MF_GRAYED });
@@ -139,8 +148,9 @@ function onLbtnUpSettings() {
 			name: 'Axis X TF entries',
 			list,
 			defaults: JSON.parse(properties.xEntries[3]),
-			input: () => inputTF('x'),
+			input: (bCopyCurrent) => inputTF('x', bCopyCurrent),
 			bNumbered: true,
+			bCopyCurrent: true,
 			onBtnUp: (entries) => {
 				properties.xEntries[1] = JSON.stringify(entries);
 				overwriteProperties(properties);
@@ -171,8 +181,9 @@ function onLbtnUpSettings() {
 			name: 'Axis Y TF entries',
 			list,
 			defaults: JSON.parse(properties.yEntries[3]),
-			input: () => inputTF('y'),
+			input: (bCopyCurrent) => inputTF('y', bCopyCurrent),
 			bNumbered: true,
+			bCopyCurrent: true,
 			onBtnUp: (entries) => {
 				properties.yEntries[1] = JSON.stringify(entries);
 				overwriteProperties(properties);
@@ -211,8 +222,9 @@ function onLbtnUpSettings() {
 			name: 'Axis Z TF entries',
 			list,
 			defaults: JSON.parse(properties.zEntries[3]),
-			input: () => inputTF('z'),
+			input: (bCopyCurrent) => inputTF('z', bCopyCurrent),
 			bNumbered: true,
+			bCopyCurrent: true,
 			onBtnUp: (entries) => {
 				properties.zEntries[1] = JSON.stringify(entries);
 				overwriteProperties(properties);

@@ -19,6 +19,7 @@
 ### Changed
 - UI: axis TF entries can now be cloned or updated with current settings.
 - Helpers: updated helpers.
+- [JSplitter (SMP)](https://foobar2000.ru/forum/viewtopic.php?t=6378&start=360) support and ES2021 compatibility.
 ### Removed
 ### Fixed
 

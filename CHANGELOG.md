@@ -22,6 +22,7 @@
 ### Changed
 - UI: minor adjustments to buttons tooltips.
 - UI: minor adjustments to menu entries.
+- Helpers: updated helpers.
 ### Removed
 ### Fixed
 

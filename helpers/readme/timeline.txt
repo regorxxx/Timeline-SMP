@@ -1,0 +1,42 @@
+﻿UI panel which displays an interactive timeline of your library
+(or other sources). Configurable by Title Format, lets you generate
+playlists based on selection. UI is fully configurable.
+
+Chart:
+---------------
+- 3 Axis available.
+- Set data per axis with Title Format.
+- Z-Axis can be disabled to create 2D charts for general statistics
+purposes (instead of a "timeline").
+- Multiple chart types available: bars, scatter, timeline, ...
+- Data can also be fitted into a normal distribution.
+- X-Axis can be aggregated in groups
+- There are multiple presets with proportional values per group,
+for ex. average rating/album, etc.
+
+Sources:
+--------
+- Library
+- Active playlist
+- Playing playlist
+- Selectable playlists (by name). Multiple playlists allowed,
+they are internally joined.
+
+Additionally, any source can be filtered via queries.
+
+UI usage:
+---------
+- Statistics via tooltip over points.
+- L. Click to show point menu for playlist creation or
+advanced point statistics.
+- Right buttons are only highlighted when mouse is over,
+otherwise they are partially hidden in the background.
+- Scroll with right buttons and mouse dragging.
+- Zoom with mouse wheel and right button.
+- Background is fully configurable.
+- Multiple sorting and filtering display options.
+
+Other UI usage:
+---------------
+Press Shift + Win + R. Click to open SMP/JSpliter panel menu
+(which works globally on any script and panel, at any position).

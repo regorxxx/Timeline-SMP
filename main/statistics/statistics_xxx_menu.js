@@ -1,5 +1,5 @@
 ﻿'use strict';
-//03/01/24
+//10/10/24
 
 /* exported bindMenu */
 
@@ -15,7 +15,7 @@ function bindMenu(parent) {
 	return _attachedMenu.call(parent, { rMenu: createStatisticsMenu.bind(parent), popup: parent.pop });
 }
 
-// Generic statistics menu which should work on almost any chart...
+// Generic statistics menu which should work on almost any chart
 function createStatisticsMenu(bClear = true) { // Must be bound to _chart() instance
 	// Constants
 	this.tooltip.SetValue(null);
@@ -81,7 +81,7 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 	menu.newEntry({ entryText: 'sep' });
 	// Menus
 	{
-		const subMenu = menu.newMenu('Chart type...');
+		const subMenu = menu.newMenu('Chart type');
 		[
 			{ isEq: null, key: this.graph.type, value: null, newValue: 'timeline', entryText: 'Timeline' },
 			{ isEq: null, key: this.graph.type, value: null, newValue: 'scatter', entryText: 'Scatter' },
@@ -93,7 +93,7 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 			this.graph.borderWidth = fineGraphs.has(option.newValue) ? _scale(1) : _scale(4);
 		}));
 		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
-		const subMenuGroup = menu.newMenu('Group X-data by...' + (!this.graph.multi ? '\t[3D-Graphs]' : ''), subMenu, this.graph.multi ? MF_STRING : MF_GRAYED);
+		const subMenuGroup = menu.newMenu('Group X-data by' + (!this.graph.multi ? '\t[3D-Graphs]' : ''), subMenu, this.graph.multi ? MF_STRING : MF_GRAYED);
 		if (this.graph.multi) {
 			menu.newEntry({ menuName: subMenuGroup, entryText: 'Show n points per X-value:', flags: MF_GRAYED });
 			menu.newEntry({ menuName: subMenuGroup, entryText: 'sep' });
@@ -111,7 +111,7 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 		}
 	}
 	{
-		const subMenu = menu.newMenu('Distribution...');
+		const subMenu = menu.newMenu('Distribution');
 		[
 			{ isEq: null, key: this.dataManipulation.distribution, value: null, newValue: null, entryText: 'Standard graph' },
 			{ isEq: null, key: this.dataManipulation.distribution, value: null, newValue: 'normal', entryText: 'Normal distrib.' },
@@ -119,7 +119,7 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 		menu.newEntry({ entryText: 'sep' });
 	}
 	{
-		const subMenu = menu.newMenu('Sorting...');
+		const subMenu = menu.newMenu('Sorting');
 		if (this.dataManipulation.distribution === null) {
 			[
 				{ isEq: null, key: this.dataManipulation.sort, value: null, newValue: 'natural|x', entryText: 'Natural sorting (X)' },
@@ -146,7 +146,7 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 	}
 	{ // NOSONAR
 		{
-			const subMenu = menu.newMenu('Values shown...');
+			const subMenu = menu.newMenu('Values shown');
 			[
 				{ isEq: false, key: this.dataManipulation.slice, value: [0, 4], newValue: [0, 4], entryText: '4 values' + (this.dataManipulation.distribution ? ' per tail' : '') },
 				{ isEq: false, key: this.dataManipulation.slice, value: [0, 10], newValue: [0, 10], entryText: '10 values' + (this.dataManipulation.distribution ? ' per tail' : '') },
@@ -157,9 +157,9 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 			].forEach(createMenuOption('dataManipulation', 'slice', subMenu));
 		}
 		{
-			const subMenu = menu.newMenu('Filter...');
-			const subMenuGreat = menu.newMenu('Greater than...', subMenu);
-			const subMenuLow = menu.newMenu('Lower than...', subMenu);
+			const subMenu = menu.newMenu('Filter');
+			const subMenuGreat = menu.newMenu('Greater than', subMenu);
+			const subMenuLow = menu.newMenu('Lower than', subMenu);
 			// Create a filter entry for each fraction of the max value (duplicates filtered)
 			const parent = this;
 			const options = [...new Set([this.stats.maxY, 1000, 100, 10, 10 / 2, 10 / 3, 10 / 5, 10 / 7].map((frac) => {
@@ -191,9 +191,9 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 		menu.newEntry({ entryText: 'sep' });
 	}
 	{
-		const subMenu = menu.newMenu('Axis & labels...');
+		const subMenu = menu.newMenu('Axis & labels');
 		{
-			const subMenuTwo = menu.newMenu('Axis...', subMenu);
+			const subMenuTwo = menu.newMenu('Axis', subMenu);
 			[
 				{ isEq: null, key: this.axis.x.show, value: null, newValue: { show: !this.axis.x.show }, entryText: (this.axis.x.show ? 'Hide' : 'Show') + ' X axis' }
 			].forEach(createMenuOption('axis', 'x', subMenuTwo, false));
@@ -202,7 +202,7 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 			].forEach(createMenuOption('axis', 'y', subMenuTwo, false));
 		}
 		{
-			const subMenuTwo = menu.newMenu('Labels...', subMenu);
+			const subMenuTwo = menu.newMenu('Labels', subMenu);
 			[
 				{ isEq: null, key: this.axis.x.labels, value: null, newValue: { labels: !this.axis.x.labels }, entryText: (this.axis.x.labels ? 'Hide' : 'Show') + ' X labels' }
 			].forEach(createMenuOption('axis', 'x', subMenuTwo, false));
@@ -220,7 +220,7 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 			}
 		}
 		{
-			const subMenuTwo = menu.newMenu('Titles...', subMenu);
+			const subMenuTwo = menu.newMenu('Titles', subMenu);
 			[
 				{ isEq: null, key: this.axis.x.showKey, value: null, newValue: { showKey: !this.axis.x.showKey }, entryText: (this.axis.x.showKey ? 'Hide' : 'Show') + ' X title' }
 			].forEach(createMenuOption('axis', 'x', subMenuTwo, false));
@@ -229,7 +229,7 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 			].forEach(createMenuOption('axis', 'y', subMenuTwo, false));
 		}
 		{
-			const subMenuTwo = menu.newMenu('Dynamic colors...', subMenu, this.callbacks.config.backgroundColor ? MF_STRING : MF_GRAYED);
+			const subMenuTwo = menu.newMenu('Dynamic colors', subMenu, this.callbacks.config.backgroundColor ? MF_STRING : MF_GRAYED);
 			[
 				{ isEq: null, key: this.configuration.bDynColor, value: null, newValue: !this.configuration.bDynColor, entryText: 'Invert background color' },
 			].forEach(createMenuOption('configuration', 'bDynColor', subMenuTwo, true));
@@ -239,7 +239,7 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 		}
 	}
 	{
-		const subMenu = menu.newMenu('Color palette...');
+		const subMenu = menu.newMenu('Color palette');
 		[
 			{ isEq: null, key: this.chroma.scheme, value: null, newValue: 'diverging', entryText: 'Diverging' },
 			{ isEq: null, key: this.chroma.scheme, value: null, newValue: 'qualitative', entryText: 'Qualitative' },
@@ -249,7 +249,7 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 		].forEach(createMenuOption('chroma', 'scheme', subMenu, true, () => { this.colors = []; })); // Remove colors to force new palette
 		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
 		{
-			const subMenuTwo = menu.newMenu('By scheme...', subMenu);
+			const subMenuTwo = menu.newMenu('By scheme', subMenu);
 			let j = 0;
 			for (let key in (this.chroma.colorBlindSafe ? colorbrewer.colorBlind : colorbrewer)) {
 				if (key === 'colorBlind') { continue; }
@@ -276,21 +276,21 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 	}
 	{
 		const type = this.graph.type.toLowerCase();
-		const subMenu = menu.newMenu('Other config...');
+		const subMenu = menu.newMenu('Other config');
 		{
-			const configSubMenu = menu.newMenu((type === 'lines' ? 'Line' : 'Point') + ' size...', subMenu);
+			const configSubMenu = menu.newMenu((type === 'lines' ? 'Line' : 'Point') + ' size', subMenu);
 			[1, 2, 3, 4].map((val) => {
 				return { isEq: null, key: this.graph.borderWidth, value: null, newValue: _scale(val), entryText: val.toString() };
 			}).forEach(createMenuOption('graph', 'borderWidth', configSubMenu));
 		}
 		if (type === 'scatter' || type === 'p-p plot') {
-			const configSubMenu = menu.newMenu('Point type...', subMenu);
+			const configSubMenu = menu.newMenu('Point type', subMenu);
 			['circle', 'circumference', 'cross', 'triangle', 'plus'].map((val) => {
 				return { isEq: null, key: this.graph.point, value: null, newValue: val, entryText: val };
 			}).forEach(createMenuOption('graph', 'point', configSubMenu));
 		}
 		{
-			const configSubMenu = menu.newMenu('Point transparency...', subMenu);
+			const configSubMenu = menu.newMenu('Point transparency', subMenu);
 			[0, 20, 40, 60, 80, 100].map((val) => {
 				return { isEq: null, key: this.graph.pointAlpha, value: null, newValue: Math.round(val * 255 / 100), entryText: val.toString() + (val === 0 ? '\t(transparent)' : val === 100 ? '\t(opaque)' : '') };
 			}).forEach(createMenuOption('graph', 'pointAlpha', configSubMenu));

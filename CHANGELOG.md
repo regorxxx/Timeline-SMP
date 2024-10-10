@@ -17,7 +17,11 @@
 
 ## [Unreleased][]
 ### Added
+- UI: settings button tooltip now shows 'Shift + Win + R. Click' shortcut to open SMP/JSpliter panel menu (which works globally on any script and panel, at any position).
+- Readme: readme is shown as popup on first installation and available at the settings menu.
 ### Changed
+- UI: minor adjustments to buttons tooltips.
+- UI: minor adjustments to menu entries.
 ### Removed
 ### Fixed
 

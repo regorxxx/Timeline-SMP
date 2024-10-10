@@ -1,10 +1,12 @@
 ﻿'use strict';
-//09/10/24
+//10/10/24
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '1.5.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
 include('helpers\\helpers_xxx.js');
-/* global globTags:readable, globQuery:readable, globProfiler:readable */
+/* global globTags:readable, globQuery:readable, globProfiler:readable, folders:readable */
+include('helpers\\helpers_xxx_file.js');
+/* global _open:readable, utf8:readable */
 include('helpers\\helpers_xxx_prototypes_smp.js');
 /* global extendGR:readable */
 include('main\\statistics\\statistics_xxx.js');
@@ -96,10 +98,20 @@ let properties = {
 		'LAST_PLAYED_ENHANCED',
 		'LAST_PLAYED'
 	]), { func: isJSON }],
+	firstPopup: ['Timeline: Fired once', false, { func: isBoolean }, false],
 };
 Object.keys(properties).forEach(p => properties[p].push(properties[p][1]));
 setProperties(properties, '', 0);
 properties = getPropertiesPairs(properties, '', 0);
+
+// Info Popup
+if (!properties.firstPopup[1]) {
+	properties.firstPopup[1] = true;
+	overwriteProperties(properties); // Updates panel
+	const readmePath = folders.xxx + 'helpers\\readme\\timeline.txt';
+	const readme = _open(readmePath, utf8);
+	if (readme.length) { fb.ShowPopupMessage(readme, 'Timeline-SMP'); }
+}
 
 // Update check
 if (properties.bAutoUpdateCheck[1]) {
@@ -178,7 +190,7 @@ newConfig.forEach((row) => row.forEach((config) => {
 			sourceArg: dataSource.sourceArg || null,
 			x: bHasX ? _qCond(config.axis.x.tf, true) : '',
 			y: bHasY ? _qCond(config.axis.y.tf, true) : '',
-			z: bHasZ ?_qCond(config.axis.z.tf, true) : '',
+			z: bHasZ ? _qCond(config.axis.z.tf, true) : '',
 			query: queryJoin([
 				properties.dataQuery[1],
 				bHasX ? config.axis.x.tf + ' PRESENT' : '',
@@ -193,7 +205,7 @@ newConfig.forEach((row) => row.forEach((config) => {
 			sourceArg: dataSource.sourceArg || null,
 			x: bHasX ? _qCond(config.axis.x.tf, true) : '',
 			y: bHasY ? _qCond(config.axis.y.tf, true) : '',
-			z: bHasZ ?_qCond(config.axis.z.tf, true) : '',
+			z: bHasZ ? _qCond(config.axis.z.tf, true) : '',
 			query: queryJoin([
 				properties.dataQuery[1],
 				bHasX ? config.axis.x.tf + ' PRESENT' : '',
@@ -210,8 +222,8 @@ newConfig.forEach((row) => row.forEach((config) => {
 */
 const rows = newConfig.length;
 const columns = newConfig[0].length;
-const nCharts = Array.from({length: rows}, (row, i) => {
-	return Array.from({length: columns}, (cell, j) => {
+const nCharts = Array.from({ length: rows }, (row, i) => {
+	return Array.from({ length: columns }, (cell, j) => {
 		const w = window.Width / columns;
 		const h = window.Height / rows * (i + 1);
 		const x = w * j;

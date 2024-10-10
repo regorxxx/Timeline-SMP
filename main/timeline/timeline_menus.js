@@ -1,9 +1,11 @@
 'use strict';
-//25/09/24
+//10/10/24
 
 /* exported onLbtnUpPoint, onLbtnUpSettings*/
 
-/* global _p:readable, checkQuery:readable, globTags:readable, globQuery:readable, round:readable, capitalizeAll:readable, properties:readable, WshShell:readable, popup:readable, _qCond:readable, overwriteProperties:readable, checkUpdate:readable, globSettings:readable , isArrayEqual:readable, _b:readable */
+/* global _p:readable, checkQuery:readable, globTags:readable, globQuery:readable, round:readable, capitalizeAll:readable, properties:readable, WshShell:readable, popup:readable, _qCond:readable, overwriteProperties:readable, checkUpdate:readable, globSettings:readable , isArrayEqual:readable, _b:readable, folders:readable */
+include('..\\..\\helpers\\helpers_xxx_file.js');
+/* global _open:readable, utf8:readable */
 include('..\\..\\helpers\\helpers_xxx_playlists.js');
 /* global sendToPlaylist:readable */
 include('..\\..\\helpers\\helpers_xxx_input.js');
@@ -25,7 +27,7 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 	menu.newEntry({ entryText: 'sep' });
 	// Menus
 	{	// Playlists
-		const subMenu = [menu.newMenu('Create playlist...'), menu.newMenu('Create AutoPlaylist...')];
+		const subMenu = [menu.newMenu('Create playlist'), menu.newMenu('Create AutoPlaylist')];
 		menu.newEntry({ menuName: subMenu[0], entryText: 'De-duplicated and randomized:', flags: MF_GRAYED });
 		menu.newEntry({ menuName: subMenu[0], entryText: 'sep' });
 		menu.newEntry({ menuName: subMenu[1], entryText: 'Configurable query:', flags: MF_GRAYED });
@@ -63,7 +65,7 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 	}
 	menu.newEntry({ entryText: 'sep' });
 	menu.newEntry({
-		entryText: 'Point statistics', func: () => {
+		entryText: 'Show point statistics...', func: () => {
 			const avg = this.data[0]
 				.map((pointArr) => pointArr.map((subPoint) => subPoint.y)).flat(Infinity)
 				.reduce((acc, curr, i) => acc + (curr - acc) / (i + 1), 0);
@@ -125,7 +127,7 @@ function onLbtnUpSettings() {
 	menu.newEntry({ entryText: 'sep' });
 	// Menus
 	{
-		const subMenu = menu.newMenu('Set X-axis data...');
+		const subMenu = menu.newMenu('Set X-axis data');
 		menu.newEntry({ menuName: subMenu, entryText: 'X-axis:', flags: MF_GRAYED });
 		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
 		const list = JSON.parse(properties.xEntries[1]);
@@ -158,7 +160,7 @@ function onLbtnUpSettings() {
 		});
 	}
 	{
-		const subMenu = menu.newMenu('Set Y-axis data...');
+		const subMenu = menu.newMenu('Set Y-axis data');
 		menu.newEntry({ menuName: subMenu, entryText: 'Y-axis:', flags: MF_GRAYED });
 		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
 		const list = JSON.parse(properties.yEntries[1]);
@@ -191,7 +193,7 @@ function onLbtnUpSettings() {
 		});
 	}
 	{
-		const subMenu = menu.newMenu('Set Z-axis data...');
+		const subMenu = menu.newMenu('Set Z-axis data');
 		menu.newEntry({ menuName: subMenu, entryText: 'Z-axis:', flags: MF_GRAYED });
 		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
 		const list = JSON.parse(properties.zEntries[1]);
@@ -233,7 +235,7 @@ function onLbtnUpSettings() {
 	}
 	menu.newEntry({ entryText: 'sep' });
 	{
-		const subMenu = menu.newMenu('Data source...');
+		const subMenu = menu.newMenu('Data source');
 		menu.newEntry({ menuName: subMenu, entryText: 'Select source for tracks:', flags: MF_GRAYED });
 		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
 		const options = [
@@ -268,7 +270,7 @@ function onLbtnUpSettings() {
 	}
 	menu.newEntry({ entryText: 'sep' });
 	{
-		const subMenu = menu.newMenu('Filter data...');
+		const subMenu = menu.newMenu('Filter data');
 		menu.newEntry({ menuName: subMenu, entryText: 'By query:', flags: MF_GRAYED });
 		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
 		const list = JSON.parse(properties.queryEntries[1]);
@@ -310,7 +312,7 @@ function onLbtnUpSettings() {
 	}
 	{
 		menu.newEntry({ entryText: 'sep' });
-		const subMenu = menu.newMenu('Other settings...');
+		const subMenu = menu.newMenu('Other settings');
 		menu.newEntry({
 			menuName: subMenu, entryText: 'Asynchronous calculation', func: () => {
 				properties.bAsync[1] = !properties.bAsync[1];
@@ -366,5 +368,16 @@ function onLbtnUpSettings() {
 			this.setData();
 		}
 	});
+	menu.newEntry({ entryText: 'sep' });
+	{	// Readme
+		const path = folders.xxx + 'helpers\\readme\\timeline.txt';
+		menu.newEntry({
+			entryText: 'Open readme...', func: () => {
+				const readme = _open(path, utf8);
+				if (readme.length) { fb.ShowPopupMessage(readme, 'Timeline-SMP'); }
+				else { console.log('Readme not found: ' + path); }
+			}
+		});
+	}
 	return menu;
 }

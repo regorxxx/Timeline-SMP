@@ -1,5 +1,5 @@
 ﻿'use strict';
-//10/10/24
+//24/10/24
 
 /* exported _chart */
 
@@ -1898,7 +1898,7 @@ function _chart({
 			}
 		}
 		this.checkConfig();
-		if (data || (dataManipulation || graph) && !(dataAsync || this.dataAsync)) { this.initData(); }
+		if (data || (dataManipulation || graph) && !dataAsync) { this.initData(); }
 		if (this.configuration.bLoadAsyncData) {
 			if (dataAsync) { this.initDataAsync(); }
 			else if (bCheckColors && this.dataAsync) { this.dataAsync.then(() => this.checkColors()); }

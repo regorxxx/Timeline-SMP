@@ -1,5 +1,5 @@
 ﻿'use strict';
-//10/10/24
+//23/10/24
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '1.5.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
@@ -44,7 +44,7 @@ let properties = {
 		}
 	)), { func: isJSON }],
 	data: ['Data options', JSON.stringify({
-		x: { key: 'Date', tf: _qCond(_t(globTags.bpm)) },
+		x: { key: 'Date', tf: _qCond(_t(globTags.date)) },
 		y: { key: 'Tracks', tf: '1' },
 		z: { key: 'Artist', tf: _qCond(globTags.artist) }
 	}), { func: isJSON }],
@@ -245,6 +245,7 @@ charts.forEach((chart) => {
 		const bHasTfX = Object.hasOwn(this.axis.x, 'tf') && this.axis.x.tf.length;
 		const bHasTfZ = Object.hasOwn(this.axis.z, 'tf') && this.axis.z.tf.length;
 		const dataSource = JSON.parse(properties.dataSource[1]);
+		const chartConfig = JSON.parse(properties.chart[1]);
 		const newConfig = {
 			[properties.bAsync[1] ? 'dataAsync' : 'data']: (properties.bAsync[1] ? getDataAsync : getData)({
 				option: bHasTfZ || bHasZ ? 'timeline' : 'tf',
@@ -261,6 +262,7 @@ charts.forEach((chart) => {
 				bProportional: entry.bProportional
 			}),
 			axis: {},
+			dataManipulation: chartConfig.dataManipulation
 		};
 		if (bHasX) { newConfig.axis.x = { key: entry.keyX, tf: _qCond(entry.x) }; }
 		if (bHasY) { newConfig.axis.y = { key: entry.keyY, tf: _qCond(entry.y), bProportional: entry.bProportional }; }

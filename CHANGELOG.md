@@ -25,6 +25,8 @@
 - Helpers: updated helpers.
 ### Removed
 ### Fixed
+- Data: 'Values shown' option was not applied for async data unless panel was reloaded.
+- Data: 'Force data update' option did not properly apply the current chart settings.
 
 ## [1.5.0] - 2024-10-09
 ### Added

@@ -17,10 +17,12 @@
 
 ## [Unreleased][]
 ### Added
+- UI: 'fill' chart type.
 - UI: settings button tooltip now shows 'Shift + Win + R. Click' shortcut to open SMP/JSpliter panel menu (which works globally on any script and panel, at any position).
 - Readme: readme is shown as popup on first installation and available at the settings menu.
 ### Changed
 - Statistics: general improvements and optimizations of point statistics. Now also show the total number of tracks before deduplication.
+- UI: X-axis keys are now shown even when not all keys can be displayed, omitting some of the values. This ensures that charts displaying numbers at the axis at least show the initial and some middle values. This applies for bars, lines, scatter, fill and timeline charts.
 - UI: minor adjustments to buttons tooltips.
 - UI: minor adjustments to menu entries.
 - Helpers: updated helpers.
@@ -29,6 +31,7 @@
 - Statistics: point statistics not working for 2D charts.
 - Data: 'Values shown' option was not applied for async data unless panel was reloaded.
 - Data: 'Force data update' option did not properly apply the current chart settings.
+- UI: minor highlighting errors on 'lines' chart type.
 
 ## [1.5.0] - 2024-10-09
 ### Added

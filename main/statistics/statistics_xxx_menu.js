@@ -1,5 +1,5 @@
 ﻿'use strict';
-//10/10/24
+//24/10/24
 
 /* exported bindMenu */
 
@@ -87,6 +87,7 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 			{ isEq: null, key: this.graph.type, value: null, newValue: 'scatter', entryText: 'Scatter' },
 			{ isEq: null, key: this.graph.type, value: null, newValue: 'bars', entryText: 'Bars' },
 			{ isEq: null, key: this.graph.type, value: null, newValue: 'lines', entryText: 'Lines' },
+			{ isEq: null, key: this.graph.type, value: null, newValue: 'fill', entryText: 'Fill' },
 			{ isEq: null, key: this.graph.type, value: null, newValue: 'doughnut', entryText: 'Doughnut' },
 			{ isEq: null, key: this.graph.type, value: null, newValue: 'pie', entryText: 'Pie' },
 		].forEach(createMenuOption('graph', 'type', subMenu, void (0), (option) => {

@@ -191,7 +191,41 @@ function _chart({
 					gr.DrawLine(newXPoint, newYPoint, xPoint, yPoint, this.graph.borderWidth, color);
 				};
 				paintPoint(color);
-				if (bFocused) { paintPoint(borderColor); }
+			}
+		});
+	};
+
+	this.paintFill = (gr, serie, i, x, y, w, h, maxY, tickW, last, xAxisValues) => { // NOSONAR
+		// Antialias for lines use gr.SetSmoothingMode(4) before calling
+		const selBar = tickW;
+		// Values
+		let valH;
+		const borderColor = RGBA(...toRGB(invert(this.colors[i], true)), getBrightness(...toRGB(this.colors[i])) < 50 ? 300 : 25);
+		const color = RGBA(...toRGB(this.colors[i]), this.graph.pointAlpha);
+		serie.forEach((value, j) => {
+			valH = value.y / maxY * (y - h);
+			const idx = xAxisValues.indexOf(value.x);
+			const xPoint = x + idx * tickW;
+			const yPoint = y - valH;
+			const bFocused = this.currPoint[0] === i && this.currPoint[1] === j;
+			const point = this.dataCoords[i][j] = {
+				x: j > 0 ? xPoint - selBar / 2 : xPoint,
+				y: yPoint,
+				w: (j > 0 && j !== last ? selBar : selBar / 2),
+				h: valH
+			};
+			if (bFocused) {
+				gr.FillSolidRect(point.x, point.y, point.w, point.h, borderColor);
+			}
+			if (j !== 0) {
+				const paintPoint = (color) => {
+					const newValH = serie[j - 1].y / maxY * (y - h);
+					const newXPoint = x + (idx - 1) * tickW;
+					const newYPoint = y - newValH;
+					const lineArr = [xPoint, yPoint, xPoint, y, newXPoint + 0.25, y, newXPoint + 0.25, newYPoint];
+					gr.FillPolygon(color, 0, lineArr);
+				};
+				paintPoint(color);
 			}
 		});
 	};
@@ -441,7 +475,8 @@ function _chart({
 		y -= this.axis.y.width;
 		let tickW, barW, offsetTickText = 0;
 		switch (this.graph.type) {
-			case 'lines': {
+			case 'lines':
+			case 'fill': {
 				x -= this.axis.x.width * 1 / 2;
 				tickW = (w - this.margin.leftAuto) / ((xAxisValuesLen - 1) || 1);
 				barW = 0;
@@ -450,7 +485,11 @@ function _chart({
 				const last = xAxisValuesLen - 1;
 				gr.SetSmoothingMode(4); // Antialias for lines
 				this.dataDraw.forEach((serie, i) => {
-					this.paintLines(gr, serie, i, x, y, w, h, maxY, tickW, last, xAxisValues);
+					if (this.graph.type === 'fill') {
+						this.paintFill(gr, serie, i, x, y, w, h, maxY, tickW, last, xAxisValues);
+					} else if (this.graph.type === 'lines') {
+						this.paintLines(gr, serie, i, x, y, w, h, maxY, tickW, last, xAxisValues);
+					}
 				});
 				gr.SetSmoothingMode(0);
 				break;
@@ -664,35 +703,42 @@ function _chart({
 				}
 				if (this.axis.x.show) {
 					if (this.axis.x.show && this.axis.x.labels) {
-						if (w / tickW < 30) { // Don't paint labels when they can't be fitted properly
-							const yPos = (y - h) + this.margin.top - this.graph.borderWidth / 2 - (this.axis.x.bAltLabels ? 0 : (y - h) / 2);
-							xAxisValues.forEach((valueX, i) => {
-								const xLabel = x + i * tickW;
-								if (this.axis.x.labels) {
-									const tickH = gr.CalcTextHeight(valueX, this.gFont);
-									const borderColor = RGBA(...toRGB(invert(xAxisColor, true)), 150);
-									const xTickW = gr.CalcTextWidth(valueX, this.gFont);
-									const flags = DT_CENTER | DT_END_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX;
-									gr.FillSolidRect(xLabel + tickW / 2 + offsetTickText - _scale(3) - xTickW / 2, yPos + tickH / 6, xTickW + _scale(4), tickH, borderColor);
-									gr.GdiDrawText(valueX, this.gFont, xAxisColorInverted, xLabel + offsetTickText, yPos + this.axis.y.width, tickW, this.h, flags);
-								}
-								const yLine = yPos + this.axis.x.width * 2;
-								let xLine = xLabel;
-								let hLine = yPos - this.axis.x.width - (this.axis.x.bAltLabels ? (y - h) / 2 : 0);
-								// Center line and ajust height if data is evenly grouped
-								if (this.graphSpecs.timeline.bAxisCenteredX) {
-									xLine += tickW / 2;
-									if (this.dataManipulation.group % 2 !== 0) {
-										const [serie, idx] = this.tracePoint(xLine, yPos - this.axis.x.width - (y - h) / 2);
-										if (serie !== -1 && idx !== -1) {
-											const coords = this.sizePoint(this.dataCoords[serie][idx], false);
-											hLine += coords.h;
-										}
+						const yPos = (y - h) + this.margin.top - this.graph.borderWidth / 2 - (this.axis.x.bAltLabels ? 0 : (y - h) / 2);
+						const minTickW = w / 30;
+						const bFitTicks = w / tickW < 30;
+						const drawLabelW = bFitTicks ? tickW : tickW * 3;
+						let lastLabel = x;
+						xAxisValues.forEach((valueX, i) => {
+							const xLabel = x + i * tickW;
+							// Don't paint labels when they can't be fitted properly
+							if (!bFitTicks) {
+								if (i !== 0 && (xLabel - lastLabel) < minTickW) { return; }
+								lastLabel = xLabel;
+							}
+							if (this.axis.x.labels) {
+								const tickH = gr.CalcTextHeight(valueX, this.gFont);
+								const borderColor = RGBA(...toRGB(invert(xAxisColor, true)), 150);
+								const xTickW = gr.CalcTextWidth(valueX, this.gFont);
+								const flags = DT_CENTER | DT_END_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX;
+								gr.FillSolidRect(xLabel + tickW / 2 + offsetTickText - _scale(3) - xTickW / 2, yPos + tickH / 6, xTickW + _scale(4), tickH, borderColor);
+								gr.GdiDrawText(valueX, this.gFont, xAxisColorInverted, xLabel + offsetTickText - (bFitTicks ? 0 : tickW), yPos + this.axis.y.width, drawLabelW, this.h, flags);
+							}
+							const yLine = yPos + this.axis.x.width * 2;
+							let xLine = xLabel;
+							let hLine = yPos - this.axis.x.width - (this.axis.x.bAltLabels ? (y - h) / 2 : 0);
+							// Center line and ajust height if data is evenly grouped
+							if (this.graphSpecs.timeline.bAxisCenteredX) {
+								xLine += tickW / 2;
+								if (this.dataManipulation.group % 2 !== 0) {
+									const [serie, idx] = this.tracePoint(xLine, yPos - this.axis.x.width - (y - h) / 2);
+									if (serie !== -1 && idx !== -1) {
+										const coords = this.sizePoint(this.dataCoords[serie][idx], false);
+										hLine += coords.h;
 									}
 								}
-								gr.DrawLine(xLine, yLine, xLine, hLine, this.axis.x.width / 2, xAxisColor);
-							});
-						}
+							}
+							gr.DrawLine(xLine, yLine, xLine, hLine, this.axis.x.width / 2, xAxisColor);
+						});
 					}
 					if (this.axis.x.key.length && this.axis.x.showKey) {
 						const offsetH = this.axis.x.labels ? gr.CalcTextHeight('A', this.gFont) : 0;
@@ -703,38 +749,45 @@ function _chart({
 			// eslint-disable-next-line no-fallthrough
 			case 'bars': // NOSONAR [fallthrough]
 				if (this.axis.x.show && this.axis.x.labels && this.axis.x.bAltLabels && this.graph.type !== 'timeline') {
-					if (w / tickW < 30) { // Don't paint labels when they can't be fitted properly
-						const yLabel = (y - h) / 2;
-						xAxisValues.forEach((valueX, i) => {
-							let xLabel = x + i * tickW;
-							valueX = this.configuration.bAltVerticalText ? valueX.flip() : valueX;
-							const xTickW = gr.CalcTextWidth(valueX, this.gFont);
-							const xtickH = gr.CalcTextHeight(valueX, this.gFont);
-							// Draw line and rectangle
-							const borderColor = RGBA(...toRGB(invert(xAxisColor, true)), 150);
-							gr.DrawLine(xLabel, y, xLabel, yLabel, this.axis.x.width / 2, xAxisColor);
-							xLabel -= (i === 0 ? 0 : xtickH / 2);
-							gr.FillSolidRect(xLabel, yLabel - xTickW - _scale(5), xtickH, xTickW + _scale(5), borderColor);
-							if (this.configuration.bAltVerticalText) { // Flip chars
-								gr.SetTextRenderingHint(TextRenderingHint.ClearTypeGridFit);
-								gr.DrawString(valueX, this.gFont, xAxisColor, xLabel, yLabel - xTickW - this.axis.x.width, tickW, this.h, StringFormatFlags.DirectionVertical);
-								gr.SetTextRenderingHint(TextRenderingHint.SystemDefault);
-							} else {
-								const keyH = gr.CalcTextHeight(valueX, this.gFont);
-								const img = gdi.CreateImage(xTickW, keyH);
-								const _gr = img.GetGraphics();
-								_gr.SetTextRenderingHint(TextRenderingHint.SingleBitPerPixelGridFit);
-								_gr.DrawString(valueX, this.gFont, RGBA(...toRGB(xAxisColor), 255), 0, 0, xTickW, keyH, StringFormatFlags.NoWrap);
-								_gr.SetTextRenderingHint(TextRenderingHint.AntiAliasGridFit);
-								_gr.DrawString(valueX, this.gFont, RGBA(...toRGB(xAxisColor), 123), 0, 0, xTickW, keyH, StringFormatFlags.NoWrap);
-								img.RotateFlip(RotateFlipType.Rotate90FlipXY);
-								img.ReleaseGraphics(_gr);
-								gr.SetInterpolationMode(InterpolationMode.NearestNeighbor);
-								gr.DrawImage(img, xLabel, yLabel - xTickW - this.axis.x.width, keyH, xTickW, 0, 0, img.Width, img.Height);
-								gr.SetInterpolationMode(InterpolationMode.Default);
-							}
-						});
-					}
+					const yLabel = (y - h) / 2;
+					const minTickW = w / 30;
+					const bFitTicks = w / tickW < 30;
+					if (!bFitTicks) { offsetTickText -= tickW; }
+					let lastLabel = x;
+					xAxisValues.forEach((valueX, i) => {
+						let xLabel = x + i * tickW;
+						// Don't paint labels when they can't be fitted properly
+						if (!bFitTicks) {
+							if (i !== 0 && (xLabel - lastLabel) < minTickW) { return; }
+							lastLabel = xLabel;
+						}
+						valueX = this.configuration.bAltVerticalText ? valueX.flip() : valueX;
+						const xTickW = gr.CalcTextWidth(valueX, this.gFont);
+						const xtickH = gr.CalcTextHeight(valueX, this.gFont);
+						// Draw line and rectangle
+						const borderColor = RGBA(...toRGB(invert(xAxisColor, true)), 150);
+						gr.DrawLine(xLabel, y, xLabel, yLabel, this.axis.x.width / 2, xAxisColor);
+						xLabel -= (i === 0 ? 0 : xtickH / 2);
+						gr.FillSolidRect(xLabel, yLabel - xTickW - _scale(5), xtickH, xTickW + _scale(5), borderColor);
+						if (this.configuration.bAltVerticalText) { // Flip chars
+							gr.SetTextRenderingHint(TextRenderingHint.ClearTypeGridFit);
+							gr.DrawString(valueX, this.gFont, xAxisColor, xLabel, yLabel - xTickW - this.axis.x.width, tickW, this.h, StringFormatFlags.DirectionVertical);
+							gr.SetTextRenderingHint(TextRenderingHint.SystemDefault);
+						} else {
+							const keyH = gr.CalcTextHeight(valueX, this.gFont);
+							const img = gdi.CreateImage(xTickW, keyH);
+							const _gr = img.GetGraphics();
+							_gr.SetTextRenderingHint(TextRenderingHint.SingleBitPerPixelGridFit);
+							_gr.DrawString(valueX, this.gFont, RGBA(...toRGB(xAxisColor), 255), 0, 0, xTickW, keyH, StringFormatFlags.NoWrap);
+							_gr.SetTextRenderingHint(TextRenderingHint.AntiAliasGridFit);
+							_gr.DrawString(valueX, this.gFont, RGBA(...toRGB(xAxisColor), 123), 0, 0, xTickW, keyH, StringFormatFlags.NoWrap);
+							img.RotateFlip(RotateFlipType.Rotate90FlipXY);
+							img.ReleaseGraphics(_gr);
+							gr.SetInterpolationMode(InterpolationMode.NearestNeighbor);
+							gr.DrawImage(img, xLabel, yLabel - xTickW - this.axis.x.width, keyH, xTickW, 0, 0, img.Width, img.Height);
+							gr.SetInterpolationMode(InterpolationMode.Default);
+						}
+					});
 				}
 				if (this.graph.multi) {
 					if (w / tickW < 30) { // Don't paint labels when they can't be fitted properly
@@ -826,36 +879,45 @@ function _chart({
 				// X Axis ticks
 				if (this.axis.x.show) {
 					if (this.graph.type !== 'timeline') {
-						if (w / tickW < 30) { // Don't paint labels when they can't be fitted properly
-							const last = xAxisValuesLen - 1;
-							const borderColor = RGBA(...toRGB(invert(xAxisColor, true)), 150);
-							xAxisValues.forEach((valueX, i) => {
-								const xtickH = gr.CalcTextHeight(valueX, this.gFont);
-								const xtickW = gr.CalcTextWidth(valueX, this.gFont);
-								const xLabel = x + i * tickW;
-								if (this.axis.x.labels && (this.graph.type !== 'bars' || !this.axis.x.bAltLabels)) {
-									if (i === 0 && offsetTickText) { // Fix for first label position
-										const zeroW = xLabel + offsetTickText + tickW - this.x - this.margin.leftAuto / 2;
-										if (this.axis.x.bAltLabels) { gr.FillSolidRect(this.x + this.margin.leftAuto + xOffsetKey - xtickW / 2 + _scale(2), y + this.axis.y.width * 3 / 2, xtickW + _scale(2), xtickH, borderColor); }
-										const flags = DT_LEFT | DT_END_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX;
-										gr.GdiDrawText(valueX, this.gFont, xAxisColor, this.x + this.margin.leftAuto / 2 + xOffsetKey, y + this.axis.y.width, zeroW, this.h, flags);
-									} else if (i === last) { // Fix for last label position
-										const lastW = xLabel + offsetTickText + tickW > w - this.margin.right
-											? this.x + w - (xLabel + offsetTickText) + this.margin.right
-											: tickW;
-										if (this.axis.x.bAltLabels) { gr.FillSolidRect(xLabel + offsetTickText + xOffsetKey + (lastW / 2 - xtickW) + _scale(2), y + this.axis.y.width * 3 / 2, xtickW + _scale(2), xtickH, borderColor); }
-										const flags = DT_CENTER | DT_END_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX;
-										gr.GdiDrawText(valueX, this.gFont, xAxisColor, xLabel + offsetTickText + xOffsetKey, y + this.axis.y.width, lastW - xOffsetKey, this.h, flags);
-									} else {
-										if (this.axis.x.bAltLabels) { gr.FillSolidRect(xLabel - xtickW / 2 - _scale(2), y + this.axis.y.width * 3 / 2, xtickW + _scale(2), xtickH, borderColor); }
-										const flags = DT_CENTER | DT_END_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX;
-										gr.GdiDrawText(valueX, this.gFont, xAxisColor, xLabel + offsetTickText, y + this.axis.y.width, tickW, this.h, flags);
-									}
+						const last = xAxisValuesLen - 1;
+						const borderColor = RGBA(...toRGB(invert(xAxisColor, true)), 150);
+						const minTickW = w / 30;
+						const bFitTicks = w / tickW < 30;
+						const drawLabelW = bFitTicks ? tickW : tickW * 3;
+						if (!bFitTicks) { offsetTickText -= tickW; }
+						let lastLabel = x;
+						xAxisValues.forEach((valueX, i) => {
+							const xtickH = gr.CalcTextHeight(valueX, this.gFont);
+							const xtickW = gr.CalcTextWidth(valueX, this.gFont);
+							let xLabel = x + i * tickW;
+							// Don't paint labels when they can't be fitted properly
+							if (!bFitTicks) {
+								if (i !== 0 && (xLabel - lastLabel) < minTickW) { return; }
+								lastLabel = xLabel;
+							}
+							if (this.axis.x.labels && (this.graph.type !== 'bars' || !this.axis.x.bAltLabels)) {
+								if (i === 0 && offsetTickText) { // Fix for first label position
+									const zeroW = xLabel + offsetTickText - this.x - this.margin.leftAuto / 2  + (bFitTicks ? tickW : drawLabelW);
+									const zeroX = this.x + this.margin.leftAuto / 2 + xOffsetKey + (bFitTicks ? 0 : tickW * 2 / 3);
+									if (this.axis.x.bAltLabels) { gr.FillSolidRect(this.x + this.margin.leftAuto + xOffsetKey - xtickW / 2 + _scale(2), y + this.axis.y.width * 3 / 2, xtickW + _scale(2), xtickH, borderColor); }
+									const flags = DT_LEFT | DT_END_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX;
+									gr.GdiDrawText(valueX, this.gFont, xAxisColor, zeroX, y + this.axis.y.width, zeroW, this.h, flags);
+								} else if (i === last) { // Fix for last label position
+									const lastW = xLabel + offsetTickText + tickW > w - this.margin.right
+										? this.x + w - (xLabel + offsetTickText) + this.margin.right
+										: tickW;
+									if (this.axis.x.bAltLabels) { gr.FillSolidRect(xLabel + offsetTickText + xOffsetKey + (lastW / 2 - xtickW) + _scale(2), y + this.axis.y.width * 3 / 2, xtickW + _scale(2), xtickH, borderColor); }
+									const flags = DT_CENTER | DT_END_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX;
+									gr.GdiDrawText(valueX, this.gFont, xAxisColor, xLabel + offsetTickText + xOffsetKey, y + this.axis.y.width, lastW - xOffsetKey, this.h, flags);
+								} else {
+									if (this.axis.x.bAltLabels) { gr.FillSolidRect(xLabel - xtickW / 2 - _scale(2), y + this.axis.y.width * 3 / 2, xtickW + _scale(2), xtickH, borderColor); }
+									const flags = DT_CENTER | DT_END_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX;
+									gr.GdiDrawText(valueX, this.gFont, xAxisColor, xLabel + offsetTickText, y + this.axis.y.width, drawLabelW, this.h, flags);
 								}
-								const xLine = xLabel + barW;
-								gr.DrawLine(xLine, y + this.axis.x.width * 2, xLine, y - this.axis.x.width, this.axis.x.width / 2, xAxisColor);
-							});
-						}
+							}
+							const xLine = xLabel + barW;
+							gr.DrawLine(xLine, y + this.axis.x.width * 2, xLine, y - this.axis.x.width, this.axis.x.width / 2, xAxisColor);
+						});
 						if (this.axis.x.key.length && this.axis.x.showKey) {
 							const offsetH = this.axis.x.labels ? gr.CalcTextHeight('A', this.gFont) : 0;
 							gr.GdiDrawText(this.axis.x.key, this.gFont, xAxisColor, x, y + this.axis.x.width + offsetH, w, this.h, DT_CENTER | DT_END_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX);

@@ -23,14 +23,14 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 	// Constants
 	const menu = new _menu();
 	const bShowAllPoints = this.graph.multi && ['scatter', 'lines', 'fill'].includes(this.graph.type);
-	const series = bShowAllPoints && this.dataDraw.length > 1
+	const points = bShowAllPoints && this.dataDraw.length > 1
 		? this.dataDraw.map((serie) => serie.find((p) => p.x === point.x)).flat(Infinity)
 		: [point];
 	// Header
 	menu.newEntry({ entryText: this.title, flags: MF_GRAYED });
 	menu.newEntry({ entryText: 'sep' });
 	// Menus
-	series.forEach((subPoint) => {
+	points.forEach((subPoint) => {
 		const menuName = menu.newMenu(subPoint.z);
 		{	// Playlists
 			const subMenu = [menu.newMenu('Create playlist', menuName), menu.newMenu('Create AutoPlaylist', menuName)];

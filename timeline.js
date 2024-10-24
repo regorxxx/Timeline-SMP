@@ -65,7 +65,7 @@ let properties = {
 		{ x: _t(globTags.style), keyX: 'Style' },
 	].map((v) => { return (Object.hasOwn(v, 'name') ? v : { ...v, name: 'By ' + v.keyX }); })), { func: isJSON }],
 	yEntries: ['Axis Y TF entries', JSON.stringify([ // Better use queries to filter by 0 and 1...
-		{ y: '1', keyY: 'Total Tracks', bProportional: false },
+		{ y: '1', keyY: 'Tracks', bProportional: false },
 		{ y: globTags.playCount, keyY: 'Listens', bProportional: false },
 		{ name: 'sep' },
 		{ y: globTags.playCount, keyY: 'Listens/Track', bProportional: true },

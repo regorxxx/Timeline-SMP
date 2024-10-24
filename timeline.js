@@ -1,5 +1,5 @@
 ﻿'use strict';
-//23/10/24
+//24/10/24
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '1.5.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
@@ -145,7 +145,7 @@ const defaultConfig = deepAssign()(
 	{
 		data: [],
 		x: 0, y: 0, w: 0, h: 0,
-		tooltipText: '\n\n(L. click to create playlist)\n(Use buttons to configure chart)',
+		tooltipText: '\n\n(L. click to show point menu)\n(Use buttons to configure chart)',
 		configuration: { bSlicePerKey: true },
 		callbacks: {
 			point: { onLbtnUp: onLbtnUpPoint },

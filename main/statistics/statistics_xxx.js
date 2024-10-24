@@ -1855,6 +1855,63 @@ function _chart({
 		return histogram;
 	};
 
+	this.computeStatisticsPoint = (point = this.getCurrentPoint(), precision = 1) => {
+		const serieIdx = this.dataDraw.length === 1 
+			? 0
+			: this.getCurrentPoint() === point 
+				? this.getCurrentPointIndex()
+				: this.dataDraw.findIndex((serie) => serie.findIndex((p) => {
+					return ['x', 'y', 'z'].every((c) => !p[c] && !point[c] || p[c] === point[c]);
+				}));
+		const bIs3D = Object.hasOwn(this.axis.z, 'tf') && this.axis.z.tf.length;
+		let currNum = 0, totalNum = 0;
+		const total = bIs3D
+			? this.data[serieIdx]
+				.map((pointArr) => pointArr.map((subPoint) => subPoint.y)).flat(Infinity)
+				.reduce((acc, curr) => { totalNum++; return acc + curr; }, 0)
+			: this.data[serieIdx]
+				.map((dataPoint) => dataPoint.y).flat(Infinity)
+				.reduce((acc, curr) => { totalNum++; return acc + curr; }, 0);
+		const totalCurr = bIs3D
+			? this.data[serieIdx]
+				.map((pointArr) => pointArr.filter((dataPoint) => dataPoint.z === point.z))
+				.map((pointArr) => pointArr.map((subPoint) => subPoint.y)).flat(Infinity)
+				.reduce((acc, curr) => { currNum++; return acc + curr; }, 0)
+			: total;
+		const avg = total / totalNum;
+		const avgCurr = bIs3D
+			? totalCurr / currNum
+			: avg;
+		const stats = {
+			global: {
+				total, 
+				avg,
+				avg100: avg / total * 100
+			}, 
+			current: {
+				total: totalCurr, 
+				total100: totalCurr / total * 100,
+				avg: avgCurr,
+				avg100: avgCurr / totalCurr * 100,
+				y: round(point.x, 1), 
+				y100: point.y / total * 100 
+			}
+		};
+		if (precision >= 0) {
+			['global', 'current'].forEach((key) => {
+				['total', 'avg', 'y'].forEach((subKey) => {
+					const item = stats[key];
+					if (Object.hasOwn(item, subKey)) {item[subKey] = round(item[subKey], precision);}
+				});
+				['total100', 'avg100', 'y100'].forEach((subKey) => {
+					const item = stats[key];
+					if (Object.hasOwn(item, subKey)) {item[subKey] = round(item[subKey], precision + 1);}
+				});
+			});
+		}
+		return stats;
+	};
+
 	this.expandData = (group = this.dataManipulation.group) => {
 		if (this.graph.multi) { // 3-dimensional data with every point having multiple {Y,Z} points
 			const series = this.data.map((serie) => { return [...(serie || [])]; });

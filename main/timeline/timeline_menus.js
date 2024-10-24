@@ -22,87 +22,75 @@ include('..\\..\\helpers-external\\namethatcolor\\ntc.js'); // For createBackgro
 function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-vars
 	// Constants
 	const menu = new _menu();
+	const bShowAllPoints = this.graph.multi && ['scatter', 'lines', 'fill'].includes(this.graph.type);
+	const series = bShowAllPoints && this.dataDraw.length > 1
+		? this.dataDraw.map((serie) => serie.find((p) => p.x === point.x)).flat(Infinity)
+		: [point];
 	// Header
 	menu.newEntry({ entryText: this.title, flags: MF_GRAYED });
 	menu.newEntry({ entryText: 'sep' });
 	// Menus
-	{	// Playlists
-		const subMenu = [menu.newMenu('Create playlist'), menu.newMenu('Create AutoPlaylist')];
-		menu.newEntry({ menuName: subMenu[0], entryText: 'De-duplicated and randomized:', flags: MF_GRAYED });
-		menu.newEntry({ menuName: subMenu[0], entryText: 'sep' });
-		menu.newEntry({ menuName: subMenu[1], entryText: 'Configurable query:', flags: MF_GRAYED });
-		menu.newEntry({ menuName: subMenu[1], entryText: 'sep' });
-		const currPoints = this.dataDraw.map((serie) => serie.find((newPoint) => newPoint.x === point.x)).filter(Boolean);
-		[
-			{ name: 'By ' + this.axis.x.key, query: this.axis.x.tf + ' IS ' + point.x, playlist: 'Timeline: ' + point.x },
-			{ name: 'By ' + this.axis.z.key, query: this.axis.z.tf + ' IS ' + point.z, playlist: 'Timeline: ' + point.z },
-			{
-				name: 'By ' + this.axis.x.key + ' and ' + this.axis.z.key, query: this.axis.x.tf + ' IS ' + point.x + ' AND ' + this.axis.z.tf + ' IS ' + point.z,
-				playlist: 'Timeline: ' + point.x + ' - ' + point.z
-			},
-			{
-				name: 'By ' + this.axis.x.key + ' and top ' + this.axis.z.key, query: this.axis.x.tf + ' IS ' + point.x + ' AND ' + _p(currPoints.map((newPoint) => this.axis.z.tf + ' IS ' + newPoint.z).join(' OR ')),
-				playlist: 'Timeline: ' + point.x + ' - Top ' + currPoints.length + ' ' + this.axis.z.key
-			}
-		].forEach((entry) => {
-			menu.newEntry({
-				menuName: subMenu[0], entryText: entry.name, func: () => {
-					if (checkQuery(entry.query)) {
-						let handleList = fb.GetQueryItems(fb.GetLibraryItems(), entry.query);
-						handleList = removeDuplicates({ handleList, sortOutput: '', checkKeys: globTags.remDupl, sortBias: globQuery.remDuplBias, bAdvTitle: true, bMultiple: true, bPreserveSort: false });
-						sendToPlaylist(handleList, entry.playlist);
-					}
+	series.forEach((subPoint) => {
+		const menuName = menu.newMenu(subPoint.z);
+		{	// Playlists
+			const subMenu = [menu.newMenu('Create playlist', menuName), menu.newMenu('Create AutoPlaylist', menuName)];
+			menu.newEntry({ menuName: subMenu[0], entryText: 'De-duplicated and randomized:', flags: MF_GRAYED });
+			menu.newEntry({ menuName: subMenu[0], entryText: 'sep' });
+			menu.newEntry({ menuName: subMenu[1], entryText: 'Configurable query:', flags: MF_GRAYED });
+			menu.newEntry({ menuName: subMenu[1], entryText: 'sep' });
+			const currPoints = this.dataDraw.map((serie) => serie.find((newPoint) => newPoint.x === point.x)).filter(Boolean);
+			[
+				{ name: 'By ' + this.axis.x.key, query: this.axis.x.tf + ' IS ' + subPoint.x, playlist: 'Timeline: ' + subPoint.x },
+				{ name: 'By ' + this.axis.z.key, query: this.axis.z.tf + ' IS ' + subPoint.z, playlist: 'Timeline: ' + subPoint.z },
+				{
+					name: 'By ' + this.axis.x.key + ' and ' + this.axis.z.key, query: this.axis.x.tf + ' IS ' + subPoint.x + ' AND ' + this.axis.z.tf + ' IS ' + subPoint.z,
+					playlist: 'Timeline: ' + subPoint.x + ' - ' + subPoint.z
+				},
+				{
+					name: 'By ' + this.axis.x.key + ' and top ' + this.axis.z.key, query: this.axis.x.tf + ' IS ' + subPoint.x + ' AND ' + _p(currPoints.map((newPoint) => this.axis.z.tf + ' IS ' + newPoint.z).join(' OR ')),
+					playlist: 'Timeline: ' + subPoint.x + ' - Top ' + currPoints.length + ' ' + this.axis.z.key
 				}
-			});
-			menu.newEntry({
-				menuName: subMenu[1], entryText: entry.name, func: () => {
-					if (checkQuery(entry.query)) {
-						plman.ActivePlaylist = plman.CreateAutoPlaylist(plman.PlaylistCount, entry.playlist, entry.query);
+			].forEach((entry) => {
+				menu.newEntry({
+					menuName: subMenu[0], entryText: entry.name, func: () => {
+						if (checkQuery(entry.query)) {
+							let handleList = fb.GetQueryItems(fb.GetLibraryItems(), entry.query);
+							handleList = removeDuplicates({ handleList, sortOutput: '', checkKeys: globTags.remDupl, sortBias: globQuery.remDuplBias, bAdvTitle: true, bMultiple: true, bPreserveSort: false });
+							sendToPlaylist(handleList, entry.playlist);
+						}
 					}
-				}
+				});
+				menu.newEntry({
+					menuName: subMenu[1], entryText: entry.name, func: () => {
+						if (checkQuery(entry.query)) {
+							plman.ActivePlaylist = plman.CreateAutoPlaylist(plman.PlaylistCount, entry.playlist, entry.query);
+						}
+					}
+				});
 			});
-		});
-	}
-	menu.newEntry({ entryText: 'sep' });
-	menu.newEntry({
-		entryText: 'Show point statistics...', func: () => {
+		}
+		menu.newEntry({ menuName, entryText: 'sep' });
+		menu.newEntry({ menuName, entryText: 'Show point statistics...', func: () => {
+			const stats = this.computeStatisticsPoint(subPoint);
 			const bIs3D = Object.hasOwn(this.axis.z, 'tf') && this.axis.z.tf.length;
-			let currNum = 0, totalNum = 0;
-			const total = bIs3D
-				? this.data[0]
-					.map((pointArr) => pointArr.map((subPoint) => subPoint.y)).flat(Infinity)
-					.reduce((acc, curr) => { totalNum++; return acc + curr; }, 0)
-				: this.data[0]
-					.map((dataPoint) => dataPoint.y).flat(Infinity)
-					.reduce((acc, curr) => { totalNum++; return acc + curr; }, 0);
-			const totalCurr = bIs3D
-				? this.data[0]
-					.map((pointArr) => pointArr.filter((dataPoint) => dataPoint.z === point.z))
-					.map((pointArr) => pointArr.map((subPoint) => subPoint.y)).flat(Infinity)
-					.reduce((acc, curr) => { currNum++; return acc + curr; }, 0)
-				: total;
-			const avg = total / totalNum;
-			const avgCurr = bIs3D
-				? totalCurr / currNum
-				: avg;
 			const libItems = fb.GetLibraryItems();
 			fb.ShowPopupMessage(
 				(
 					bIs3D
-						? '[Z]' + this.axis.z.key + ':\t' + point.z + '\n'
+						? '[Z]' + this.axis.z.key + ':\t' + subPoint.z + '\n'
 						: '[Z] None' + '\n'
 				) +
-				'[X]' + this.axis.x.key + ':\t' + point.x +
+				'[X]' + this.axis.x.key + ':\t' + subPoint.x +
 				'\n' +
-				'[Y]' + this.axis.y.key + ':\t' + round(point.y, 1) + ' ' + _p(round(point.y / total * 100, 2) + '%') +
+				'[Y]' + this.axis.y.key + ':\t' + round(subPoint.y, 1) + ' ' + _p(stats.current.y100 + '%') +
 				'\n' +
-				'Average ' + this.axis.y.key + ' (any ' + this.axis.x.key + '): ' + round(avgCurr, 1) + ' ' + _p(round(avgCurr / totalCurr * 100, 2) + '%') +
+				'Average ' + this.axis.y.key + ' (any ' + this.axis.x.key + '): ' + stats.current.avg  + ' ' + _p(stats.current.avg100 + '%') +
 				'\n' +
-				'Total ' + this.axis.y.key + ' (any ' + this.axis.x.key + '): ' + round(totalCurr, 1) +
+				'Total ' + this.axis.y.key + ' (any ' + this.axis.x.key + '): ' + stats.current.total +
 				'\n' +
 				(
 					bIs3D
-						? 'Total Tracks (any ' + this.axis.x.key + ') -not deduplicated-: ' + fb.GetQueryItems(libItems, this.axis.z.tf + ' IS ' + point.z).Count +
+						? 'Total Tracks (any ' + this.axis.x.key + ') -not deduplicated-: ' + fb.GetQueryItems(libItems, this.axis.z.tf + ' IS ' + subPoint.z).Count +
 							'\n'
 						: ''
 				) +
@@ -110,16 +98,16 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 					bIs3D
 						? '-'.repeat(40) +
 							'\n' +
-							'Global total ' + this.axis.y.key + ': ' + round(total, 1)+
+							'Global total ' + this.axis.y.key + ': ' + stats.global.total+
 							'\n' +
-							'Global average ' + this.axis.y.key + ' (any ' + this.axis.x.key + '): ' + round(avg, 1) + ' ' + _p(round(avg / total * 100, 2) + '%')
+							'Global average ' + this.axis.y.key + ' (any ' + this.axis.x.key + '): ' + stats.global.avg + ' ' + _p(stats.global.avg100 + '%')
 							+ '\n'
 						: ''
 				) +
 				'Total Tracks on library -not deduplicated-: ' + libItems.Count
 				, window.Name + ': Point statistics'
 			);
-		}
+		}});
 	});
 	return menu.btn_up(x, y);
 }

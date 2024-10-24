@@ -1,5 +1,5 @@
 'use strict';
-//10/10/24
+//24/10/24
 
 /* exported onLbtnUpPoint, onLbtnUpSettings*/
 
@@ -66,30 +66,57 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 	menu.newEntry({ entryText: 'sep' });
 	menu.newEntry({
 		entryText: 'Show point statistics...', func: () => {
-			const avg = this.data[0]
-				.map((pointArr) => pointArr.map((subPoint) => subPoint.y)).flat(Infinity)
-				.reduce((acc, curr, i) => acc + (curr - acc) / (i + 1), 0);
-			const avgCurr = this.data[0]
-				.map((pointArr) => pointArr.filter((dataPoint) => dataPoint.z === point.z))
-				.map((pointArr) => pointArr.map((subPoint) => subPoint.y)).flat(Infinity)
-				.reduce((acc, curr, i) => acc + (curr - acc) / (i + 1), 0);
+			const bIs3D = Object.hasOwn(this.axis.z, 'tf') && this.axis.z.tf.length;
+			let currNum = 0, totalNum = 0;
+			const total = bIs3D
+				? this.data[0]
+					.map((pointArr) => pointArr.map((subPoint) => subPoint.y)).flat(Infinity)
+					.reduce((acc, curr) => { totalNum++; return acc + curr; }, 0)
+				: this.data[0]
+					.map((dataPoint) => dataPoint.y).flat(Infinity)
+					.reduce((acc, curr) => { totalNum++; return acc + curr; }, 0);
+			const totalCurr = bIs3D
+				? this.data[0]
+					.map((pointArr) => pointArr.filter((dataPoint) => dataPoint.z === point.z))
+					.map((pointArr) => pointArr.map((subPoint) => subPoint.y)).flat(Infinity)
+					.reduce((acc, curr) => { currNum++; return acc + curr; }, 0)
+				: total;
+			const avg = total / totalNum;
+			const avgCurr = bIs3D
+				? totalCurr / currNum
+				: avg;
 			const libItems = fb.GetLibraryItems();
 			fb.ShowPopupMessage(
-				this.axis.z.key + ':\t' + point.z +
+				(
+					bIs3D
+						? '[Z]' + this.axis.z.key + ':\t' + point.z + '\n'
+						: '[Z] None' + '\n'
+				) +
+				'[X]' + this.axis.x.key + ':\t' + point.x +
 				'\n' +
-				this.axis.x.key + ':\t' + point.x +
+				'[Y]' + this.axis.y.key + ':\t' + round(point.y, 1) + ' ' + _p(round(point.y / total * 100, 2) + '%') +
 				'\n' +
-				this.axis.y.key + ':\t' + point.y + ' ' + _p(round(point.y / libItems.Count * 100, 2) + '%') +
+				'Average ' + this.axis.y.key + ' (any ' + this.axis.x.key + '): ' + round(avgCurr, 1) + ' ' + _p(round(avgCurr / totalCurr * 100, 2) + '%') +
 				'\n' +
-				'Average ' + this.axis.y.key + ' (any ' + this.axis.x.key + '): ' + Math.round(avgCurr) + ' ' + _p(round(avgCurr / libItems.Count * 100, 2) + '%') +
+				'Total ' + this.axis.y.key + ' (any ' + this.axis.x.key + '): ' + round(totalCurr, 1) +
 				'\n' +
-				'Total ' + this.axis.y.key + ' (any ' + this.axis.x.key + '): ' + fb.GetQueryItems(libItems, this.axis.z.tf + ' IS ' + point.z).Count +
-				'\n' +
-				'-'.repeat(40) +
-				'\n' +
-				'Global total ' + this.axis.y.key + ': ' + libItems.Count +
-				'\n' +
-				'Global average ' + this.axis.y.key + ' (any ' + this.axis.x.key + '): ' + Math.round(avg) + ' ' + _p(round(avg / libItems.Count * 100, 2) + '%')
+				(
+					bIs3D
+						? 'Total Tracks (any ' + this.axis.x.key + ') -not deduplicated-: ' + fb.GetQueryItems(libItems, this.axis.z.tf + ' IS ' + point.z).Count +
+							'\n'
+						: ''
+				) +
+				(
+					bIs3D
+						? '-'.repeat(40) +
+							'\n' +
+							'Global total ' + this.axis.y.key + ': ' + round(total, 1)+
+							'\n' +
+							'Global average ' + this.axis.y.key + ' (any ' + this.axis.x.key + '): ' + round(avg, 1) + ' ' + _p(round(avg / total * 100, 2) + '%')
+							+ '\n'
+						: ''
+				) +
+				'Total Tracks on library -not deduplicated-: ' + libItems.Count
 				, window.Name + ': Point statistics'
 			);
 		}

@@ -20,11 +20,13 @@
 - UI: settings button tooltip now shows 'Shift + Win + R. Click' shortcut to open SMP/JSpliter panel menu (which works globally on any script and panel, at any position).
 - Readme: readme is shown as popup on first installation and available at the settings menu.
 ### Changed
+- Statistics: general improvements and optimizations of point statistics. Now also show the total number of tracks before deduplication.
 - UI: minor adjustments to buttons tooltips.
 - UI: minor adjustments to menu entries.
 - Helpers: updated helpers.
 ### Removed
 ### Fixed
+- Statistics: point statistics not working for 2D charts.
 - Data: 'Values shown' option was not applied for async data unless panel was reloaded.
 - Data: 'Force data update' option did not properly apply the current chart settings.
 

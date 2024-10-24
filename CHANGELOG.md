@@ -21,8 +21,9 @@
 - UI: settings button tooltip now shows 'Shift + Win + R. Click' shortcut to open SMP/JSpliter panel menu (which works globally on any script and panel, at any position).
 - Readme: readme is shown as popup on first installation and available at the settings menu.
 ### Changed
-- UI: point menu now allows to select any point along the same Y-Z plane while using lines, scatter or fill charts. Previously it only worked on the point from the first serie (and that's why the other chart types exist though, to properly display multi-dimensional charts).
 - Statistics: general improvements and optimizations of point statistics. Now also show the total number of tracks before deduplication.
+- UI: point menu now allows to select any point along the same Y-Z plane while using lines, scatter or fill charts. Previously it only worked on the point from the first serie (and that's why the other chart types exist though, to properly display multi-dimensional charts).
+- UI: tooltip now shows all points along the same Y-Z plane while using lines, scatter or fill charts. See comment above.
 - UI: X-axis keys are now shown even when not all keys can be displayed, omitting some of the values. This ensures that charts displaying numbers at the axis at least show the initial and some middle values. This applies for bars, lines, scatter, fill and timeline charts.
 - UI: minor adjustments to buttons tooltips.
 - UI: minor adjustments to menu entries.

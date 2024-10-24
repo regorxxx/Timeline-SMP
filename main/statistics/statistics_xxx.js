@@ -1207,17 +1207,26 @@ function _chart({
 					this.currPoint = [serie, idx];
 					if (bPoint) {
 						bHand = true;
-						const serieData = this.dataDraw[serie];
-						const point = serieData[idx];
 						const bPercent = this.graph.type === 'doughnut' || this.graph.type === 'pie';
-						const percent = bPercent ? Math.round(point.y * 100 / serieData.reduce((acc, point) => acc + point.y, 0)) : null;
-						ttText = point.x + ': ' + round(point.y, 3) + (this.axis.y.key ? ' ' + this.axis.y.key : '') +
-							(bPercent ? ' ' + _p(percent + '%') : '') +
-							(Object.hasOwn(point, 'z') ? ' - ' + point.z : '') +
-							(this.tooltipText
-								? isFunction(tooltipText) ? tooltipText.call(this, point, serie, mask) : tooltipText
-								: ''
-							);
+						const refPoint = this.dataDraw[serie][idx];
+						const bShowAllPoints = this.graph.multi && ['scatter', 'lines', 'fill'].includes(this.graph.type);
+						const points = bShowAllPoints && this.dataDraw.length > 1
+							? this.dataDraw.map((serie) => serie.find((p) => p.x === refPoint.x)).flat(Infinity)
+							: [refPoint];
+						ttText = '';
+						points.forEach((point, i) => {
+							if (i > 0) {ttText += '\n';}
+							const percent = bPercent
+								? Math.round(point.y * 100 / this.dataDraw[i].reduce((acc, point) => acc + point.y, 0)) 
+								: null;
+							ttText += point.x + ': ' + round(point.y, 3) 
+								+ (this.axis.y.key ? ' ' + this.axis.y.key : '') +
+								(bPercent ? ' ' + _p(percent + '%') : '') +
+								(Object.hasOwn(point, 'z') ? ' - ' + point.z : '');
+						});
+						ttText += this.tooltipText
+							? isFunction(tooltipText) ? tooltipText.call(this, refPoint, serie, mask) : tooltipText
+							: '';
 					}
 				}
 				if (ttText.length) { this.tooltip.SetValue(ttText, true); }

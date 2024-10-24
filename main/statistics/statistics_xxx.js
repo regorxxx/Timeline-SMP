@@ -1211,7 +1211,7 @@ function _chart({
 						const refPoint = this.dataDraw[serie][idx];
 						const bShowAllPoints = this.graph.multi && ['scatter', 'lines', 'fill'].includes(this.graph.type);
 						const points = bShowAllPoints && this.dataDraw.length > 1
-							? this.dataDraw.map((serie) => serie.find((p) => p.x === refPoint.x)).flat(Infinity)
+							? this.dataDraw.map((s) => s.find((p) => p.x === refPoint.x)).flat(Infinity).filter(Boolean)
 							: [refPoint];
 						ttText = '';
 						points.forEach((point, i) => {

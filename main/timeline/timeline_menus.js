@@ -24,7 +24,7 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 	const menu = new _menu();
 	const bShowAllPoints = this.graph.multi && ['scatter', 'lines', 'fill'].includes(this.graph.type);
 	const points = bShowAllPoints && this.dataDraw.length > 1
-		? this.dataDraw.map((serie) => serie.find((p) => p.x === point.x)).flat(Infinity)
+		? this.dataDraw.map((serie) => serie.find((p) => p.x === point.x)).flat(Infinity).filter(Boolean)
 		: [point];
 	// Header
 	menu.newEntry({ entryText: this.title, flags: MF_GRAYED });

@@ -148,9 +148,17 @@ const defaultConfig = deepAssign()(
 		tooltipText: '\n\n(L. click to show point menu)\n(Use buttons to configure chart)',
 		configuration: { bSlicePerKey: true },
 		callbacks: {
-			point: { onLbtnUp: onLbtnUpPoint },
-			settings: { onLbtnUp: function (x, y, mask) { onLbtnUpSettings.call(this).btn_up(x, y); } }, // eslint-disable-line no-unused-vars
-			display: { onLbtnUp: function (x, y, mask) { createStatisticsMenu.call(this).btn_up(x, y, ['sep', createBackgroundMenu.call(background, { menuName: 'Background' }, void (0), { nameColors: true })]); } }, // eslint-disable-line no-unused-vars
+			point: { 
+				onLbtnUp: onLbtnUpPoint 
+			},
+			settings: { 
+				onLbtnUp: function (x, y, mask) { onLbtnUpSettings.call(this).btn_up(x, y); }, // eslint-disable-line no-unused-vars
+				onDblLbtn: function (x, y, mask) { this.setData(); }, // eslint-disable-line no-unused-vars
+				tooltip: 'Main settings\n\nDouble Click to force data update\n\n(Shift + Win + R. Click\nfor SMP panel menu)'
+			},
+			display: { 
+				onLbtnUp: function (x, y, mask) { createStatisticsMenu.call(this).btn_up(x, y, ['sep', createBackgroundMenu.call(background, { menuName: 'Background' }, void (0), { nameColors: true })]); } // eslint-disable-line no-unused-vars
+			},
 			config: {
 				change: function (config, changeArgs, callbackArgs) {
 					if (callbackArgs && callbackArgs.bSaveProperties) {

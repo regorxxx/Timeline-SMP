@@ -31,9 +31,9 @@ function _chart({
 	callbacks = {
 		point: {/* onLbtnUp, onRbtnUp, onDblLbtn */ },
 		focus: {/* onMouseWwheel, onRbtnUp */ },
-		settings: {/* onLbtnUp, onRbtnUp, onDblLbtn */ },
-		display: {/* onLbtnUp, onRbtnUp, onDblLbtn */ },
-		zoom: {/* onLbtnUp, onRbtnUp, onDblLbtn */ },
+		settings: {/* onLbtnUp, onRbtnUp, onDblLbtn, tooltip */ },
+		display: {/* onLbtnUp, onRbtnUp, onDblLbtn, tooltip */ },
+		zoom: {/* onLbtnUp, onRbtnUp, onDblLbtn, tooltip */ },
 		custom: {/* onLbtnUp, onRbtnUp, onDblLbtn, tooltip */ },
 		config: {/* change, backgroundColor */ }
 	},
@@ -73,12 +73,13 @@ function _chart({
 				onMouseWwheel: this.zoomX,
 				onRbtnUp: null
 			},
-			settings: { onLbtnUp: null, onRbtnUp: null, onDblLbtn: null },
-			display: { onLbtnUp: null, onRbtnUp: null, onDblLbtn: null },
+			settings: { onLbtnUp: null, onRbtnUp: null, onDblLbtn: null, tooltip: null },
+			display: { onLbtnUp: null, onRbtnUp: null, onDblLbtn: null, tooltip: null },
 			zoom: {
 				onLbtnUp: (x, y, mask) => this.zoomX(mask === MK_SHIFT || this.getCurrentRange() === 1 ? -1 : 1),
 				onDblLbtn: (x, y, mask) => { this.zoomX(mask === MK_SHIFT || this.getCurrentRange() === 1 ? -Infinity : Infinity); },
 				onRbtnUp: null,
+				tooltip: null
 			},
 			custom: { onLbtnUp: null, onRbtnUp: null, onDblLbtn: null, tooltip: null },
 			config: { change: null, backgroundColor: null }
@@ -1164,19 +1165,25 @@ function _chart({
 				if (this.buttons.settings) {
 					if (this.settingsBtn.move(x, y)) {
 						bHand = true;
-						ttText = 'Main settings\n\n(Shift + Win + R. Click\nfor SMP panel menu)';
+						ttText = this.callbacks.settings.tooltip
+							? isFunction(this.callbacks.settings.tooltip) ? this.callbacks.settings.tooltip() : this.callbacks.settings.tooltip
+							: 'Main settings\n\n(Shift + Win + R. Click\nfor SMP panel menu)';
 					}
 				}
 				if (this.buttons.display) {
 					if (this.displayBtn.move(x, y)) {
 						bHand = true;
-						ttText = 'Display settings';
+						ttText = this.callbacks.display.tooltip
+							? isFunction(this.callbacks.display.tooltip) ? this.callbacks.display.tooltip() : this.callbacks.display.tooltip
+							: 'Display settings';
 					}
 				}
 				if (this.buttons.zoom) {
 					if (this.zoomBtn.move(x, y)) {
 						bHand = true;
-						ttText = 'Press Shift to zoom out\n\nDouble CLick for max zoom in/out';
+						ttText = this.callbacks.zoom.tooltip
+							? isFunction(this.callbacks.zoom.tooltip) ? this.callbacks.zoom.tooltip() : this.callbacks.zoom.tooltip
+							: 'Press Shift to zoom out\n\nDouble Click for max zoom in/out';
 					}
 				}
 				if (this.buttons.custom) {

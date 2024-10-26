@@ -339,6 +339,9 @@ function onLbtnUpSettings() {
 		menu.newEntry({
 			menuName: subMenu, entryText: 'Init data on startup', func: () => {
 				this.changeConfig({ configuration: { bLoadAsyncData: !this.configuration.bLoadAsyncData }, callbackArgs: { bSaveProperties: true }});
+				if (this.configuration.bLoadAsyncData) {
+					fb.ShowPopupMessage('Chart will not display any data upon panel reload/startup until it\'s manually forced to do so using \'Force data update\' menu entry.\n\nThis may be used to improve loading times if chart is only meant to be used on demand.', 'Timeline-SMP');
+				}
 			}
 		});
 		menu.newCheckMenuLast(() => this.configuration.bLoadAsyncData);

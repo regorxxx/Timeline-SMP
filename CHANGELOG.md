@@ -20,6 +20,7 @@
 - Data: new setting to avoid data loading on startup. This may be used to calculate data and display the chart only on demand. Previously there was an option to force a data update, but it was available only after loading it at least once. Thus charts associated to the entire library were always calculated at least once at startup, which may had been undesirable.
 - UI: 'fill' chart type.
 - UI: settings button tooltip now shows 'Shift + Win + R. Click' shortcut to open SMP/JSpliter panel menu (which works globally on any script and panel, at any position).
+- UI: settings button tooltip now shows 'Double Click' shortcut to force data update (see above).
 - UI: scrolling cursor is displayed when scrolling using mouse + dragging.
 - Readme: readme is shown as popup on first installation and available at the settings menu.
 ### Changed

@@ -1,5 +1,5 @@
 ﻿'use strict';
-//24/10/24
+//25/10/24
 
 /* exported _chart */
 
@@ -1214,15 +1214,17 @@ function _chart({
 							? this.dataDraw.map((s) => s.find((p) => p.x === refPoint.x)).flat(Infinity).filter(Boolean)
 							: [refPoint];
 						ttText = '';
+						const bMultiLine = points.length > 1;
+						ttText += '[X]' + this.axis.x.key + ' - [Y]' + this.axis.y.key + (this.graph.multi ? ' - [Z]' + this.axis.z.key : '') + '\n\n';
 						points.forEach((point, i) => {
-							if (i > 0) {ttText += '\n';}
 							const percent = bPercent
-								? Math.round(point.y * 100 / this.dataDraw[i].reduce((acc, point) => acc + point.y, 0)) 
+								? Math.round(point.y * 100 / this.dataDraw[i].reduce((acc, point) => acc + point.y, 0))
 								: null;
-							ttText += point.x + ': ' + round(point.y, 3) 
+							ttText += (i === 0 || !bMultiLine ? point.x + ':' : '') + (bMultiLine ? '\n\t' : ' ');
+							ttText += round(point.y, 3)
 								+ (this.axis.y.key ? ' ' + this.axis.y.key : '') +
 								(bPercent ? ' ' + _p(percent + '%') : '') +
-								(Object.hasOwn(point, 'z') ? ' - ' + point.z : '');
+								(this.graph.multi ? ' - ' + point.z : '');
 						});
 						ttText += this.tooltipText
 							? isFunction(tooltipText) ? tooltipText.call(this, refPoint, serie, mask) : tooltipText

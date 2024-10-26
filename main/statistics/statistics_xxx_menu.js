@@ -1,5 +1,5 @@
 ﻿'use strict';
-//24/10/24
+//26/10/24
 
 /* exported bindMenu */
 
@@ -268,12 +268,12 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 		}
 		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
 		menu.newEntry({
-			menuName: subMenu, entryText: 'Colorblind safe?', func: () => {
+			menuName: subMenu, entryText: 'Colorblind safe', func: () => {
 				this.colors = [];
-				this.changeConfig({ chroma: { colorBlindSafe: !this.chroma.colorBlindSafe, callbackArgs: { bSaveProperties: true } } });
+				this.changeConfig({ chroma: { colorBlindSafe: !this.chroma.colorBlindSafe }, callbackArgs: { bSaveProperties: true } });
 			}, flags: this.chroma.scheme === 'random' ? MF_GRAYED : MF_STRING
 		});
-		menu.newCheckMenu(subMenu, 'Colorblind safe?', void (0), () => { return this.chroma.colorBlindSafe; });
+		menu.newCheckMenu(subMenu, 'Colorblind safe', void (0), () => { return this.chroma.colorBlindSafe; });
 	}
 	{
 		const type = this.graph.type.toLowerCase();

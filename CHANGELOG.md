@@ -29,6 +29,7 @@
 - UI: X-axis keys are now shown even when not all keys can be displayed, omitting some of the values. This ensures that charts displaying numbers at the axis at least show the initial and some middle values. This applies for bars, lines, scatter, fill and timeline charts.
 - UI: minor adjustments to buttons tooltips.
 - UI: minor adjustments to menu entries.
+- UI: left scrolling button position is now adjusted following Y-Axis display (except for doughnut and pie charts).
 - Helpers: updated helpers.
 ### Removed
 ### Fixed

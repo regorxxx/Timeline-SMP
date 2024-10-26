@@ -1414,7 +1414,9 @@ function _chart({
 	this.hasToolbar = false;
 	this.buttonsCoords = { x: () => this.x + this.w - _scale(26), y: () => this.y + _scale(12), size: _scale(24) };
 	this.resizeButtons = () => {
-		this.leftBtn.x = this.x;
+		this.leftBtn.x = this.axis.y.show && !['doughnut', 'pie'].includes(this.graph.type)
+			? this.x + this.margin.leftAuto * 2
+			: this.x;
 		this.leftBtn.y = (this.y + this.h) / 2;
 		this.leftBtn.w = this.buttonsCoords.size / 2;
 		this.rightBtn.x = this.x + this.w - this.rightBtn.w;
@@ -2009,6 +2011,7 @@ function _chart({
 			if (axis.x) { this.axis.x = { ...this.axis.x, ...axis.x }; }
 			if (axis.y) { this.axis.y = { ...this.axis.y, ...axis.y }; }
 			if (axis.z) { this.axis.z = { ...this.axis.z, ...axis.z }; }
+			if (Object.hasOwn(axis.y, 'show')) {this.resizeButtons();}
 		}
 		if (graphSpecs) {
 			if (graphSpecs.timeline) { this.graphSpecs.timeline = { ...this.graphSpecs.timeline, ...graphSpecs.timeline }; }

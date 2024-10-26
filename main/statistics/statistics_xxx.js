@@ -1,5 +1,5 @@
 ﻿'use strict';
-//25/10/24
+//26/10/24
 
 /* exported _chart */
 
@@ -943,7 +943,7 @@ function _chart({
 
 	this.paintButtons = (gr, bHideToolbar = false) => {
 		const color = invert(this.callbacks.config.backgroundColor ? this.callbacks.config.backgroundColor()[0] : this.background.color || this.axis.x.color, true);
-		if (this.buttons.xScroll) {
+		if (this.buttons.xScroll && this.getCurrentRange() < this.getMaxRange()) {
 			this.leftBtn.paint(gr, color);
 			this.rightBtn.paint(gr, color);
 		}
@@ -1241,6 +1241,21 @@ function _chart({
 		return false;
 	};
 
+	this.isOnButton = (x, y) => {
+		if (!window.ID) { return false; }
+		if (this.pop.isEnabled()) {return false; }
+		if (this.trace(x, y)) {
+			return [
+				...(this.buttons.xScroll ? ['leftBtn', 'rightBtn'] : []),
+				(this.buttons.settings ? 'settingsBtn' : ''),
+				(this.buttons.display ? 'displayBtn' : ''),
+				(this.buttons.zoom ? 'zoomBtn' : ''),
+				(this.buttons.custom ? 'custom' : '')
+			].filter(Boolean).some((button) => this[button].move(x, y));
+		}
+		return false;
+	};
+
 	this.leavePoints = (cleanNear = true) => {
 		if (cleanNear) { this.nearPoint = [-1, -1]; }
 		if (this.currPoint[0] !== -1 || this.currPoint[1] !== -1) {
@@ -1317,6 +1332,10 @@ function _chart({
 		const points = Math.max(...this.stats.points);
 		const currSlice = [Math.max(this.dataManipulation.slice[0], 0), Math.min(this.dataManipulation.slice[1], points)];
 		return Math.max(Math.min(currSlice[1] - currSlice[0], points), 1);
+	};
+
+	this.getMaxRange = () => {
+		return Math.max(...this.stats.points);
 	};
 
 	let prevX = null;

@@ -30,6 +30,7 @@
 - UI: minor adjustments to buttons tooltips.
 - UI: minor adjustments to menu entries.
 - UI: left scrolling button position is now adjusted following Y-Axis display (except for doughnut and pie charts).
+- UI: scrolling buttons are now shown only when the chart is not showing all data (no zoom).
 - Helpers: updated helpers.
 ### Removed
 ### Fixed

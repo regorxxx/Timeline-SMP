@@ -1,5 +1,5 @@
 'use strict';
-//24/10/24
+//26/10/24
 
 /* exported onLbtnUpPoint, onLbtnUpSettings*/
 
@@ -72,30 +72,30 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 		menu.newEntry({ menuName, entryText: 'sep' });
 		menu.newEntry({ menuName, entryText: 'Show point statistics...', func: () => {
 			const stats = this.computeStatisticsPoint(subPoint);
-			const bIs3D = Object.hasOwn(this.axis.z, 'tf') && this.axis.z.tf.length;
 			const libItems = fb.GetLibraryItems();
 			fb.ShowPopupMessage(
-				(
-					bIs3D
-						? '[Z]' + this.axis.z.key + ':\t' + subPoint.z + '\n'
-						: '[Z] None' + '\n'
-				) +
+				'[X]' + this.axis.x.key + ' - [Y]' + this.axis.y.key + (this.graph.multi ? ' - [Z]' + this.axis.z.key : '') + '\n\n' +
 				'[X]' + this.axis.x.key + ':\t' + subPoint.x +
 				'\n' +
 				'[Y]' + this.axis.y.key + ':\t' + round(subPoint.y, 1) + ' ' + _p(stats.current.y100 + '%') +
 				'\n' +
+				(
+					this.graph.multi
+						? '[Z]' + this.axis.z.key + ':\t' + subPoint.z + '\n'
+						: '[Z] None' + '\n'
+				) +
 				'Average ' + this.axis.y.key + ' (any ' + this.axis.x.key + '): ' + stats.current.avg  + ' ' + _p(stats.current.avg100 + '%') +
 				'\n' +
 				'Total ' + this.axis.y.key + ' (any ' + this.axis.x.key + '): ' + stats.current.total +
 				'\n' +
 				(
-					bIs3D
+					this.graph.multi
 						? 'Total Tracks (any ' + this.axis.x.key + ') -not deduplicated-: ' + fb.GetQueryItems(libItems, this.axis.z.tf + ' IS ' + subPoint.z).Count +
 							'\n'
 						: ''
 				) +
 				(
-					bIs3D
+					this.graph.multi
 						? '-'.repeat(40) +
 							'\n' +
 							'Global total ' + this.axis.y.key + ': ' + stats.global.total+
@@ -337,11 +337,18 @@ function onLbtnUpSettings() {
 		menu.newCheckMenuLast(() => properties.bAsync[1]);
 		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
 		menu.newEntry({
+			menuName: subMenu, entryText: 'Init data on startup', func: () => {
+				this.changeConfig({ configuration: { bLoadAsyncData: !this.configuration.bLoadAsyncData }, callbackArgs: { bSaveProperties: true }});
+			}
+		});
+		menu.newCheckMenuLast(() => this.configuration.bLoadAsyncData);
+		menu.newEntry({
 			menuName: subMenu, entryText: 'Auto-update data sources', func: () => {
 				properties.bAutoData[1] = !properties.bAutoData[1];
 				overwriteProperties(properties);
 			}, flags: dataSource.sourceType === 'library' ? MF_GRAYED : MF_STRING
 		});
+		menu.appendToLast(dataSource.sourceType === 'library' ? '\t[non library]' : '');
 		menu.newCheckMenuLast(() => properties.bAutoData[1]);
 		const playingTF = JSON.parse(properties.playingTF[1]).map((tag) => tag.toUpperCase());
 		const bAlways = isArrayEqual(playingTF, ['*']);

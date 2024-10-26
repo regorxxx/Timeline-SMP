@@ -1245,13 +1245,7 @@ function _chart({
 		if (!window.ID) { return false; }
 		if (this.pop.isEnabled()) {return false; }
 		if (this.trace(x, y)) {
-			return [
-				...(this.buttons.xScroll ? ['leftBtn', 'rightBtn'] : []),
-				(this.buttons.settings ? 'settingsBtn' : ''),
-				(this.buttons.display ? 'displayBtn' : ''),
-				(this.buttons.zoom ? 'zoomBtn' : ''),
-				(this.buttons.custom ? 'custom' : '')
-			].filter(Boolean).some((button) => this[button].move(x, y));
+			return this.getButtonKeys().filter(Boolean).some((button) => this[button].move(x, y));
 		}
 		return false;
 	};
@@ -1993,7 +1987,17 @@ function _chart({
 		Config related
 	*/
 
-	this.changeConfig = ({ data, dataAsync = null, colors, chroma, graph, dataManipulation, background, grid, axis, graphSpecs, margin, x, y, w, h, title, configuration, gFont, bPaint = true, callback = this.callbacks.config.change /* (config, arguments, callbackArgs) => void(0) */, callbackArgs = null }) => {
+	this.getButtonKeys = () => {
+		return [
+			...(this.buttons.xScroll ? ['leftBtn', 'rightBtn'] : []),
+			(this.buttons.settings ? 'settingsBtn' : ''),
+			(this.buttons.display ? 'displayBtn' : ''),
+			(this.buttons.zoom ? 'zoomBtn' : ''),
+			(this.buttons.custom ? 'custom' : '')
+		];
+	};
+
+	this.changeConfig = ({ data, dataAsync = null, colors, chroma, graph, dataManipulation, background, grid, axis, graphSpecs, margin, x, y, w, h, title, configuration, gFont, bPaint = true, bForceLoadData = false, callback = this.callbacks.config.change /* (config, arguments, callbackArgs) => void(0) */, callbackArgs = null }) => {
 		let bCheckColors = false;
 		if (gFont) { this.gFont = gFont; }
 		if (this.data && this.data.length) {
@@ -2051,7 +2055,7 @@ function _chart({
 		}
 		this.checkConfig();
 		if (data || (dataManipulation || graph) && !dataAsync) { this.initData(); }
-		if (this.configuration.bLoadAsyncData) {
+		if (this.configuration.bLoadAsyncData || bForceLoadData) {
 			if (dataAsync) { this.initDataAsync(); }
 			else if (bCheckColors && this.dataAsync) { this.dataAsync.then(() => this.checkColors()); }
 		} // May be managed by the chart or externally

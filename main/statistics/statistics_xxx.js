@@ -1867,14 +1867,14 @@ function _chart({
 	};
 
 	this.computeStatisticsPoint = (point = this.getCurrentPoint(), precision = 1) => {
-		const serieIdx = this.dataDraw.length === 1 
+		const serieIdx = this.dataDraw.length === 1
 			? 0
-			: this.getCurrentPoint() === point 
+			: this.getCurrentPoint() === point
 				? this.getCurrentPointIndex()
 				: this.dataDraw.findIndex((serie) => serie.findIndex((p) => {
 					return ['x', 'y', 'z'].every((c) => !p[c] && !point[c] || p[c] === point[c]);
 				}));
-		const bIs3D = Object.hasOwn(this.axis.z, 'tf') && this.axis.z.tf.length;
+		const bIs3D = this.graph.multi;
 		let currNum = 0, totalNum = 0;
 		const total = bIs3D
 			? this.data[serieIdx]
@@ -1895,28 +1895,28 @@ function _chart({
 			: avg;
 		const stats = {
 			global: {
-				total, 
+				total,
 				avg,
 				avg100: avg / total * 100
-			}, 
+			},
 			current: {
-				total: totalCurr, 
+				total: totalCurr,
 				total100: totalCurr / total * 100,
 				avg: avgCurr,
 				avg100: avgCurr / totalCurr * 100,
-				y: round(point.x, 1), 
-				y100: point.y / total * 100 
+				y: round(point.x, 1),
+				y100: point.y / total * 100
 			}
 		};
 		if (precision >= 0) {
 			['global', 'current'].forEach((key) => {
 				['total', 'avg', 'y'].forEach((subKey) => {
 					const item = stats[key];
-					if (Object.hasOwn(item, subKey)) {item[subKey] = round(item[subKey], precision);}
+					if (Object.hasOwn(item, subKey)) { item[subKey] = round(item[subKey], precision); }
 				});
 				['total100', 'avg100', 'y100'].forEach((subKey) => {
 					const item = stats[key];
-					if (Object.hasOwn(item, subKey)) {item[subKey] = round(item[subKey], precision + 1);}
+					if (Object.hasOwn(item, subKey)) { item[subKey] = round(item[subKey], precision + 1); }
 				});
 			});
 		}
@@ -2350,17 +2350,28 @@ function _chart({
 	};
 
 	this.setDefaults();
+	/** @type {GdiFont} */
 	this.gFont = gFont;
+	/** @type {any[][]} */
 	this.data = data;
+	/** @type {Promise.<any[][]>} */
 	this.dataAsync = dataAsync;
+	/** @type {any[][]>} */
 	this.dataDraw = data || [];
+	/** @type {any[][][]>} */
 	this.dataCoords = this.dataDraw.map(() => { return []; });
 	this.dataManipulation = { ...this.dataManipulation, ...(dataManipulation || {}) };
+	/** @type {null|string[]} */
 	this.sortKey = null;
+	/** @type {number}} */
 	this.series = data ? data.length : 0;
+	/** @type {{type: string, multi: Boolean, borderWidth: number, point:'circle'|'cross'|'triangle', pointAlpha: number}} */
 	this.graph = { ...this.graph, ...(graph || {}) };
+	/** @type {{color: number, image: {imageGDI: GdiGraphics}}} */
 	this.background = { ...this.background, ...(background || {}) };
+	/** @type {nunmber[]|number[][]} */
 	this.colors = colors;
+	/** @type {{scheme: 'diverging'|'qualitative'|'sequential'|'random'|number[], colorBlindSafe: Boolean, interpolation: 'lrgb'|'rgb'|'lab'|'hsl'|'lch'}} @see https://vis4.net/chromajs/#color-scales */
 	this.chroma = { ...this.chroma, ...(chroma || {}) };
 	if (axis) {
 		if (axis.x) { this.axis.x = { ...this.axis.x, ...axis.x }; }
@@ -2371,6 +2382,7 @@ function _chart({
 		if (grid.x) { this.grid.x = { ...this.grid.x, ...grid.x }; }
 		if (grid.y) { this.grid.y = { ...this.grid.y, ...grid.y }; }
 	}
+	/** @type {{left: number, right: number, top: number, bottom: number}} */
 	this.margin = { ...this.margin, ...(margin || {}) };
 	if (graphSpecs) {
 		if (graphSpecs.timeline) { this.graphSpecs.timeline = { ...this.graphSpecs.timeline, ...graphSpecs.timeline }; }

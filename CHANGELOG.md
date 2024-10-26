@@ -17,6 +17,7 @@
 
 ## [Unreleased][]
 ### Added
+- Data: new setting to avoid data loading on startup. This may be used to calculate data and display the chart only on demand. Previously there was an option to force a data update, but it was available only after loading it at least once. Thus charts associated to the entire library were always calculated at least once at startup, which may had been undesirable.
 - UI: 'fill' chart type.
 - UI: settings button tooltip now shows 'Shift + Win + R. Click' shortcut to open SMP/JSpliter panel menu (which works globally on any script and panel, at any position).
 - UI: scrolling cursor is displayed when scrolling using mouse + dragging.
@@ -38,6 +39,7 @@
 - Data: 'Values shown' option was not applied for async data unless panel was reloaded.
 - Data: 'Force data update' option did not properly apply the current chart settings.
 - UI: minor highlighting errors on 'lines' chart type.
+- UI: Color palette 'colorblind safe' setting was not saved properly between sessions.
 
 ## [1.5.0] - 2024-10-09
 ### Added

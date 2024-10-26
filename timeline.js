@@ -1,5 +1,5 @@
 ﻿'use strict';
-//24/10/24
+//25/10/24
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '1.5.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
@@ -374,7 +374,7 @@ addEventListener('on_mouse_move', (x, y, mask) => {
 	if (!window.ID) { return; }
 	if (mask === MK_LBUTTON) {
 		charts.forEach((chart) => {
-			if (chart.inFocus) { chart.scrollX({ x, release: 0x01 /* VK_LBUTTON */, bThrottle: true }); }
+			if (chart.inFocus) { window.SetCursor(32653); chart.scrollX({ x, release: 0x01 /* VK_LBUTTON */, bThrottle: true }); }
 		});
 	} else {
 		charts.some((chart) => { return chart.move(x, y, mask); });

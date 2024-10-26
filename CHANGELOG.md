@@ -19,6 +19,7 @@
 ### Added
 - UI: 'fill' chart type.
 - UI: settings button tooltip now shows 'Shift + Win + R. Click' shortcut to open SMP/JSpliter panel menu (which works globally on any script and panel, at any position).
+- UI: scrolling cursor is displayed when scrolling using mouse + dragging.
 - Readme: readme is shown as popup on first installation and available at the settings menu.
 ### Changed
 - Statistics: general improvements and optimizations of point statistics. Now also show the total number of tracks before deduplication.

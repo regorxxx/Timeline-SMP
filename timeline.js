@@ -1,5 +1,5 @@
 ﻿'use strict';
-//25/10/24
+//26/10/24
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '1.5.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
@@ -40,7 +40,7 @@ let properties = {
 				x: { show: true, color: RGB(50, 50, 50), width: _scale(2), ticks: 'auto', labels: true, bAltLabels: true },
 				y: { show: false, color: RGB(50, 50, 50), width: _scale(2), ticks: 5, labels: true }
 			},
-			configuration: { bDynColor: true, bDynColorBW: false }
+			configuration: { bDynColor: true, bDynColorBW: false, bLoadAsyncData: true }
 		}
 	)), { func: isJSON }],
 	data: ['Data options', JSON.stringify({
@@ -198,7 +198,7 @@ newConfig.forEach((row) => row.forEach((config) => {
 			], 'AND'),
 			bProportional: config.axis.y.bProportional
 		});
-	} else {
+	} else if (defaultConfig.configuration.bLoadAsyncData) {
 		config.data = getData({
 			option: bHasZ ? 'timeline' : 'tf',
 			sourceType: dataSource.sourceType,
@@ -269,7 +269,7 @@ charts.forEach((chart) => {
 		if (bHasZ) { newConfig.axis.z = { key: entry.keyZ, tf: _qCond(entry.z) }; }
 		if (bHasZ || bHasTfZ) { newConfig.graph = { multi: true }; }
 		else { newConfig.graph = { multi: false }; }
-		this.changeConfig({ ...newConfig, bPaint: true });
+		this.changeConfig({ ...newConfig, bPaint: true, bForceLoadData: true });
 		this.changeConfig({ title: window.Name + ' - ' + 'Graph 1 {' + this.axis.x.key + ' - ' + this.axis.y.key + '}', bPaint: false, callbackArgs: { bSaveProperties: true } });
 	};
 });
@@ -374,7 +374,12 @@ addEventListener('on_mouse_move', (x, y, mask) => {
 	if (!window.ID) { return; }
 	if (mask === MK_LBUTTON) {
 		charts.forEach((chart) => {
-			if (chart.inFocus) { window.SetCursor(32653); chart.scrollX({ x, release: 0x01 /* VK_LBUTTON */, bThrottle: true }); }
+			if (chart.inFocus) {
+				if (!chart.isOnButton(x, y) && chart.getCurrentRange() < chart.getMaxRange()) {
+					window.SetCursor(32653);
+					chart.scrollX({ x, release: 0x01 /* VK_LBUTTON */, bThrottle: true });
+				}
+			}
 		});
 	} else {
 		charts.some((chart) => { return chart.move(x, y, mask); });

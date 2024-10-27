@@ -1,5 +1,5 @@
 ﻿'use strict';
-//26/10/24
+//27/10/24
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '1.5.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
@@ -154,7 +154,7 @@ const defaultConfig = deepAssign()(
 			settings: { 
 				onLbtnUp: function (x, y, mask) { onLbtnUpSettings.call(this).btn_up(x, y); }, // eslint-disable-line no-unused-vars
 				onDblLbtn: function (x, y, mask) { this.setData(); }, // eslint-disable-line no-unused-vars
-				tooltip: 'Main settings\n\nDouble Click to force data update\n\n(Shift + Win + R. Click\nfor SMP panel menu)'
+				tooltip: 'Main settings\n\nDouble L. Click to force data update\n(Shift + Win + R. Click\nfor SMP panel menu)'
 			},
 			display: { 
 				onLbtnUp: function (x, y, mask) { createStatisticsMenu.call(this).btn_up(x, y, ['sep', createBackgroundMenu.call(background, { menuName: 'Background' }, void (0), { nameColors: true })]); } // eslint-disable-line no-unused-vars
@@ -421,6 +421,18 @@ addEventListener('on_mouse_lbtn_dblclk', (x, y, mask) => {
 addEventListener('on_mouse_wheel', (step) => {
 	if (!window.ID) { return; }
 	charts.some((chart) => { return chart.mouseWheel(step); });
+});
+
+addEventListener('on_mouse_wheel_h', (step) => {
+	if (!window.ID) { return; }
+	charts.forEach((chart) => {
+		if (chart.inFocus) {
+			if (chart.getCurrentRange() < chart.getMaxRange()) {
+				window.SetCursor(32653);
+				chart.scrollX({ step, bThrottle: true });
+			}
+		}
+	});
 });
 
 addEventListener('on_key_down', (vKey) => {

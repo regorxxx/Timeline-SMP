@@ -43,7 +43,8 @@
 - Data: 'Force data update' option did not properly apply the current chart settings.
 - UI: zoom button showing '-' instead of '+' if there was no data drawn.
 - UI: minor highlighting errors on 'lines' chart type.
-- UI: Color palette 'colorblind safe' setting was not saved properly between sessions.
+- UI: color palette 'colorblind safe' setting was not saved properly between sessions.
+- UI: '&' being displayed as '_' on tooltips.
 
 ## [1.5.0] - 2024-10-09
 ### Added

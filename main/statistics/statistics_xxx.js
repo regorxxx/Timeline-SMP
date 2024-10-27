@@ -901,7 +901,7 @@ function _chart({
 							}
 							if (this.axis.x.labels && (this.graph.type !== 'bars' || !this.axis.x.bAltLabels)) {
 								if (i === 0 && offsetTickText) { // Fix for first label position
-									const zeroW = xLabel + offsetTickText - this.x - this.margin.leftAuto / 2  + (bFitTicks ? tickW : drawLabelW);
+									const zeroW = xLabel + offsetTickText - this.x - this.margin.leftAuto / 2 + (bFitTicks ? tickW : drawLabelW);
 									const zeroX = this.x + this.margin.leftAuto / 2 + xOffsetKey + (bFitTicks ? 0 : tickW * 2 / 3);
 									if (this.axis.x.bAltLabels) { gr.FillSolidRect(this.x + this.margin.leftAuto + xOffsetKey - xtickW / 2 + _scale(2), y + this.axis.y.width * 3 / 2, xtickW + _scale(2), xtickH, borderColor); }
 									const flags = DT_LEFT | DT_END_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX;
@@ -1163,8 +1163,8 @@ function _chart({
 					if (this.leftBtn.move(x, y) || this.rightBtn.move(x, y)) {
 						bHand = true;
 						ttText = this.callbacks.xScroll.tooltip
-							? isFunction(this.callbacks.xScroll.tooltip) 
-								? this.callbacks.xScroll.tooltip(this.rightBtn.hover) 
+							? isFunction(this.callbacks.xScroll.tooltip)
+								? this.callbacks.xScroll.tooltip(this.rightBtn.hover)
 								: this.callbacks.xScroll.tooltip
 							: 'L. Click to scroll on X-axis\n\nDouble L. Click to jump to ' + (this.rightBtn.hover ? 'right' : 'left');
 					}
@@ -1173,8 +1173,8 @@ function _chart({
 					if (this.settingsBtn.move(x, y)) {
 						bHand = true;
 						ttText = this.callbacks.settings.tooltip
-							? isFunction(this.callbacks.settings.tooltip) 
-								? this.callbacks.settings.tooltip() 
+							? isFunction(this.callbacks.settings.tooltip)
+								? this.callbacks.settings.tooltip()
 								: this.callbacks.settings.tooltip
 							: 'Main settings\n\n(Shift + Win + R. Click\nfor SMP panel menu)';
 					}
@@ -1183,8 +1183,8 @@ function _chart({
 					if (this.displayBtn.move(x, y)) {
 						bHand = true;
 						ttText = this.callbacks.display.tooltip
-							? isFunction(this.callbacks.display.tooltip) 
-								? this.callbacks.display.tooltip() 
+							? isFunction(this.callbacks.display.tooltip)
+								? this.callbacks.display.tooltip()
 								: this.callbacks.display.tooltip
 							: 'Display settings';
 					}
@@ -1193,8 +1193,8 @@ function _chart({
 					if (this.zoomBtn.move(x, y)) {
 						bHand = true;
 						ttText = this.callbacks.zoom.tooltip
-							? isFunction(this.callbacks.zoom.tooltip) 
-								? this.callbacks.zoom.tooltip() 
+							? isFunction(this.callbacks.zoom.tooltip)
+								? this.callbacks.zoom.tooltip()
 								: this.callbacks.zoom.tooltip
 							: 'Press Shift to zoom out\n\nDouble L. Click for max zoom in/out';
 					}
@@ -1203,8 +1203,8 @@ function _chart({
 					if (this.customBtn.move(x, y)) {
 						bHand = true;
 						ttText = this.callbacks.custom.tooltip
-							? isFunction(this.callbacks.custom.tooltip) 
-								? this.callbacks.custom.tooltip() 
+							? isFunction(this.callbacks.custom.tooltip)
+								? this.callbacks.custom.tooltip()
 								: this.callbacks.custom.tooltip
 							: '';
 					}
@@ -1265,7 +1265,7 @@ function _chart({
 
 	this.isOnButton = (x, y) => {
 		if (!window.ID) { return false; }
-		if (this.pop.isEnabled()) {return false; }
+		if (this.pop.isEnabled()) { return false; }
 		if (this.trace(x, y)) {
 			return this.getButtonKeys().filter(Boolean).some((button) => this[button].move(x, y));
 		}
@@ -1639,7 +1639,7 @@ function _chart({
 	this.filter = () => { // Filter points with user provided function
 		if (!this.dataManipulation.filter) { return; }
 		this.dataDraw = this.dataDraw.map((serie) => { return serie.filter(this.dataManipulation.filter); });
-		if (this.configuration.bDebug) { memoryPrint('filter'); }
+		if (this.configuration.bDebug) { memoryPrint('filter', this.dataDraw); }
 	};
 
 	this.slice = () => { // Draw only selected points
@@ -1689,7 +1689,7 @@ function _chart({
 
 	this.normal = (bInverse = false) => { // Sort as normal distribution
 		this.dataDraw = this.normalApply(this.dataDraw, bInverse);
-		if (this.configuration.bDebug) { memoryPrint('normal'); }
+		if (this.configuration.bDebug) { memoryPrint('normal', this.dataDraw); }
 	};
 
 	this.normalApply = (series, bInverse = false) => { // Sort as normal distribution
@@ -1882,7 +1882,7 @@ function _chart({
 			}
 			statistics.median = statistics.min + (i > 0 ? (2 * i - 1) * binSize / 2 : 0);
 		}
-		if (this.configuration.bDebug) { memoryPrint('statistics'); }
+		if (this.configuration.bDebug) { memoryPrint('statistics', [statistics, histogram]); }
 		return statistics;
 	};
 
@@ -1959,7 +1959,6 @@ function _chart({
 				});
 			});
 		}
-		if (this.configuration.bDebug) { memoryPrint('point statistics'); }
 		return stats;
 	};
 
@@ -2007,7 +2006,7 @@ function _chart({
 			if (this.configuration.bProfile) { this.profile.Print('Probability plot', false); }
 		}
 		this.stats.pointsDraw = this.dataDraw.map((serie) => serie.length);
-		if (this.configuration.bDebug) { memoryPrint('manipulate data end'); }
+		if (this.configuration.bDebug) { memoryPrint('manipulate data end', this.dataDraw); }
 	};
 
 	/*
@@ -2061,7 +2060,7 @@ function _chart({
 			if (axis.x) { this.axis.x = { ...this.axis.x, ...axis.x }; }
 			if (axis.y) { this.axis.y = { ...this.axis.y, ...axis.y }; }
 			if (axis.z) { this.axis.z = { ...this.axis.z, ...axis.z }; }
-			if (Object.hasOwn(axis.y, 'show')) {this.resizeButtons();}
+			if (Object.hasOwn(axis.y, 'show')) { this.resizeButtons(); }
 		}
 		if (graphSpecs) {
 			if (graphSpecs.timeline) { this.graphSpecs.timeline = { ...this.graphSpecs.timeline, ...graphSpecs.timeline }; }
@@ -2379,7 +2378,7 @@ function _chart({
 		// Missing colors
 		this.checkScheme();
 		if (this.data && this.data.length) { this.checkColors(); }
-		if (this.configuration.bDebug) { memoryPrint('init data'); }
+		if (this.configuration.bDebug) { memoryPrint('init data', this.data); }
 	};
 
 	this.initDataAsync = () => {
@@ -2483,8 +2482,8 @@ function _chart({
 		lbtnDblFunc: (x, y, mask, parent) => { this.scrollX({ step: Infinity, bThrottle: false }); } // eslint-disable-line no-unused-vars
 	});
 	this.zoomBtn = new _button({
-		text: () => utils.IsKeyPressed(VK_SHIFT) || this.getCurrentRange() === 1 && this.getMaxRange() 
-			? chars.searchMinus 
+		text: () => utils.IsKeyPressed(VK_SHIFT) || this.getCurrentRange() === 1 && this.getMaxRange() > 0
+			? chars.searchMinus
 			: chars.searchPlus,
 		x: this.x, y: this.y, w: this.buttonsCoords.size, h: this.buttonsCoords.size,
 		isVisible: (time, timer) => { return this.inFocus || (Date.now() - time < timer); },

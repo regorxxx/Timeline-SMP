@@ -31,7 +31,7 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 	menu.newEntry({ entryText: 'sep' });
 	// Menus
 	points.forEach((subPoint) => {
-		const menuName = menu.newMenu(subPoint.z);
+		const menuName = this.graph.multi ? menu.newMenu(subPoint.z) : menu.getMainMenuName();
 		{	// Playlists
 			const subMenu = [menu.newMenu('Create playlist', menuName), menu.newMenu('Create AutoPlaylist', menuName)];
 			menu.newEntry({ menuName: subMenu[0], entryText: 'De-duplicated and randomized:', flags: MF_GRAYED });
@@ -41,16 +41,20 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 			const currPoints = this.dataDraw.map((serie) => serie.find((newPoint) => newPoint.x === point.x)).filter(Boolean);
 			[
 				{ name: 'By ' + this.axis.x.key, query: this.axis.x.tf + ' IS ' + subPoint.x, playlist: 'Timeline: ' + subPoint.x },
-				{ name: 'By ' + this.axis.z.key, query: this.axis.z.tf + ' IS ' + subPoint.z, playlist: 'Timeline: ' + subPoint.z },
-				{
-					name: 'By ' + this.axis.x.key + ' and ' + this.axis.z.key, query: this.axis.x.tf + ' IS ' + subPoint.x + ' AND ' + this.axis.z.tf + ' IS ' + subPoint.z,
-					playlist: 'Timeline: ' + subPoint.x + ' - ' + subPoint.z
-				},
-				{
-					name: 'By ' + this.axis.x.key + ' and top ' + this.axis.z.key, query: this.axis.x.tf + ' IS ' + subPoint.x + ' AND ' + _p(currPoints.map((newPoint) => this.axis.z.tf + ' IS ' + newPoint.z).join(' OR ')),
-					playlist: 'Timeline: ' + subPoint.x + ' - Top ' + currPoints.length + ' ' + this.axis.z.key
-				}
-			].forEach((entry) => {
+				...(this.graph.multi
+					? [
+						{ name: 'By ' + this.axis.z.key, query: this.axis.z.tf + ' IS ' + subPoint.z, playlist: 'Timeline: ' + subPoint.z },
+						{
+							name: 'By ' + this.axis.x.key + ' and ' + this.axis.z.key, query: this.axis.x.tf + ' IS ' + subPoint.x + ' AND ' + this.axis.z.tf + ' IS ' + subPoint.z,
+							playlist: 'Timeline: ' + subPoint.x + ' - ' + subPoint.z
+						},
+						{
+							name: 'By ' + this.axis.x.key + ' and top ' + this.axis.z.key, query: this.axis.x.tf + ' IS ' + subPoint.x + ' AND ' + _p(currPoints.map((newPoint) => this.axis.z.tf + ' IS ' + newPoint.z).join(' OR ')),
+							playlist: 'Timeline: ' + subPoint.x + ' - Top ' + currPoints.length + ' ' + this.axis.z.key
+						}
+					]
+					: [])
+			].filter(Boolean).forEach((entry) => {
 				menu.newEntry({
 					menuName: subMenu[0], entryText: entry.name, func: () => {
 						if (checkQuery(entry.query)) {
@@ -70,44 +74,46 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 			});
 		}
 		menu.newEntry({ menuName, entryText: 'sep' });
-		menu.newEntry({ menuName, entryText: 'Show point statistics...', func: () => {
-			const stats = this.computeStatisticsPoint(subPoint);
-			const libItems = fb.GetLibraryItems();
-			fb.ShowPopupMessage(
-				'[X]' + this.axis.x.key + ' - [Y]' + this.axis.y.key + (this.graph.multi ? ' - [Z]' + this.axis.z.key : '') + '\n\n' +
-				'[X]' + this.axis.x.key + ':\t' + subPoint.x +
-				'\n' +
-				'[Y]' + this.axis.y.key + ':\t' + round(subPoint.y, 1) + ' ' + _p(stats.current.y100 + '%') +
-				'\n' +
-				(
-					this.graph.multi
-						? '[Z]' + this.axis.z.key + ':\t' + subPoint.z + '\n'
-						: '[Z] None' + '\n'
-				) +
-				'Average ' + this.axis.y.key + ' (any ' + this.axis.x.key + '): ' + stats.current.avg  + ' ' + _p(stats.current.avg100 + '%') +
-				'\n' +
-				'Total ' + this.axis.y.key + ' (any ' + this.axis.x.key + '): ' + stats.current.total +
-				'\n' +
-				(
-					this.graph.multi
-						? 'Total Tracks (any ' + this.axis.x.key + ') -not deduplicated-: ' + fb.GetQueryItems(libItems, this.axis.z.tf + ' IS ' + subPoint.z).Count +
+		menu.newEntry({
+			menuName, entryText: 'Show point statistics...', func: () => {
+				const stats = this.computeStatisticsPoint(subPoint);
+				const libItems = fb.GetLibraryItems();
+				fb.ShowPopupMessage(
+					'[X]' + this.axis.x.key + ' - [Y]' + this.axis.y.key + (this.graph.multi ? ' - [Z]' + this.axis.z.key : '') + '\n\n' +
+					'[X]' + this.axis.x.key + ':\t' + subPoint.x +
+					'\n' +
+					'[Y]' + this.axis.y.key + ':\t' + round(subPoint.y, 1) + ' ' + _p(stats.current.y100 + '%') +
+					'\n' +
+					(
+						this.graph.multi
+							? '[Z]' + this.axis.z.key + ':\t' + subPoint.z + '\n'
+							: '[Z] None' + '\n'
+					) +
+					'Average ' + this.axis.y.key + ' (any ' + this.axis.x.key + '): ' + stats.current.avg + ' ' + _p(stats.current.avg100 + '%') +
+					'\n' +
+					'Total ' + this.axis.y.key + ' (any ' + this.axis.x.key + '): ' + stats.current.total +
+					'\n' +
+					(
+						this.graph.multi
+							? 'Total Tracks (any ' + this.axis.x.key + ') -not deduplicated-: ' + fb.GetQueryItems(libItems, this.axis.z.tf + ' IS ' + subPoint.z).Count +
 							'\n'
-						: ''
-				) +
-				(
-					this.graph.multi
-						? '-'.repeat(40) +
+							: ''
+					) +
+					(
+						this.graph.multi
+							? '-'.repeat(40) +
 							'\n' +
-							'Global total ' + this.axis.y.key + ': ' + stats.global.total+
+							'Global total ' + this.axis.y.key + ': ' + stats.global.total +
 							'\n' +
 							'Global average ' + this.axis.y.key + ' (any ' + this.axis.x.key + '): ' + stats.global.avg + ' ' + _p(stats.global.avg100 + '%')
 							+ '\n'
-						: ''
-				) +
-				'Total Tracks on library -not deduplicated-: ' + libItems.Count
-				, window.Name + ': Point statistics'
-			);
-		}});
+							: ''
+					) +
+					'Total Tracks on library -not deduplicated-: ' + libItems.Count
+					, window.Name + ': Point statistics'
+				);
+			}
+		});
 	});
 	return menu.btn_up(x, y);
 }
@@ -338,7 +344,7 @@ function onLbtnUpSettings() {
 		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
 		menu.newEntry({
 			menuName: subMenu, entryText: 'Init data on startup', func: () => {
-				this.changeConfig({ configuration: { bLoadAsyncData: !this.configuration.bLoadAsyncData }, callbackArgs: { bSaveProperties: true }});
+				this.changeConfig({ configuration: { bLoadAsyncData: !this.configuration.bLoadAsyncData }, callbackArgs: { bSaveProperties: true } });
 				if (this.configuration.bLoadAsyncData) {
 					fb.ShowPopupMessage('Chart will not display any data upon panel reload/startup until it\'s manually forced to do so using \'Force data update\' menu entry.\n\nThis may be used to improve loading times if chart is only meant to be used on demand.', 'Timeline-SMP');
 				}
@@ -370,12 +376,14 @@ function onLbtnUpSettings() {
 		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
 		{
 			const subMenuTwo = menu.newMenu('Debug and testing', subMenu);
-			menu.newEntry({menuName: subMenuTwo, entryText: 'Debug logging', func: () => 
-				this.changeConfig({ configuration: { bDebug: !this.configuration.bDebug }, callbackArgs: { bSaveProperties: true }})
+			menu.newEntry({
+				menuName: subMenuTwo, entryText: 'Debug logging', func: () =>
+					this.changeConfig({ configuration: { bDebug: !this.configuration.bDebug }, callbackArgs: { bSaveProperties: true } })
 			});
 			menu.newCheckMenuLast(() => this.configuration.bDebug);
-			menu.newEntry({menuName: subMenuTwo, entryText: 'Profile logging', func: () => 
-				this.changeConfig({ configuration: { bProfile: !this.configuration.bProfile }, callbackArgs: { bSaveProperties: true }})
+			menu.newEntry({
+				menuName: subMenuTwo, entryText: 'Profile logging', func: () =>
+					this.changeConfig({ configuration: { bProfile: !this.configuration.bProfile }, callbackArgs: { bSaveProperties: true } })
 			});
 			menu.newCheckMenuLast(() => this.configuration.bProfile);
 		}

@@ -50,7 +50,7 @@ function memoryPrint(text, obj) {
 		window.Name + (text ? ' - ' + text : '') +
 		(
 			typeof obj !== 'undefined' 
-				? '\n\tPanel memory usage: ' + roughSizeOfObject(obj)
+				? '\n\tArgs memory usage: ' + utils.FormatFileSize(roughSizeOfObject(obj))
 				: ''
 		) +
 		'\n\tPanel memory usage: ' + utils.FormatFileSize(window.JsMemoryStats.MemoryUsage) +

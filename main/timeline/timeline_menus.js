@@ -1,5 +1,5 @@
 'use strict';
-//26/10/24
+//27/10/24
 
 /* exported onLbtnUpPoint, onLbtnUpSettings*/
 
@@ -367,6 +367,18 @@ function onLbtnUpSettings() {
 			}, flags: dataSource.sourceType === 'library' || !properties.bAutoData[1] ? MF_GRAYED : MF_STRING
 		});
 		menu.newCheckMenuLast(() => !!properties.playingTF[1].length);
+		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+		{
+			const subMenuTwo = menu.newMenu('Debug and testing', subMenu);
+			menu.newEntry({menuName: subMenuTwo, entryText: 'Debug logging', func: () => 
+				this.changeConfig({ configuration: { bDebug: !this.configuration.bDebug }, callbackArgs: { bSaveProperties: true }})
+			});
+			menu.newCheckMenuLast(() => this.configuration.bDebug);
+			menu.newEntry({menuName: subMenuTwo, entryText: 'Profile logging', func: () => 
+				this.changeConfig({ configuration: { bProfile: !this.configuration.bProfile }, callbackArgs: { bSaveProperties: true }})
+			});
+			menu.newCheckMenuLast(() => this.configuration.bProfile);
+		}
 		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
 		menu.newEntry({
 			menuName: subMenu, entryText: 'Automatically check for updates', func: () => {

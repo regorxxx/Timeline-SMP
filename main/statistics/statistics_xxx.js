@@ -1,10 +1,10 @@
 ﻿'use strict';
-//26/10/24
+//27/10/24
 
 /* exported _chart */
 
 include('statistics_xxx_helper.js');
-/* global _gdiFont:readable, getBrightness:readable, toRGB:readable, RGBA:readable, invert:readable, Chroma:readable, _scale:readable, _tt:readable, round:readable, DT_CENTER:readable, DT_END_ELLIPSIS:readable, DT_CALCRECT:readable, DT_NOPREFIX:readable, DT_RIGHT:readable, DT_LEFT:readable, TextRenderingHint:readable, StringFormatFlags:readable, InterpolationMode:readable, RotateFlipType:readable, VK_SHIFT:readable, range:readable, RGB:readable, isFunction:readable, _p:readable, IDC_HAND:readable, IDC_ARROW:readable, debounce:readable, throttle:readable, VK_CONTROL:readable, MK_LBUTTON:readable, colorbrewer:readable, NatSort:readable, MK_SHIFT:readable, _button:readable, chars:readable, _popup:readable, opaqueColor:readable */
+/* global _gdiFont:readable, getBrightness:readable, toRGB:readable, RGBA:readable, invert:readable, Chroma:readable, _scale:readable, _tt:readable, round:readable, DT_CENTER:readable, DT_END_ELLIPSIS:readable, DT_CALCRECT:readable, DT_NOPREFIX:readable, DT_RIGHT:readable, DT_LEFT:readable, TextRenderingHint:readable, StringFormatFlags:readable, InterpolationMode:readable, RotateFlipType:readable, VK_SHIFT:readable, range:readable, RGB:readable, isFunction:readable, _p:readable, IDC_HAND:readable, IDC_ARROW:readable, debounce:readable, throttle:readable, VK_CONTROL:readable, MK_LBUTTON:readable, colorbrewer:readable, NatSort:readable, MK_SHIFT:readable, _button:readable, chars:readable, _popup:readable, opaqueColor:readable, memoryPrint:readable */
 
 function _chart({
 	data /* [[{x, y}, ...]]*/,
@@ -35,9 +35,10 @@ function _chart({
 		display: {/* onLbtnUp, onRbtnUp, onDblLbtn, tooltip */ },
 		zoom: {/* onLbtnUp, onRbtnUp, onDblLbtn, tooltip */ },
 		custom: {/* onLbtnUp, onRbtnUp, onDblLbtn, tooltip */ },
+		xScroll: {/* tooltip */ },
 		config: {/* change, backgroundColor */ }
 	},
-	configuration = {/* bLoadAsyncData: true , bAltVerticalText: false, bPopupBackground: false, bProfile: false, bSlicePerKey: true*, bDynColor: true, bDynColorBW: true , maxSliceOnDataChange: 100 */ },
+	configuration = {/* bLoadAsyncData: true , bAltVerticalText: false, bPopupBackground: false, bDebug: false, bProfile: false, bSlicePerKey: true*, bDynColor: true, bDynColorBW: true , maxSliceOnDataChange: 100 */ },
 	x = 0,
 	y = 0,
 	w = window.Width,
@@ -82,12 +83,14 @@ function _chart({
 				tooltip: null
 			},
 			custom: { onLbtnUp: null, onRbtnUp: null, onDblLbtn: null, tooltip: null },
+			xScroll: { tooltip: null },
 			config: { change: null, backgroundColor: null }
 		};
 		this.configuration = {
 			bLoadAsyncData: true,
 			bAltVerticalText: false,
 			bPopupBackground: false,
+			bDebug: false,
 			bProfile: false,
 			bSlicePerKey: true,
 			bDynColor: true, bDynColorBW: true,
@@ -1159,14 +1162,20 @@ function _chart({
 				if (this.buttons.xScroll) {
 					if (this.leftBtn.move(x, y) || this.rightBtn.move(x, y)) {
 						bHand = true;
-						ttText = 'L. Click to scroll on X-axis\n\nDouble L. Click to jump to ' + (this.rightBtn.hover ? 'right' : 'left');
+						ttText = this.callbacks.xScroll.tooltip
+							? isFunction(this.callbacks.xScroll.tooltip) 
+								? this.callbacks.xScroll.tooltip(this.rightBtn.hover) 
+								: this.callbacks.xScroll.tooltip
+							: 'L. Click to scroll on X-axis\n\nDouble L. Click to jump to ' + (this.rightBtn.hover ? 'right' : 'left');
 					}
 				}
 				if (this.buttons.settings) {
 					if (this.settingsBtn.move(x, y)) {
 						bHand = true;
 						ttText = this.callbacks.settings.tooltip
-							? isFunction(this.callbacks.settings.tooltip) ? this.callbacks.settings.tooltip() : this.callbacks.settings.tooltip
+							? isFunction(this.callbacks.settings.tooltip) 
+								? this.callbacks.settings.tooltip() 
+								: this.callbacks.settings.tooltip
 							: 'Main settings\n\n(Shift + Win + R. Click\nfor SMP panel menu)';
 					}
 				}
@@ -1174,7 +1183,9 @@ function _chart({
 					if (this.displayBtn.move(x, y)) {
 						bHand = true;
 						ttText = this.callbacks.display.tooltip
-							? isFunction(this.callbacks.display.tooltip) ? this.callbacks.display.tooltip() : this.callbacks.display.tooltip
+							? isFunction(this.callbacks.display.tooltip) 
+								? this.callbacks.display.tooltip() 
+								: this.callbacks.display.tooltip
 							: 'Display settings';
 					}
 				}
@@ -1182,15 +1193,19 @@ function _chart({
 					if (this.zoomBtn.move(x, y)) {
 						bHand = true;
 						ttText = this.callbacks.zoom.tooltip
-							? isFunction(this.callbacks.zoom.tooltip) ? this.callbacks.zoom.tooltip() : this.callbacks.zoom.tooltip
-							: 'Press Shift to zoom out\n\nDouble Click for max zoom in/out';
+							? isFunction(this.callbacks.zoom.tooltip) 
+								? this.callbacks.zoom.tooltip() 
+								: this.callbacks.zoom.tooltip
+							: 'Press Shift to zoom out\n\nDouble L. Click for max zoom in/out';
 					}
 				}
 				if (this.buttons.custom) {
 					if (this.customBtn.move(x, y)) {
 						bHand = true;
 						ttText = this.callbacks.custom.tooltip
-							? isFunction(this.callbacks.custom.tooltip) ? this.callbacks.custom.tooltip() : this.callbacks.custom.tooltip
+							? isFunction(this.callbacks.custom.tooltip) 
+								? this.callbacks.custom.tooltip() 
+								: this.callbacks.custom.tooltip
 							: '';
 					}
 				}
@@ -1624,6 +1639,7 @@ function _chart({
 	this.filter = () => { // Filter points with user provided function
 		if (!this.dataManipulation.filter) { return; }
 		this.dataDraw = this.dataDraw.map((serie) => { return serie.filter(this.dataManipulation.filter); });
+		if (this.configuration.bDebug) { memoryPrint('filter'); }
 	};
 
 	this.slice = () => { // Draw only selected points
@@ -1673,6 +1689,7 @@ function _chart({
 
 	this.normal = (bInverse = false) => { // Sort as normal distribution
 		this.dataDraw = this.normalApply(this.dataDraw, bInverse);
+		if (this.configuration.bDebug) { memoryPrint('normal'); }
 	};
 
 	this.normalApply = (series, bInverse = false) => { // Sort as normal distribution
@@ -1680,7 +1697,7 @@ function _chart({
 		series = series.map((serie) => { return serie.sort(sort).reduceRight((acc, val, i) => { return i % 2 === 0 ? [...acc, val] : [val, ...acc]; }, []); });
 		const slice = this.dataManipulation.slice;
 		if (!slice || !slice.length === 2 || (slice[0] === 0 && slice[1] === Infinity)) { return series; } // NOSONAR
-		series = series.map((serie) => {
+		return series.map((serie) => {
 			const len = serie.length;
 			const tail = slice[1];
 			const center = Math.round(len / 2) + slice[0];
@@ -1688,7 +1705,6 @@ function _chart({
 			const right = center + tail;
 			return serie.slice(left - 1, right);
 		});
-		return series;
 	};
 
 	this.normalInverse = () => { // Tails of normal distribution
@@ -1866,6 +1882,7 @@ function _chart({
 			}
 			statistics.median = statistics.min + (i > 0 ? (2 * i - 1) * binSize / 2 : 0);
 		}
+		if (this.configuration.bDebug) { memoryPrint('statistics'); }
 		return statistics;
 	};
 
@@ -1942,6 +1959,7 @@ function _chart({
 				});
 			});
 		}
+		if (this.configuration.bDebug) { memoryPrint('point statistics'); }
 		return stats;
 	};
 
@@ -1970,6 +1988,7 @@ function _chart({
 
 	this.manipulateData = () => {
 		if (!this.data) { return false; }
+		if (this.configuration.bDebug) { memoryPrint('manipulate data init'); }
 		if (this.configuration.bProfile) { this.profile.Reset(); }
 		this.expandData();
 		if (this.configuration.bProfile) { this.profile.Print('Expand data', false); }
@@ -1988,6 +2007,7 @@ function _chart({
 			if (this.configuration.bProfile) { this.profile.Print('Probability plot', false); }
 		}
 		this.stats.pointsDraw = this.dataDraw.map((serie) => serie.length);
+		if (this.configuration.bDebug) { memoryPrint('manipulate data end'); }
 	};
 
 	/*
@@ -2359,6 +2379,7 @@ function _chart({
 		// Missing colors
 		this.checkScheme();
 		if (this.data && this.data.length) { this.checkColors(); }
+		if (this.configuration.bDebug) { memoryPrint('init data'); }
 	};
 
 	this.initDataAsync = () => {
@@ -2462,7 +2483,9 @@ function _chart({
 		lbtnDblFunc: (x, y, mask, parent) => { this.scrollX({ step: Infinity, bThrottle: false }); } // eslint-disable-line no-unused-vars
 	});
 	this.zoomBtn = new _button({
-		text: () => utils.IsKeyPressed(VK_SHIFT) || this.getCurrentRange() === 1 ? chars.searchMinus : chars.searchPlus,
+		text: () => utils.IsKeyPressed(VK_SHIFT) || this.getCurrentRange() === 1 && this.getMaxRange() 
+			? chars.searchMinus 
+			: chars.searchPlus,
 		x: this.x, y: this.y, w: this.buttonsCoords.size, h: this.buttonsCoords.size,
 		isVisible: (time, timer) => { return this.inFocus || (Date.now() - time < timer); },
 		notVisibleMode: 25, bTimerOnVisible: true,

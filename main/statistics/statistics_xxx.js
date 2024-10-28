@@ -199,6 +199,54 @@ function _chart({
 		});
 	};
 
+	// Same than paintLines but splits thick lines into multiple pieces to avoid drawing glitches
+	this.paintLinesHighQ = (gr, serie, i, x, y, w, h, maxY, tickW, last, xAxisValues) => { // NOSONAR
+		// Antialias for lines use gr.SetSmoothingMode(4) before calling
+		const selBar = tickW;
+		// Values
+		let valH;
+		const borderColor = RGBA(...toRGB(invert(this.colors[i], true)), getBrightness(...toRGB(this.colors[i])) < 50 ? 300 : 25);
+		const color = RGBA(...toRGB(this.colors[i]), this.graph.pointAlpha);
+		serie.forEach((value, j) => {
+			valH = value.y / maxY * (y - h);
+			const idx = xAxisValues.indexOf(value.x);
+			const xPoint = x + idx * tickW;
+			const yPoint = y - valH;
+			const bFocused = this.currPoint[0] === i && this.currPoint[1] === j;
+			const point = this.dataCoords[i][j] = {
+				x: j > 0 ? xPoint - selBar / 2 : xPoint,
+				y: yPoint,
+				w: (j > 0 && j !== last ? selBar : selBar / 2),
+				h: valH
+			};
+			if (bFocused) {
+				gr.FillSolidRect(point.x, point.y, point.w, point.h, borderColor);
+			}
+			if (j !== 0) {
+				const paintPoint = (color) => {
+					const newValH = serie[j - 1].y / maxY * (y - h);
+					const newXPoint = x + (idx - 1) * tickW;
+					const newYPoint = y - newValH;
+					if (this.graph.borderWidth > 1) {
+						const half = this.graph.borderWidth / 2;
+						const m = (newXPoint - xPoint) / Math.abs(newYPoint - yPoint);
+						const alpha = Math.atan(m) * (m < 0 && newYPoint > yPoint ? -1 : 1);
+						const xOffset = half * Math.cos(alpha);
+						const yOffset = half * Math.sin(alpha);
+						// const lineArr = [ - half, yPoint - half, xPoint + half, yPoint + half, newXPoint + half, newYPoint + half, newXPoint - half, newYPoint - half];
+						const lineArr = [xPoint - xOffset, yPoint - yOffset, xPoint + xOffset, yPoint + yOffset, newXPoint + xOffset, newYPoint + yOffset, newXPoint - xOffset, newYPoint - yOffset];
+						// const lineArr = [xPoint, yPoint, xPoint, y, newXPoint, y, newXPoint, newYPoint];
+						gr.FillPolygon(color, 0, lineArr);
+					} else {
+						gr.DrawLine(newXPoint, newYPoint, xPoint, yPoint, this.graph.borderWidth, color);
+					}
+				};
+				paintPoint(color);
+				if (bFocused) { paintPoint(borderColor); }
+			}
+		});
+	};
+
 	this.paintFill = (gr, serie, i, x, y, w, h, maxY, tickW, last, xAxisValues) => { // NOSONAR
 		// Antialias for lines use gr.SetSmoothingMode(4) before calling
 		const selBar = tickW;
@@ -480,6 +528,7 @@ function _chart({
 		let tickW, barW, offsetTickText = 0;
 		switch (this.graph.type) {
 			case 'lines':
+			case 'lines-hq':
 			case 'fill': {
 				x -= this.axis.x.width * 1 / 2;
 				tickW = (w - this.margin.leftAuto) / ((xAxisValuesLen - 1) || 1);
@@ -493,6 +542,8 @@ function _chart({
 						this.paintFill(gr, serie, i, x, y, w, h, maxY, tickW, last, xAxisValues);
 					} else if (this.graph.type === 'lines') {
 						this.paintLines(gr, serie, i, x, y, w, h, maxY, tickW, last, xAxisValues);
+					} else if (this.graph.type === 'lines-hq') {
+						this.paintLinesHighQ(gr, serie, i, x, y, w, h, maxY, tickW, last, xAxisValues);
 					}
 				});
 				gr.SetSmoothingMode(0);
@@ -2407,7 +2458,7 @@ function _chart({
 	this.gFont = gFont;
 	/** @type {any[][]} */
 	this.data = data;
-	/** @type {Promise.<any[][]>} */
+	/** @type {null|Promise.<any[][]>} */
 	this.dataAsync = dataAsync;
 	/** @type {any[][]>} */
 	this.dataDraw = data || [];

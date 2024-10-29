@@ -1,6 +1,7 @@
 ﻿UI panel which displays an interactive timeline of your library
 (or other sources). Configurable by Title Format, lets you generate
-playlists based on selection. UI is fully configurable.
+playlists based on selection. UI is fully configurable and with 
+some tweaking it can be used to display arbitrary statistics.
 
 Chart:
 ---------------
@@ -29,10 +30,12 @@ UI usage:
 - Statistics via tooltip over points.
 - L. Click to show point menu for playlist creation or
 advanced point statistics.
-- Right buttons are only highlighted when mouse is over,
+- Right panel buttons are only highlighted when mouse is over,
 otherwise they are partially hidden in the background.
-- Scroll with right buttons and mouse dragging.
-- Zoom with mouse wheel and right button.
+- Scroll with left/right buttons, horizontal mouse wheel or
+L. Click mouse dragging.
+- Zoom with mouse wheel and right panel button.
+- All tooltips show the available shortcuts.
 - Background is fully configurable.
 - Multiple sorting and filtering display options.
 
@@ -40,3 +43,22 @@ Other UI usage:
 ---------------
 Press Shift + Win + R. Click to open SMP/JSpliter panel menu
 (which works globally on any script and panel, at any position).
+
+FAQ:
+----
+- X-Data grouping is only available on 3D charts. This setting
+is found at the Display menu 'Chart type\Group X-Data by'.
+- When 3D charts are used, the X-groups shown are those with the
+higher Y values. The total number can be tweaked as explayed above.
+i.e. A chart displaying the Tracks (Y) per Artists (Z) per Date (X)
+will only show 3 artists per date by default, and those 3 artists
+will be the ones with most tracks (Y) from that date (X).
+- Chart types other than 'Timeline' will handle 3D charts in 
+different ways drawing multiple series instead.
+- To use 2D charts, disable the Z-Axis.
+- Panel data may be loaded on demand-only by changing 
+'Other settings\Init data on startup' to false. In such cases
+the data will be (re)lodaded by double clicking on the settings
+buttton or using 'Force data update' at such menu.
+- Clicking multiple times into a color palette will randomly apply
+a scheme from that same palette.

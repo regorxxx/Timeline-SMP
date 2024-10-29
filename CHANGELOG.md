@@ -26,6 +26,7 @@
 - Debug: added multiple debug logging settings to 'Other settings' menu.
 - Readme: readme is shown as popup on first installation and available at the settings menu.
 ### Changed
+- [JSplitter (SMP)](https://foobar2000.ru/forum/viewtopic.php?t=6378&start=360) support for locked playlists.
 - Statistics: general improvements and optimizations of point statistics. Now also show the total number of tracks before deduplication.
 - UI: point menu now allows to select any point along the same Y-Z plane while using lines, scatter or fill charts. Previously it only worked on the point from the first serie (and that's why the other chart types exist though, to properly display multi-dimensional charts).
 - UI: tooltip now shows all points along the same Y-Z plane while using lines, scatter or fill charts. See comment above.
@@ -35,6 +36,7 @@
 - UI: minor adjustments to menu entries.
 - UI: left scrolling button position is now adjusted following Y-Axis display (except for doughnut and pie charts).
 - UI: scrolling buttons are now shown only when the chart is not showing all data (no zoom).
+- Readme: added FAQ section.
 - Helpers: updated helpers.
 ### Removed
 ### Fixed

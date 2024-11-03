@@ -1,5 +1,5 @@
 'use strict';
-//27/10/24
+//03/11/24
 
 /* exported onLbtnUpPoint, onLbtnUpSettings*/
 
@@ -132,7 +132,7 @@ function onLbtnUpSettings() {
 				bProportional: this.axis[axis].bProportional
 			};
 		} else {
-			const axisTF = Input.string('string', this.axis[axis].tf, 'Enter tag or TF expression:\n\n' + (axis === 'y' ? 'Expression should output a number per track (and TRUE). For example:\nListens: $max(%PLAY_COUNT%,%LASTFM_PLAY_COUNT%,0)\nRated 5 tracks: $ifequal(%RATING%,5,1$not(0),0)' : 'For example:\n%GENRE%'), window.Name, '%GENRE%');
+			const axisTF = Input.string('string', this.axis[axis].tf, 'Enter tag or TF expression:\n\n' + (axis === 'y' ? 'Expression should output a number per track (and TRUE). For example:\nListens: $max(%PLAY_COUNT%,%LASTFM_PLAY_COUNT%,0)\nRated 5 tracks: $ifequal(' + globTags.rating + ',5,1$not(0),0)' : 'For example:\n%GENRE%'), window.Name, '%GENRE%');
 			if (axisTF === null) { return; }
 			const axisKey = Input.string('string', capitalizeAll(axisTF.replace(/%/g, '')), 'Enter axis name:', window.Name, 'Date') || Input.lastInput;
 			if (axisKey === null) { return; }

@@ -1,5 +1,5 @@
 ﻿'use strict';
-//26/10/24
+//07/11/24
 
 /* exported bindMenu */
 
@@ -9,7 +9,7 @@ try { include('..\\..\\helpers\\menu_xxx.js'); } catch (e) {
 	try { include('..\\..\\examples\\_statistics\\menu_xxx.js'); } catch (e) { fb.ShowPopupMessage('Missing menu framework file', window.Name); }
 }
 /* global _attachedMenu:readable, _menu:readable */
-/* global MF_GRAYED:readable, _scale:readable, MF_STRING:readable, colorbrewer:readable, MF_MENUBARBREAK:readable */
+/* global MF_GRAYED:readable, _scale:readable, MF_STRING:readable, colorbrewer:readable, MF_MENUBARBREAK:readable, Input:readable, isArrayEqual:readable */
 
 function bindMenu(parent) {
 	return _attachedMenu.call(parent, { rMenu: createStatisticsMenu.bind(parent), popup: parent.pop });
@@ -73,8 +73,9 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 			}
 		}.bind(this);
 	};
-	const filtGreat = (num) => { return (a) => { return a.y > num; }; };
-	const filtLow = (num) => { return (a) => { return a.y < num; }; };
+	const filtGreat = (num) => ((a) => a.y > num);
+	const filtLow = (num) => ((a) => a.y < num);
+	const filtBetween = (lim) => ((a) => a.y > lim[0] && a.y < lim[1]);
 	const fineGraphs = new Set(['bars', 'doughnut', 'pie', 'timeline']);
 	// Header
 	menu.newEntry({ entryText: this.title, flags: MF_GRAYED });
@@ -87,29 +88,13 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 			{ isEq: null, key: this.graph.type, value: null, newValue: 'scatter', entryText: 'Scatter' },
 			{ isEq: null, key: this.graph.type, value: null, newValue: 'bars', entryText: 'Bars' },
 			{ isEq: null, key: this.graph.type, value: null, newValue: 'lines', entryText: 'Lines' },
+			{ isEq: null, key: this.graph.type, value: null, newValue: 'lines-hq', entryText: 'Lines (high quality)' },
 			{ isEq: null, key: this.graph.type, value: null, newValue: 'fill', entryText: 'Fill' },
 			{ isEq: null, key: this.graph.type, value: null, newValue: 'doughnut', entryText: 'Doughnut' },
 			{ isEq: null, key: this.graph.type, value: null, newValue: 'pie', entryText: 'Pie' },
 		].forEach(createMenuOption('graph', 'type', subMenu, void (0), (option) => {
 			this.graph.borderWidth = fineGraphs.has(option.newValue) ? _scale(1) : _scale(4);
 		}));
-		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
-		const subMenuGroup = menu.newMenu('Group X-data by' + (!this.graph.multi ? '\t[3D-Graphs]' : ''), subMenu, this.graph.multi ? MF_STRING : MF_GRAYED);
-		if (this.graph.multi) {
-			menu.newEntry({ menuName: subMenuGroup, entryText: 'Show n points per X-value:', flags: MF_GRAYED });
-			menu.newEntry({ menuName: subMenuGroup, entryText: 'sep' });
-			const parent = this;
-			const options = [...new Set([this.stats.maxGroup, 10, 8, 5, 4, 3, 2, 1].map((frac) => {
-				return Math.round(this.stats.maxGroup / frac) || this.stats.minGroup; // Don't allow zero
-			}))];
-
-			options.map((val) => {
-				return { isEq: null, key: this.dataManipulation.group, value: null, newValue: val, entryText: val + ' point(s)' };
-			}).forEach(function (option, i) {
-				createMenuOption('dataManipulation', 'group', subMenuGroup, false)(option);
-				menu.newCheckMenu(subMenuGroup, option.entryText, void (0), () => this.dataManipulation.group === options[i]);
-			}.bind(parent));
-		}
 	}
 	{
 		const subMenu = menu.newMenu('Distribution');
@@ -147,18 +132,44 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 	}
 	{ // NOSONAR
 		{
-			const subMenu = menu.newMenu('Values shown');
+			const subMenu = menu.newMenu('Show (X-axis)');
+			if (this.buttons.zoom) {
+				menu.newEntry({ menuName: subMenu, entryText: 'Changed with zoom:', flags: MF_GRAYED });
+				menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+			}
+			const options = [
+				{ isEq: false, key: this.dataManipulation.slice, value: [0, 4], newValue: [0, 4], entryText: '4 items' + (this.dataManipulation.distribution ? ' per tail' : '') },
+				{ isEq: false, key: this.dataManipulation.slice, value: [0, 10], newValue: [0, 10], entryText: '10 items' + (this.dataManipulation.distribution ? ' per tail' : '') },
+				{ isEq: false, key: this.dataManipulation.slice, value: [0, 20], newValue: [0, 20], entryText: '20 items' + (this.dataManipulation.distribution ? ' per tail' : '') },
+				{ isEq: false, key: this.dataManipulation.slice, value: [0, 50], newValue: [0, 50], entryText: '50 items' + (this.dataManipulation.distribution ? ' per tail' : '') }
+			];
+			options.forEach(createMenuOption('dataManipulation', 'slice', subMenu));
+			menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+			menu.newEntry({
+				menuName: subMenu, entryText: 'Custom range...' + '\t[' + this.dataManipulation.slice + ']', func: () => {
+					const slice = [0, Infinity];
+					slice[0] = Input.number('int positive', this.dataManipulation.slice[0], 'Input number:', 'Show X-points from', 40);
+					if (slice[0] === null) {
+						if (!Input.isLastEqual) { return; }
+						slice[0] = Input.previousInput;
+					}
+					slice[1] = Input.number('int positive', this.dataManipulation.slice[1], 'Input number:\n(must be greater than previous one: ' + slice[0] + ')', 'Show X-points up to', slice[0] + 1, [(n) => n > slice[0]]);
+					if (slice[1] === null) {
+						if (!Input.isLastEqual) { return; }
+						slice[1] = Input.previousInput;
+					}
+					if (isArrayEqual(this.dataManipulation.slice, slice)) { return; }
+					this.changeConfig({ dataManipulation: { slice }, callbackArgs: { bSaveProperties: true } });
+				}
+			});
+			menu.newCheckMenuLast(() => !options.some((opt) => isArrayEqual(this.dataManipulation.slice, opt.value)));
 			[
-				{ isEq: false, key: this.dataManipulation.slice, value: [0, 4], newValue: [0, 4], entryText: '4 values' + (this.dataManipulation.distribution ? ' per tail' : '') },
-				{ isEq: false, key: this.dataManipulation.slice, value: [0, 10], newValue: [0, 10], entryText: '10 values' + (this.dataManipulation.distribution ? ' per tail' : '') },
-				{ isEq: false, key: this.dataManipulation.slice, value: [0, 20], newValue: [0, 20], entryText: '20 values' + (this.dataManipulation.distribution ? ' per tail' : '') },
-				{ isEq: false, key: this.dataManipulation.slice, value: [0, 50], newValue: [0, 50], entryText: '50 values' + (this.dataManipulation.distribution ? ' per tail' : '') },
 				{ entryText: 'sep' },
-				{ isEq: false, key: this.dataManipulation.slice, value: [0, Infinity], newValue: [0, Infinity], entryText: 'Show all values' },
+				{ isEq: false, key: this.dataManipulation.slice, value: [0, Infinity], newValue: [0, Infinity], entryText: 'Show entire X-axis' },
 			].forEach(createMenuOption('dataManipulation', 'slice', subMenu));
 		}
 		{
-			const subMenu = menu.newMenu('Filter');
+			const subMenu = menu.newMenu('Filter (Y-axis)');
 			const subMenuGreat = menu.newMenu('Greater than', subMenu);
 			const subMenuLow = menu.newMenu('Lower than', subMenu);
 			// Create a filter entry for each fraction of the max value (duplicates filtered)
@@ -166,28 +177,130 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 			const options = [...new Set([this.stats.maxY, 1000, 100, 10, 10 / 2, 10 / 3, 10 / 5, 10 / 7].map((frac) => {
 				return Math.round(this.stats.maxY / frac) || 1; // Don't allow zero
 			}))];
-			options.map((val) => {
-				return { isEq: null, key: this.dataManipulation.filter, value: null, newValue: filtGreat(val), entryText: val };
-			}).forEach(function (option, i) {
-				createMenuOption('dataManipulation', 'filter', subMenuGreat, false)(option);
-				menu.newCheckMenu(subMenuGreat, option.entryText, void (0), () => {
-					const filter = this.dataManipulation.filter;
-					return !!(filter && filter({ y: options[i] + 1 }) && !filter({ y: options[i] })); // Just a hack to check the current value is the filter
+			{
+				options.map((val) => {
+					return { isEq: null, key: this.dataManipulation.filter, value: null, newValue: filtGreat(val), entryText: val };
+				}).forEach(function (option, i) {
+					createMenuOption('dataManipulation', 'filter', subMenuGreat, false)(option);
+					menu.newCheckMenu(subMenuGreat, option.entryText, void (0), () => {
+						const filter = this.dataManipulation.filter;
+						const filterStr = (filter || '').toString();
+						return !!filter && filterStr.includes(' > ') && filter({ y: options[i] + 1 }) && !filter({ y: options[i] }); // Just a hack to check the current value is the filter
+					});
+				}.bind(parent));
+				menu.newEntry({ menuName: subMenuGreat, entryText: 'sep' });
+				menu.newEntry({
+					menuName: subMenuGreat, entryText: 'Custom value...', func: () => {
+						let val = Input.number('real', -Infinity, 'Input real number:', 'Allow only Y-Value greater than', 40);
+						if (val === null) {
+							if (!Input.isLastEqual) { return; }
+							val = Input.previousInput;
+						}
+						this.changeConfig({
+							dataManipulation: {
+								filter: val === -Infinity ? null : filtGreat(val)
+							}, callbackArgs: { bSaveProperties: true }
+						});
+					}
 				});
-			}.bind(parent));
-			options.map((val) => {
-				return { isEq: null, key: this.dataManipulation.filter, value: null, newValue: filtLow(val), entryText: val };
-			}).forEach(function (option, i) {
-				createMenuOption('dataManipulation', 'filter', subMenuLow, false)(option);
-				menu.newCheckMenu(subMenuLow, option.entryText, void (0), () => {
+				menu.newCheckMenuLast(() => {
 					const filter = this.dataManipulation.filter;
-					return !!(filter && filter({ y: options[i] + 1 }) && !filter({ y: options[i] })); // Just a hack to check the current value is the filter
+					const filterStr = (filter || '').toString();
+					return !!filter && filterStr.includes(' > ') && options.every((val) => !menu.isChecked(subMenuGreat, val));
 				});
-			}.bind(parent));
+			}
+			{
+				options.map((val) => {
+					return { isEq: null, key: this.dataManipulation.filter, value: null, newValue: filtLow(val), entryText: val };
+				}).forEach(function (option, i) {
+					createMenuOption('dataManipulation', 'filter', subMenuLow, false)(option);
+					menu.newCheckMenu(subMenuLow, option.entryText, void (0), () => {
+						const filter = this.dataManipulation.filter;
+						const filterStr = (filter || '').toString();
+						return !!filter && filterStr.includes(' < ') && filter({ y: options[i] + 1 }) && !filter({ y: options[i] }); // Just a hack to check the current value is the filter
+					});
+				}.bind(parent));
+				menu.newEntry({ menuName: subMenuLow, entryText: 'sep' });
+				menu.newEntry({
+					menuName: subMenuLow, entryText: 'Custom value...', func: () => {
+						let val = Input.number('real', Infinity, 'Input real number:', 'Allow only Y-Value lower than', 40);
+						if (val === null) {
+							if (!Input.isLastEqual) { return; }
+							val = Input.previousInput;
+						}
+						this.changeConfig({
+							dataManipulation: {
+								filter: val === Infinity ? null : filtLow(val)
+							}, callbackArgs: { bSaveProperties: true }
+						});
+					}
+				});
+				menu.newCheckMenuLast(() => {
+					const filter = this.dataManipulation.filter;
+					const filterStr = (filter || '').toString();
+					return !!filter && filterStr.includes(' < ') && options.every((val) => !menu.isChecked(subMenuLow, val));
+				});
+			}
+			{
+				menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+				menu.newEntry({
+					menuName: subMenu, entryText: 'Between 2 values...', func: () => {
+						const limits = [-Infinity, Infinity];
+						limits[0] = Input.number('real', -Infinity, 'Input real number:', 'Allow only Y-Value greater than', 40);
+						if (limits[0] === null) {
+							if (!Input.isLastEqual) { return; }
+							limits[0] = Input.previousInput;
+						}
+						limits[1] = Input.number('real', Infinity, 'Input real number:', 'Allow only Y-Value lower than', 40);
+						if (limits[1] === null) {
+							if (!Input.isLastEqual) { return; }
+							limits[1] = Input.previousInput;
+						}
+						this.changeConfig({
+							dataManipulation: {
+								filter: limits.every((n) => !Number.isFinite(n)) ? null : filtBetween(limits)
+							}, callbackArgs: { bSaveProperties: true }
+						});
+					}
+				});
+				menu.newCheckMenuLast(() => {
+					const filter = this.dataManipulation.filter;
+					const filterStr = (filter || '').toString();
+					return !!filter && filterStr.includes(' < ') && filterStr.includes(' > ');
+				});
+			}
 			[
 				{ entryText: 'sep' },
 				{ isEq: null, key: this.dataManipulation.filter, value: null, newValue: null, entryText: 'No filter' },
 			].forEach(createMenuOption('dataManipulation', 'filter', subMenu));
+		}
+		{
+			menu.newEntry({ entryText: 'sep' });
+			const subMenuGroup = menu.newMenu('Z-Axis groups' + (!this.graph.multi ? '\t[3D-Graphs]' : ''), void (0), this.graph.multi ? MF_STRING : MF_GRAYED);
+			if (this.graph.multi) {
+				menu.newEntry({ menuName: subMenuGroup, entryText: 'Z-points per X-value:', flags: MF_GRAYED });
+				menu.newEntry({ menuName: subMenuGroup, entryText: 'sep' });
+				const parent = this;
+				const options = [...new Set([this.stats.maxGroup, 10, 8, 5, 4, 3, 2, 1].map((frac) => {
+					return Math.round(this.stats.maxGroup / frac) || this.stats.minGroup; // Don't allow zero
+				}))];
+
+				options.map((val) => {
+					return { isEq: null, key: this.dataManipulation.group, value: null, newValue: val, entryText: val + ' point(s)' };
+				}).forEach(function (option, i) {
+					createMenuOption('dataManipulation', 'group', subMenuGroup, false)(option);
+					menu.newCheckMenuLast(() => this.dataManipulation.group === options[i]);
+				}.bind(parent));
+				menu.newEntry({ menuName: subMenuGroup, entryText: 'sep' });
+				menu.newEntry({
+					menuName: subMenuGroup, entryText: 'Custom value...' + '\t[' + this.dataManipulation.group + ']', func: () => {
+						const val = Input.number('int positive', this.dataManipulation.group, 'Input number:', 'Number of Z-points per X-value', 40);
+						if (val === null) { return; }
+						this.changeConfig({ dataManipulation: { group: val }, callbackArgs: { bSaveProperties: true } });
+					}
+				});
+				menu.newCheckMenuLast(() => !options.some((val) => this.dataManipulation.group === val));
+			}
 		}
 		menu.newEntry({ entryText: 'sep' });
 	}
@@ -277,7 +390,7 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 	}
 	{
 		const type = this.graph.type.toLowerCase();
-		const subMenu = menu.newMenu('Other config');
+		const subMenu = menu.newMenu('Other settings');
 		{
 			const configSubMenu = menu.newMenu((type === 'lines' ? 'Line' : 'Point') + ' size', subMenu);
 			[1, 2, 3, 4].map((val) => {

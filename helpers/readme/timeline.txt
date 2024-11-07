@@ -11,7 +11,7 @@ Chart:
 purposes (instead of a "timeline").
 - Multiple chart types available: bars, scatter, timeline, ...
 - Data can also be fitted into a normal distribution.
-- X-Axis can be aggregated in groups
+- Z-Axis can be aggregated in groups per X-Value
 - There are multiple presets with proportional values per group,
 for ex. average rating/album, etc.
 
@@ -46,9 +46,9 @@ Press Shift + Win + R. Click to open SMP/JSpliter panel menu
 
 FAQ:
 ----
-- X-Data grouping is only available on 3D charts. This setting
-is found at the Display menu 'Chart type\Group X-Data by'.
-- When 3D charts are used, the X-groups shown are those with the
+- Z-Data grouping is only available on 3D charts. This setting
+is found at the Display menu 'Z-Axis groups' submenu.
+- When 3D charts are used, the Z-groups shown are those with the
 higher Y values. The total number can be tweaked as explayed above.
 i.e. A chart displaying the Tracks (Y) per Artists (Z) per Date (X)
 will only show 3 artists per date by default, and those 3 artists

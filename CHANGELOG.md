@@ -23,6 +23,10 @@
 - UI: settings button tooltip now shows 'Double Click' shortcut to force data update (see above).
 - UI: scrolling cursor is displayed when scrolling using mouse + dragging.
 - UI: added horizontal (x) scrolling using the mouse wheel (for mouses with horizontal moves).
+- UI: X-Axis shown values at display menu now allows any custom value.
+- UI: Y-Axis filter at display menu now allows any custom value for 'greater than'/'lower than' filters.
+- UI: option to filter data between 2 custom values on Y-Axis at display menu.
+- UI: custom option for Z-Axis groups setting at display menu.
 - Debug: added multiple debug logging settings to 'Other settings' menu.
 - Readme: readme is shown as popup on first installation and available at the settings menu.
 ### Changed
@@ -33,7 +37,8 @@
 - UI: axis legend is now shown at tooltip and point statistics popup.
 - UI: X-axis keys are now shown even when not all keys can be displayed, omitting some of the values. This ensures that charts displaying numbers at the axis at least show the initial and some middle values. This applies for bars, lines, scatter, fill and timeline charts.
 - UI: minor adjustments to buttons tooltips.
-- UI: minor adjustments to menu entries.
+- UI: multiple menu entries at 'Display settings' have been renamed for clarity's sake.
+- UI: chart title now skips the Window name (panel) if it's an UUID.
 - UI: left scrolling button position is now adjusted following Y-Axis display (except for doughnut and pie charts).
 - UI: scrolling buttons are now shown only when the chart is not showing all data (no zoom).
 - Readme: added FAQ section.

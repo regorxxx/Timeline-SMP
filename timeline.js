@@ -1,5 +1,5 @@
 ﻿'use strict';
-//27/10/24
+//07/11/24
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '1.5.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
@@ -8,7 +8,7 @@ include('helpers\\helpers_xxx.js');
 include('helpers\\helpers_xxx_file.js');
 /* global _open:readable, utf8:readable */
 include('helpers\\helpers_xxx_prototypes_smp.js');
-/* global extendGR:readable */
+/* global extendGR:readable, isUUID */
 include('main\\statistics\\statistics_xxx.js');
 /* global _chart:readable */
 include('main\\statistics\\statistics_xxx_menu.js');
@@ -148,15 +148,15 @@ const defaultConfig = deepAssign()(
 		tooltipText: '\n\n(L. click to show point menu)\n(Use buttons to configure chart)',
 		configuration: { bSlicePerKey: true },
 		callbacks: {
-			point: { 
-				onLbtnUp: onLbtnUpPoint 
+			point: {
+				onLbtnUp: onLbtnUpPoint
 			},
-			settings: { 
+			settings: {
 				onLbtnUp: function (x, y, mask) { onLbtnUpSettings.call(this).btn_up(x, y); }, // eslint-disable-line no-unused-vars
 				onDblLbtn: function (x, y, mask) { this.setData(); }, // eslint-disable-line no-unused-vars
 				tooltip: 'Main settings\n\nDouble L. Click to force data update\n(Shift + Win + R. Click\nfor SMP panel menu)'
 			},
-			display: { 
+			display: {
 				onLbtnUp: function (x, y, mask) { createStatisticsMenu.call(this).btn_up(x, y, ['sep', createBackgroundMenu.call(background, { menuName: 'Background' }, void (0), { nameColors: true })]); } // eslint-disable-line no-unused-vars
 			},
 			config: {
@@ -236,7 +236,7 @@ const nCharts = Array.from({ length: rows }, (row, i) => {
 		const h = window.Height / rows * (i + 1);
 		const x = w * j;
 		const y = window.Height / rows * i;
-		const title = window.Name + ' - ' + 'Graph ' + (1 + rows * i + j) + ' {' + newConfig[i][j].axis.x.key + ' - ' + newConfig[i][j].axis.y.key + '}';
+		const title = (isUUID(window.Name.replace(/[{}]/g, '')) ? '' : window.Name + ' - ') + 'Graph ' + (1 + rows * i + j) + ' {' + newConfig[i][j].axis.x.key + ' - ' + newConfig[i][j].axis.y.key + '}';
 		return new _chart({ ...defaultConfig, x, y, w, h }).changeConfig({ ...newConfig[i][j], bPaint: false, title });
 	});
 });
@@ -245,7 +245,7 @@ const charts = nCharts.flat(Infinity);
 /*
 	Helper to set data
 */
-charts.forEach((chart) => {
+charts.forEach((chart, i) => {
 	chart.setData = function (entry = {}) {
 		const bHasX = Object.hasOwn(entry, 'x') && entry.x.length;
 		const bHasY = Object.hasOwn(entry, 'y') && entry.y.length;
@@ -277,8 +277,9 @@ charts.forEach((chart) => {
 		if (bHasZ) { newConfig.axis.z = { key: entry.keyZ, tf: _qCond(entry.z) }; }
 		if (bHasZ || bHasTfZ) { newConfig.graph = { multi: true }; }
 		else { newConfig.graph = { multi: false }; }
+		const title = (isUUID(window.Name.replace(/[{}]/g, '')) ? '' : window.Name + ' - ') + 'Graph ' + i + ' {' + this.axis.x.key + ' - ' + this.axis.y.key + '}';
 		this.changeConfig({ ...newConfig, bPaint: true, bForceLoadData: true });
-		this.changeConfig({ title: window.Name + ' - ' + 'Graph 1 {' + this.axis.x.key + ' - ' + this.axis.y.key + '}', bPaint: false, callbackArgs: { bSaveProperties: true } });
+		this.changeConfig({ title, bPaint: false, callbackArgs: { bSaveProperties: true } });
 	};
 });
 globProfiler.Print('charts');

@@ -1,9 +1,9 @@
 'use strict';
-//11/11/24
+//12/11/24
 
 /* exported onLbtnUpPoint, onLbtnUpSettings*/
 
-/* global _p:readable, checkQuery:readable, globTags:readable, globQuery:readable, round:readable, capitalizeAll:readable, properties:readable, WshShell:readable, popup:readable, _qCond:readable, overwriteProperties:readable, checkUpdate:readable, globSettings:readable , isArrayEqual:readable, _b:readable, folders:readable, dynQueryMode:readable, refreshData:readable */
+/* global _p:readable, checkQuery:readable, globTags:readable, globQuery:readable, round:readable, capitalizeAll:readable, properties:readable, WshShell:readable, popup:readable, _qCond:readable, overwriteProperties:readable, checkUpdate:readable, globSettings:readable , isArrayEqual:readable, _b:readable, folders:readable, dynQueryMode:readable, refreshData:readable, isUUID:readable, queryJoin:readable, queryReplaceWithCurrent:readable, selectedHandle:readable, VK_SHIFT:readable */
 include('..\\..\\helpers\\helpers_xxx_file.js');
 /* global _open:readable, utf8:readable */
 include('..\\..\\helpers\\helpers_xxx_playlists.js');
@@ -36,7 +36,7 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 			const subMenu = [menu.newMenu('Create playlist', menuName), menu.newMenu('Create AutoPlaylist', menuName)];
 			menu.newEntry({ menuName: subMenu[0], entryText: 'De-duplicated and randomized:', flags: MF_GRAYED });
 			menu.newEntry({ menuName: subMenu[0], entryText: 'sep' });
-			menu.newEntry({ menuName: subMenu[1], entryText: 'Configurable query:', flags: MF_GRAYED });
+			menu.newEntry({ menuName: subMenu[1], entryText: 'Press Shift to configure:', flags: MF_GRAYED });
 			menu.newEntry({ menuName: subMenu[1], entryText: 'sep' });
 			const currPoints = this.dataDraw.map((serie) => serie.find((newPoint) => newPoint.x === point.x)).filter(Boolean);
 			[
@@ -57,17 +57,25 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 			].filter(Boolean).forEach((entry) => {
 				menu.newEntry({
 					menuName: subMenu[0], entryText: entry.name, func: () => {
+						let query = queryJoin([entry.query, properties.dataQuery[1]].filter(Boolean), 'AND');
+						query = queryReplaceWithCurrent(query, selectedHandle, { bToLowerCase: true });
 						if (checkQuery(entry.query)) {
-							let handleList = fb.GetQueryItems(fb.GetLibraryItems(), entry.query);
+							let handleList = fb.GetQueryItems(fb.GetLibraryItems(), query);
 							handleList = removeDuplicates({ handleList, sortOutput: '', checkKeys: globTags.remDupl, sortBias: globQuery.remDuplBias, bAdvTitle: true, bMultiple: true, bPreserveSort: false });
 							sendToPlaylist(handleList, entry.playlist);
+							console.log(query);
 						}
 					}
 				});
 				menu.newEntry({
 					menuName: subMenu[1], entryText: entry.name, func: () => {
-						if (checkQuery(entry.query)) {
-							plman.ActivePlaylist = plman.CreateAutoPlaylist(plman.PlaylistCount, entry.playlist, entry.query);
+						let query = queryJoin([entry.query, properties.dataQuery[1]].filter(Boolean), 'AND');
+						query = queryReplaceWithCurrent(query, selectedHandle, { bToLowerCase: true });
+						if (checkQuery(query)) {
+							plman.ActivePlaylist = plman.CreateAutoPlaylist(plman.PlaylistCount, entry.playlist, query);
+							if (utils.IsKeyPressed(VK_SHIFT)) {
+								plman.ShowAutoPlaylistUI(plman.ActivePlaylist);
+							}
 						}
 					}
 				});
@@ -87,7 +95,7 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 					(
 						this.graph.multi
 							? '[Z]' + this.axis.z.key + ':\t' + subPoint.z + '\n'
-							: '[Z] None' + '\n'
+							: '[Z]None' + '\n'
 					) +
 					'Average ' + this.axis.y.key + ' (any ' + this.axis.x.key + '): ' + stats.current.avg + ' ' + _p(stats.current.avg100 + '%') +
 					'\n' +
@@ -110,7 +118,7 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 							: ''
 					) +
 					'Total Tracks on library -not deduplicated-: ' + libItems.Count
-					, window.Name + ': Point statistics'
+					, (isUUID(window.Name.replace(/[{}]/g, '')) ? '' : window.Name + ': ') + 'Point statistics'
 				);
 			}
 		});
@@ -132,14 +140,14 @@ function onLbtnUpSettings() {
 				bProportional: this.axis[axis].bProportional
 			};
 		} else {
-			const axisTF = Input.string('string', this.axis[axis].tf, 'Enter tag or TF expression:\n\n' + (axis === 'y' ? 'Expression should output a number per track (and TRUE). For example:\nListens: $max(%PLAY_COUNT%,%LASTFM_PLAY_COUNT%,0)\nRated 5 tracks: $ifequal(' + globTags.rating + ',5,1$not(0),0)' : 'For example:\n%GENRE%'), window.Name, '%GENRE%');
+			const axisTF = Input.string('string', this.axis[axis].tf, 'Enter tag or TF expression:\n\n' + (axis === 'y' ? 'Expression should output a number per track (and TRUE). For example:\nListens: $max(%PLAY_COUNT%,%LASTFM_PLAY_COUNT%,0)\nRated 5 tracks: $ifequal(' + globTags.rating + ',5,1$not(0),0)' : 'For example:\n%GENRE%'), 'Axis ' + axis + ' TitleFormat', '%GENRE%');
 			if (axisTF === null) { return; }
-			const axisKey = Input.string('string', capitalizeAll(axisTF.replace(/%/g, '')), 'Enter axis name:', window.Name, 'Date') || Input.lastInput;
+			const axisKey = Input.string('string', capitalizeAll(axisTF.replace(/%/g, '')), 'Enter axis name:', 'Axis ' + axis + ' name', 'Date') || Input.lastInput;
 			if (axisKey === null) { return; }
 			return {
 				[axis]: axisTF,
 				['key' + axis.toUpperCase()]: axisKey,
-				bProportional: axis === 'y' && WshShell.Popup('Proportional to total number of tracks per serie?', 0, window.Name, popup.question + popup.yes_no) === popup.yes
+				bProportional: axis === 'y' && WshShell.Popup('Proportional to total number of tracks per serie?', 0, 'Y-data calculation', popup.question + popup.yes_no) === popup.yes
 			};
 		}
 	};
@@ -270,7 +278,7 @@ function onLbtnUpSettings() {
 				menuName: subMenu, entryText: option.entryText, func: () => {
 					if (Object.hasOwn(option, 'sourceArg')) {
 						if (option.sourceArg === null) {
-							const input = Input.string('string', dataSource.sourceArg || '', 'Enter playlist name(s):\n(separated by ;)', window.Name, 'My Playlist;Other Playlist', void (0), true) || Input.lastInput;
+							const input = Input.string('string', dataSource.sourceArg || '', 'Enter playlist name(s):\n(separated by ;)', 'Playlist sources', 'My Playlist;Other Playlist', void (0), true) || Input.lastInput;
 							if (input === null) { return; }
 							dataSource.sourceArg = input.split(';');
 						} else {
@@ -310,7 +318,7 @@ function onLbtnUpSettings() {
 		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
 		menu.newEntry({
 			menuName: subMenu, entryText: 'By query...', func: () => {
-				const input = Input.string('string', properties.dataQuery[1], 'Enter query:', window.Name, 'ALL');
+				const input = Input.string('string', properties.dataQuery[1], 'Enter query:\n(dynamic queries also allowed, see readme)', 'Filter source by query', 'ALL');
 				if (input === null) { return; }
 				properties.dataQuery[1] = input;
 				overwriteProperties(properties);
@@ -322,7 +330,7 @@ function onLbtnUpSettings() {
 			name: 'Query entries',
 			list,
 			defaults: JSON.parse(properties.queryEntries[3]),
-			input: () => Input.string('string', properties.dataQuery[1], 'Enter query:', window.Name, 'ALL'),
+			input: () => Input.string('string', properties.dataQuery[1], 'Enter query:', 'Filter source by query', 'ALL'),
 			bNumbered: true,
 			onBtnUp: (entries) => {
 				properties.queryEntries[1] = JSON.stringify(entries);
@@ -365,7 +373,7 @@ function onLbtnUpSettings() {
 			: playingTF.length ? 'Tags' : 'Never';
 		menu.newEntry({
 			menuName: subMenu, entryText: 'On playback only by TF...' + '\t' + _b(playingTFTip), func: () => {
-				const input = Input.json('array strings', playingTF, 'Enter tags:\n(Use ["*"] for all tags)', window.Name, '["PLAY_COUNT"]');
+				const input = Input.json('array strings', playingTF, 'Enter tags:\n(Use ["*"] for all tags)', 'Auto-update sources by TitleFormat', '["PLAY_COUNT"]');
 				if (input === null) { return; }
 				properties.playingTF[1] = JSON.stringify(input.map((tag) => tag.toUpperCase()));
 				overwriteProperties(properties);
@@ -373,7 +381,7 @@ function onLbtnUpSettings() {
 		});
 		menu.newCheckMenuLast(() => dataSource.sourceType !== 'library' && !!properties.playingTF[1].length);
 		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
-		const subMenuTwo = menu.newMenu('Auto-Update Dynamic queries', subMenu, properties.dataQuery[1].count('#') >= 2 ? MF_STRING : MF_GRAYED);
+		const subMenuTwo = menu.newMenu('Auto-update dynamic queries', subMenu, properties.dataQuery[1].count('#') >= 2 ? MF_STRING : MF_GRAYED);
 		[
 			{ key: 'onSelection', entryText: 'Selecting tracks (playlist)' },
 			{ key: 'onPlayback', entryText: 'When playing a track' },
@@ -441,14 +449,19 @@ function onLbtnUpSettings() {
 		}
 	});
 	menu.newEntry({ entryText: 'sep' });
-	{	// Readme
-		const path = folders.xxx + 'helpers\\readme\\timeline.txt';
-		menu.newEntry({
-			entryText: 'Open readme...', func: () => {
-				const readme = _open(path, utf8);
-				if (readme.length) { fb.ShowPopupMessage(readme, 'Timeline-SMP'); }
-				else { console.log('Readme not found: ' + path); }
-			}
+	{	// Readmes
+		const subMenu = menu.newMenu('Readmes');
+		[
+			{path: folders.xxx + 'helpers\\readme\\timeline.txt', name: 'Timeline-SMP'},
+			{path: folders.xxx + 'helpers\\readme\\timeline_dynamic_query.txt', name: 'Dynamic queries'}
+		].forEach((o) => {
+			menu.newEntry({
+				menuName: subMenu, entryText: o.name, func: () => {
+					const readme = _open(o.path, utf8);
+					if (readme.length) { fb.ShowPopupMessage(readme, o.name); }
+					else { console.log('Readme not found: ' + o.path); }
+				}
+			});
 		});
 	}
 	return menu;

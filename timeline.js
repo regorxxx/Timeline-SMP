@@ -1,5 +1,5 @@
 ﻿'use strict';
-//11/11/24
+//12/11/24
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '1.5.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
@@ -122,7 +122,7 @@ const getSel = () => {
 				? fb.GetNowPlaying() || fb.GetFocusItem(true)
 				: fb.GetFocusItem(true) || fb.GetNowPlaying()
 			: fb.GetFocusItem(true)
-		: dynQueryMode.onPlayback ? fb.GetNowPlaying() : null;
+		: dynQueryMode.onPlayback ? fb.GetNowPlaying() : fb.GetSelection();
 };
 
 // Info Popup

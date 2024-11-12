@@ -34,6 +34,7 @@
 ### Changed
 - [JSplitter (SMP)](https://foobar2000.ru/forum/viewtopic.php?t=6378&start=360) support for locked playlists.
 - Statistics: general improvements and optimizations of point statistics. Now also show the total number of tracks before deduplication.
+- Data: source filters are now also applied to playlist creation when clicking on points.
 - UI: point menu now allows to select any point along the same Y-Z plane while using lines, scatter or fill charts. Previously it only worked on the point from the first serie (and that's why the other chart types exist though, to properly display multi-dimensional charts).
 - UI: tooltip now shows all points along the same Y-Z plane while using lines, scatter or fill charts. See comment above.
 - UI: axis legend is now shown at tooltip and point statistics popup.
@@ -44,6 +45,7 @@
 - UI: chart title now skips the Window name (panel) if it's an UUID.
 - UI: left scrolling button position is now adjusted following Y-Axis display (except for doughnut and pie charts).
 - UI: scrolling buttons are now shown only when the chart is not showing all data (no zoom).
+- UI: bars, fill and lines chart types fallback to 'scatter' if the serie drawn contains a single point, previously nothing was drawn.
 - Readme: added FAQ section.
 - Helpers: updated helpers.
 ### Removed
@@ -55,6 +57,8 @@
 - UI: minor highlighting errors on 'lines' chart type.
 - UI: color palette 'colorblind safe' setting was not saved properly between sessions.
 - UI: '&' being displayed as '_' on tooltips.
+- UI: fixed last label background not being properly adjusted in some cases for bars, lines, fill and scatter charts.
+- UI: fixed minor UI background highlighting glitch when mouse was over a button but also over a point.
 
 ## [1.5.0] - 2024-10-09
 ### Added

@@ -1,9 +1,9 @@
 'use strict';
-//03/11/24
+//11/11/24
 
 /* exported onLbtnUpPoint, onLbtnUpSettings*/
 
-/* global _p:readable, checkQuery:readable, globTags:readable, globQuery:readable, round:readable, capitalizeAll:readable, properties:readable, WshShell:readable, popup:readable, _qCond:readable, overwriteProperties:readable, checkUpdate:readable, globSettings:readable , isArrayEqual:readable, _b:readable, folders:readable */
+/* global _p:readable, checkQuery:readable, globTags:readable, globQuery:readable, round:readable, capitalizeAll:readable, properties:readable, WshShell:readable, popup:readable, _qCond:readable, overwriteProperties:readable, checkUpdate:readable, globSettings:readable , isArrayEqual:readable, _b:readable, folders:readable, dynQueryMode:readable, refreshData:readable */
 include('..\\..\\helpers\\helpers_xxx_file.js');
 /* global _open:readable, utf8:readable */
 include('..\\..\\helpers\\helpers_xxx_playlists.js');
@@ -289,9 +289,8 @@ function onLbtnUpSettings() {
 			return (idx !== -1 ? idx : 0);
 		}, options);
 	}
-	menu.newEntry({ entryText: 'sep' });
 	{
-		const subMenu = menu.newMenu('Filter data');
+		const subMenu = menu.newMenu('Data filtering');
 		menu.newEntry({ menuName: subMenu, entryText: 'By query:', flags: MF_GRAYED });
 		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
 		const list = JSON.parse(properties.queryEntries[1]);
@@ -332,8 +331,7 @@ function onLbtnUpSettings() {
 		});
 	}
 	{
-		menu.newEntry({ entryText: 'sep' });
-		const subMenu = menu.newMenu('Other settings');
+		const subMenu = menu.newMenu('Data calculation');
 		menu.newEntry({
 			menuName: subMenu, entryText: 'Asynchronous calculation', func: () => {
 				properties.bAsync[1] = !properties.bAsync[1];
@@ -351,6 +349,7 @@ function onLbtnUpSettings() {
 			}
 		});
 		menu.newCheckMenuLast(() => this.configuration.bLoadAsyncData);
+		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
 		menu.newEntry({
 			menuName: subMenu, entryText: 'Auto-update data sources', func: () => {
 				properties.bAutoData[1] = !properties.bAutoData[1];
@@ -358,7 +357,7 @@ function onLbtnUpSettings() {
 			}, flags: dataSource.sourceType === 'library' ? MF_GRAYED : MF_STRING
 		});
 		menu.appendToLast(dataSource.sourceType === 'library' ? '\t[non library]' : '');
-		menu.newCheckMenuLast(() => properties.bAutoData[1]);
+		menu.newCheckMenuLast(() => dataSource.sourceType !== 'library' && properties.bAutoData[1]);
 		const playingTF = JSON.parse(properties.playingTF[1]).map((tag) => tag.toUpperCase());
 		const bAlways = isArrayEqual(playingTF, ['*']);
 		const playingTFTip = bAlways
@@ -372,7 +371,35 @@ function onLbtnUpSettings() {
 				overwriteProperties(properties);
 			}, flags: dataSource.sourceType === 'library' || !properties.bAutoData[1] ? MF_GRAYED : MF_STRING
 		});
-		menu.newCheckMenuLast(() => !!properties.playingTF[1].length);
+		menu.newCheckMenuLast(() => dataSource.sourceType !== 'library' && !!properties.playingTF[1].length);
+		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+		const subMenuTwo = menu.newMenu('Auto-Update Dynamic queries', subMenu, properties.dataQuery[1].count('#') >= 2 ? MF_STRING : MF_GRAYED);
+		[
+			{ key: 'onSelection', entryText: 'Selecting tracks (playlist)' },
+			{ key: 'onPlayback', entryText: 'When playing a track' },
+		].forEach((o) => {
+			menu.newEntry({
+				menuName: subMenuTwo, entryText: o.entryText, func: () => {
+					dynQueryMode[o.key] = !dynQueryMode[o.key];
+					properties.dynQueryMode[1] = JSON.stringify(dynQueryMode);
+					overwriteProperties(properties);
+					if (fb.IsPlaying) { refreshData(plman.PlayingPlaylist, 'on_playback_new_track_dynQuery'); }
+				}, flags: o.key === 'preferPlayback' && !dynQueryMode.onPlayback ? MF_GRAYED : MF_STRING
+			});
+			menu.newCheckMenuLast(() => dynQueryMode[o.key]);
+		});
+		menu.newEntry({
+			menuName: subMenuTwo, entryText: 'Prefer now playing', func: () => {
+				dynQueryMode.preferPlayback = !dynQueryMode.preferPlayback;
+				properties.dynQueryMode[1] = JSON.stringify(dynQueryMode);
+				overwriteProperties(properties);
+			}, flags: !dynQueryMode.onPlayback ? MF_GRAYED : MF_STRING
+		});
+		menu.newCheckMenuLast(() => dynQueryMode.onPlayback && dynQueryMode.preferPlayback);
+	}
+	{
+		menu.newEntry({ entryText: 'sep' });
+		const subMenu = menu.newMenu('Other settings');
 		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
 		{
 			const subMenuTwo = menu.newMenu('Debug and testing', subMenu);

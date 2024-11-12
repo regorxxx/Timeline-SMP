@@ -1,5 +1,5 @@
 'use strict';
-//09/08/24
+//11/11/24
 
 /* exported getData, getDataAsync */
 
@@ -7,7 +7,7 @@
 include('..\\..\\helpers\\helpers_xxx_prototypes.js');
 /* global _t:readable, _bt:readable */
 include('..\\..\\helpers\\helpers_xxx_tags.js');
-/* global queryReplaceWithCurrent:readable */
+/* global queryReplaceWithCurrent:readable, checkQuery:readable */
 include('..\\..\\helpers\\helpers_xxx_file.js');
 /* global _isFile:readable, folders:readable, _jsonParseFileCheck:readable, utf8:readable */
 include('..\\..\\helpers\\helpers_xxx_playlists.js');
@@ -69,6 +69,7 @@ function getData({
 	option = 'tf', optionArg = null,
 	x = 'genre', y = 1, z = 'artist',
 	query = 'ALL', sourceType = 'library', sourceArg = null,
+	queryHandle = null,
 	bProportional = false,
 	bRemoveDuplicates = true,
 	bIncludeHandles = false
@@ -77,7 +78,7 @@ function getData({
 	const dedupByIdTags = new Set(['TITLE']); dedupByIdTags.forEach((tag) => noSplitTags.add(_t(tag)));
 	const idChars = ['\u200b', '\u200c', '\u200d', '\u200e', '\u200f', '\u2060'];
 	const idCharsRegExp = new RegExp(idChars.join('|'), 'gi');
-	const source = filterSource(query, getSource(sourceType, sourceArg));
+	const source = filterSource(query, getSource(sourceType, sourceArg), queryHandle);
 	const handleList = bRemoveDuplicates ? deduplicateSource(source) : source;
 	if ((typeof z === 'undefined' || z === null || !z.length) && option === 'timeline') { option = 'tf'; }
 	let data;
@@ -357,6 +358,7 @@ async function getDataAsync({
 	option = 'tf', optionArg = null,
 	x = 'genre', y = 1, z = 'artist',
 	query = 'ALL', sourceType = 'library', sourceArg = null,
+	queryHandle = null,
 	bProportional = false,
 	bRemoveDuplicates = true,
 	bIncludeHandles = false
@@ -365,7 +367,7 @@ async function getDataAsync({
 	const dedupByIdTags = new Set(['TITLE']); dedupByIdTags.forEach((tag) => noSplitTags.add(_t(tag)));
 	const idChars = ['\u200b', '\u200c', '\u200d', '\u200e', '\u200f', '\u2060'];
 	const idCharsRegExp = new RegExp(idChars.join('|'), 'gi');
-	const source = filterSource(query, getSource(sourceType, sourceArg));
+	const source = filterSource(query, getSource(sourceType, sourceArg), queryHandle);
 	const handleList = bRemoveDuplicates ? deduplicateSource(source) : source;
 	if ((typeof z === 'undefined' || z === null || !z.length) && option === 'timeline') { option = 'tf'; }
 	let data;
@@ -632,7 +634,9 @@ function getSource(type, arg) {
 	}
 }
 
-function filterSource(query, source) {
+function filterSource(query, source, handle = null) {
+	query = queryReplaceWithCurrent(query, handle, { bToLowerCase: true });
+	if (!checkQuery(query)) { return new FbMetadbHandleList(); }
 	return (query.length && query !== 'ALL' ? fb.GetQueryItems(source, query) : source);
 }
 

@@ -1,5 +1,5 @@
 ﻿'use strict';
-//07/11/24
+//11/11/24
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '1.5.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
@@ -14,7 +14,7 @@ include('main\\statistics\\statistics_xxx.js');
 include('main\\statistics\\statistics_xxx_menu.js');
 /* global createStatisticsMenu:readable */
 include('main\\timeline\\timeline_helpers.js');
-/* global  _gdiFont:readable, MK_LBUTTON:readable, deepAssign:readable, RGB:readable, isJSON:readable, _scale:readable, isString:readable, isBoolean:readable, globSettings:readable, setProperties:readable, getPropertiesPairs:readable, checkUpdate:readable, overwriteProperties:readable, getDataAsync:readable, _qCond:readable, queryJoin:readable, getData:readable, getPlaylistIndexArray:readable, _t:readable, isArrayEqual:readable */
+/* global  _gdiFont:readable, MK_LBUTTON:readable, deepAssign:readable, RGB:readable, isJSON:readable, _scale:readable, isString:readable, isBoolean:readable, globSettings:readable, setProperties:readable, getPropertiesPairs:readable, checkUpdate:readable, overwriteProperties:readable, getDataAsync:readable, _qCond:readable, queryJoin:readable, getData:readable, getPlaylistIndexArray:readable, _t:readable, isArrayEqual:readable, queryReplaceWithCurrent:readable */
 include('main\\timeline\\timeline_menus.js');
 /* global onLbtnUpPoint:readable, onLbtnUpSettings:readable, createBackgroundMenu:readable */
 include('main\\window\\window_xxx_background.js');
@@ -96,13 +96,34 @@ let properties = {
 		'PLAY_COUNT',
 		'LASTFM_PLAY_COUNT',
 		'LAST_PLAYED_ENHANCED',
-		'LAST_PLAYED'
+		'LAST_PLAYED',
+		'2003_LAST_PLAYED',
+		'2003_PLAYCOUNT',
+		'2003_LAST_PLAYED_AGO',
+		'2003_LAST_PLAYED_AGO2'
 	]), { func: isJSON }],
 	firstPopup: ['Timeline: Fired once', false, { func: isBoolean }, false],
+	dynQueryMode: ['Update data with dynamic queries', JSON.stringify({
+		onSelection: true,
+		onPlayback: true,
+		preferPlayback: true
+	}), { func: isJSON }],
 };
 Object.keys(properties).forEach(p => properties[p].push(properties[p][1]));
 setProperties(properties, '', 0);
 properties = getPropertiesPairs(properties, '', 0);
+
+// Helpers
+const dynQueryMode = JSON.parse(properties.dynQueryMode[1]);
+const getSel = () => {
+	return dynQueryMode.onSelection
+		? dynQueryMode.onPlayback
+			? dynQueryMode.preferPlayback
+				? fb.GetNowPlaying() || fb.GetFocusItem(true)
+				: fb.GetFocusItem(true) || fb.GetNowPlaying()
+			: fb.GetFocusItem(true)
+		: dynQueryMode.onPlayback ? fb.GetNowPlaying() : null;
+};
 
 // Info Popup
 if (!properties.firstPopup[1]) {
@@ -204,6 +225,7 @@ newConfig.forEach((row) => row.forEach((config) => {
 				bHasX ? config.axis.x.tf + ' PRESENT' : '',
 				bHasZ ? config.axis.z.tf + ' PRESENT' : ''
 			], 'AND'),
+			queryHandle: getSel(),
 			bProportional: config.axis.y.bProportional
 		});
 	} else if (defaultConfig.configuration.bLoadAsyncData) {
@@ -219,6 +241,7 @@ newConfig.forEach((row) => row.forEach((config) => {
 				bHasX ? config.axis.x.tf + ' PRESENT' : '',
 				bHasZ ? config.axis.z.tf + ' PRESENT' : ''
 			], 'AND'),
+			queryHandle: getSel(),
 			bProportional: config.axis.y.bProportional
 		});
 	}
@@ -267,6 +290,7 @@ charts.forEach((chart, i) => {
 					bHasTfX || bHasX ? (bHasX ? _qCond(entry.x) : this.axis.x.tf) + ' PRESENT' : '',
 					bHasTfZ || bHasZ ? (bHasZ ? _qCond(entry.z) : this.axis.z.tf) + ' PRESENT' : ''
 				], 'AND'),
+				queryHandle: getSel(),
 				bProportional: entry.bProportional
 			}),
 			axis: {},
@@ -286,6 +310,7 @@ globProfiler.Print('charts');
 
 let playingPlaylist = plman.PlayingPlaylist;
 let activePlaylist = plman.ActivePlaylist;
+let selectedHandle = getSel();
 let selectedPlaylists = -1;
 function refreshData(plsIdx, callback, bForce = false) {
 	let bRefresh = false;
@@ -306,10 +331,22 @@ function refreshData(plsIdx, callback, bForce = false) {
 					});
 				});
 		};
-		const updateCharts = (bForce) => {
+		const needsUpdateByDynQuery = () => {
+			const query = properties.dataQuery[1];
+			if (query.count('#') < 2) { return false; }
+			const currSel = getSel();
+			if (selectedHandle && currSel) {
+				if (currSel.RawPath === selectedHandle.RawPath) { return false; }
+			}
+			if (queryReplaceWithCurrent(query, selectedHandle) === queryReplaceWithCurrent(query, currSel)) { return false; }
+			selectedHandle = currSel;
+			return true;
+		};
+		const updateCharts = (bForce, mode = '') => {
 			let bRefresh = false;
 			charts.forEach((chart) => {
-				if (!chart.pop.isEnabled() && (bForce || needsUpdateByTf(chart))) {
+				const bUpdate = bForce || (mode === 'tf' && needsUpdateByTf(chart)) || (mode === 'dynQuery' && needsUpdateByDynQuery());
+				if (!chart.pop.isEnabled() && bUpdate) {
 					chart.setData();
 					bRefresh = true;
 				}
@@ -328,14 +365,14 @@ function refreshData(plsIdx, callback, bForce = false) {
 			if (playingPlaylist !== plman.PlayingPlaylist) {
 				bRefresh = updateCharts(true);
 			} else if (plsIdx === plman.PlayingPlaylist) {
-				bRefresh = updateCharts();
+				bRefresh = updateCharts(false, 'tf');
 			}
 		}
 		playingPlaylist = plman.PlayingPlaylist;
 		if (callback === 'on_playlist_switch' && bActive) {
 			bRefresh = updateCharts(true);
 		} else if (bActive && (activePlaylist !== plman.ActivePlaylist || plsIdx === plman.PlayingPlaylist)) {
-			bRefresh = updateCharts();
+			bRefresh = updateCharts(false, 'tf');
 		}
 		activePlaylist = plman.ActivePlaylist;
 		if (dataSource.sourceType === 'playlist') {
@@ -343,9 +380,22 @@ function refreshData(plsIdx, callback, bForce = false) {
 			if (bPlaylistChanged && idxArr.includes(plsIdx)) {
 				bRefresh = updateCharts(true);
 			} else if (selectedPlaylists !== idxArr.length || idxArr.includes(plsIdx)) {
-				bRefresh = updateCharts();
+				bRefresh = updateCharts(false, 'tf');
 			}
 			selectedPlaylists = idxArr.length;
+		}
+		if (callback === 'on_selection_changed_dynQuery') {
+			if (dynQueryMode.onSelection && (!fb.IsPlaying || !dynQueryMode.onPlayback || !dynQueryMode.preferPlayback)) {
+				bRefresh = updateCharts(false, 'dynQuery');
+			}
+		} else if (callback === 'on_item_focus_change_dynQuery') {
+			if (dynQueryMode.onSelection && (!fb.IsPlaying || !dynQueryMode.onPlayback || !dynQueryMode.preferPlayback)) {
+				bRefresh = updateCharts(false, 'dynQuery');
+			}
+		} else if (callback === 'on_playback_new_track_dynQuery' && dynQueryMode.onPlayback) {
+			if (!dynQueryMode.onSelection || dynQueryMode.preferPlayback) {
+				bRefresh = updateCharts(false, 'dynQuery');
+			}
 		}
 	}
 	return bRefresh;
@@ -450,18 +500,21 @@ addEventListener('on_playback_new_track', () => { // To show playing now playlis
 	if (background.coverMode.toLowerCase() !== 'none') { background.updateImageBg(); }
 	if (!window.ID) { return; }
 	if (properties.bAutoData[1]) { refreshData(plman.PlayingPlaylist, 'on_playback_new_track'); }
+	if (dynQueryMode.onPlayback) { refreshData(plman.PlayingPlaylist, 'on_playback_new_track_dynQuery'); }
 });
 
 addEventListener('on_selection_changed', () => {
 	if (background.coverMode.toLowerCase() !== 'none' && (!background.coverModeOptions.bNowPlaying || !fb.IsPlaying)) {
 		background.updateImageBg();
 	}
+	if (dynQueryMode.onSelection) { refreshData(plman.ActivePlaylist, 'on_selection_changed_dynQuery'); }
 });
 
 addEventListener('on_item_focus_change', () => {
 	if (background.coverMode.toLowerCase() !== 'none' && (!background.coverModeOptions.bNowPlaying || !fb.IsPlaying)) {
 		background.updateImageBg();
 	}
+	if (dynQueryMode.onSelection) { refreshData(plman.ActivePlaylist, 'on_item_focus_change_dynQuery'); }
 });
 
 addEventListener('on_playlist_switch', () => {

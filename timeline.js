@@ -1,5 +1,5 @@
 ﻿'use strict';
-//12/11/24
+//13/11/24
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '1.5.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
@@ -35,12 +35,13 @@ let properties = {
 			dataManipulation: { sort: 'natural|x', group: 3, filter: null, slice: [0, Infinity], distribution: null },
 			background: { color: null },
 			chroma: { scheme: 'Set1' },
-			margin: { left: _scale(20), right: _scale(10), top: _scale(10), bottom: _scale(15) },
+			margin: { left: _scale(20), right: _scale(20), top: _scale(10), bottom: _scale(15) },
 			axis: {
 				x: { show: true, color: RGB(50, 50, 50), width: _scale(2), ticks: 'auto', labels: true, bAltLabels: true },
 				y: { show: false, color: RGB(50, 50, 50), width: _scale(2), ticks: 5, labels: true }
 			},
-			configuration: { bDynColor: true, bDynColorBW: false, bLoadAsyncData: true }
+			configuration: { bDynColor: true, bDynColorBW: false, bLoadAsyncData: true },
+			buttons: { alpha: 25 },
 		}
 	)), { func: isJSON }],
 	data: ['Data options', JSON.stringify({
@@ -166,7 +167,11 @@ const defaultConfig = deepAssign()(
 	{
 		data: [],
 		x: 0, y: 0, w: 0, h: 0,
-		tooltipText: '\n\n(L. click to show point menu)\n(Use buttons to configure chart)',
+		tooltipText: function (point, serie, mask) { // eslint-disable-line no-unused-vars
+			return '\n\n(L. click to show point menu)' +
+				(this.getCurrentRange() < this.getMaxRange() ? '\n(L. click dragging to scroll)' : '') +
+				'\n(Use buttons to configure chart)';
+		},
 		configuration: { bSlicePerKey: true },
 		callbacks: {
 			point: {
@@ -384,11 +389,7 @@ function refreshData(plsIdx, callback, bForce = false) {
 			}
 			selectedPlaylists = idxArr.length;
 		}
-		if (callback === 'on_selection_changed_dynQuery') {
-			if (dynQueryMode.onSelection && (!fb.IsPlaying || !dynQueryMode.onPlayback || !dynQueryMode.preferPlayback)) {
-				bRefresh = updateCharts(false, 'dynQuery');
-			}
-		} else if (callback === 'on_item_focus_change_dynQuery') {
+		if (callback === 'on_selection_changed_dynQuery' || callback === 'on_item_focus_change_dynQuery') {
 			if (dynQueryMode.onSelection && (!fb.IsPlaying || !dynQueryMode.onPlayback || !dynQueryMode.preferPlayback)) {
 				bRefresh = updateCharts(false, 'dynQuery');
 			}

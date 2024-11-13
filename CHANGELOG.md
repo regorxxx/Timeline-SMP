@@ -46,6 +46,10 @@
 - UI: left scrolling button position is now adjusted following Y-Axis display (except for doughnut and pie charts).
 - UI: scrolling buttons are now shown only when the chart is not showing all data (no zoom).
 - UI: bars, fill and lines chart types fallback to 'scatter' if the serie drawn contains a single point, previously nothing was drawn.
+- UI: scroll buttons are now only shown if the chart can be scrolled in such direction.
+- UI: tooltip now shows the scrolling mouse shortcut (if scrolling is possible).
+- UI: buttons are now smoothly hidden when panel is not on focus. Transparency may be adjusted from 0 to 255 only at properties ('Chart options|buttons|alpha').
+- UI: changed default margins on new installations.
 - Readme: added FAQ section.
 - Helpers: updated helpers.
 ### Removed

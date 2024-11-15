@@ -50,7 +50,7 @@
 - UI: tooltip now shows the scrolling mouse shortcut (if scrolling is possible).
 - UI: buttons are now smoothly hidden when panel is not on focus. Transparency may be adjusted from 0 to 255 only at properties ('Chart options|buttons|alpha').
 - UI: changed default margins on new installations.
-- Statistics: buttons are now smoothly hidden when panel is not on focus. Transparency may be adjusted from 0 to 255 by setting buttons.alpha, timer to hide them by setting buttons.timer.
+- UI: buttons are now smoothly hidden when panel is not on focus. Transparency may be adjusted from 0 to 255 by setting buttons.alpha, timer to hide them by setting buttons.timer.
 - Readme: added FAQ section.
 - Helpers: updated helpers.
 - Helpers: general code cleanup on menus internal code. Please report any bug on extra separators or menu entries not working as expected.

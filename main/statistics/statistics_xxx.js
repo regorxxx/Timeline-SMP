@@ -1,5 +1,5 @@
 ﻿'use strict';
-//13/11/24
+//14/11/24
 
 /* exported _chart */
 
@@ -27,7 +27,7 @@ function _chart({
 		timeline: {/* bAxisCenteredX */ },
 	},
 	margin = {/* left, right, top, bottom */ },
-	buttons = {/* xScroll , settings, display, zoom, customm, alpha */ },
+	buttons = {/* xScroll , settings, display, zoom, customm, alpha, timer */ },
 	callbacks = {
 		point: {/* onLbtnUp, onRbtnUp, onDblLbtn */ },
 		focus: {/* onMouseWwheel, onRbtnUp */ },
@@ -67,7 +67,7 @@ function _chart({
 			timeline: { bAxisCenteredX: false },
 		};
 		this.margin = { left: _scale(20), right: _scale(20), top: _scale(20), bottom: _scale(20) };
-		this.buttons = { xScroll: false, settings: false, display: false, zoom: false, custom: false, alpha: 25 };
+		this.buttons = { xScroll: false, settings: false, display: false, zoom: false, custom: false, alpha: 25, timer: 1500  };
 		this.callbacks = {
 			point: { onLbtnUp: null, onRbtnUp: null, onDblLbtn: null },
 			focus: {
@@ -2484,7 +2484,7 @@ function _chart({
 		text: chars.left,
 		x: this.x, y: this.y, w: this.buttonsCoords.size / 2, h: this.buttonsCoords.size / 2,
 		isVisible: (time, timer) => { return this.inFocus || (Date.now() - time < timer); },
-		notVisibleMode: this.buttons.alpha, bTimerOnVisible: true,
+		notVisibleMode: this.buttons.alpha, bTimerOnVisible: true, timer: this.buttons.timer,
 		scrollSteps: 1, scrollSpeed: 250,
 		lbtnFunc: (x, y, mask, parent, delta = 1) => { this.scrollX({ step: - Math.round(delta), bThrottle: false }); },
 		lbtnDblFunc: (x, y, mask, parent) => { this.scrollX({ step: - Infinity, bThrottle: false }); } // eslint-disable-line no-unused-vars
@@ -2493,7 +2493,7 @@ function _chart({
 		text: chars.right,
 		x: this.x, y: this.y, w: this.buttonsCoords.size / 2, h: this.buttonsCoords.size / 2,
 		isVisible: (time, timer) => { return this.inFocus || (Date.now() - time < timer); },
-		notVisibleMode: this.buttons.alpha, bTimerOnVisible: true,
+		notVisibleMode: this.buttons.alpha, bTimerOnVisible: true, timer: this.buttons.timer,
 		scrollSteps: 1, scrollSpeed: 250,
 		lbtnFunc: (x, y, mask, parent, delta = 1) => { this.scrollX({ step: Math.round(delta), bThrottle: false }); },
 		lbtnDblFunc: (x, y, mask, parent) => { this.scrollX({ step: Infinity, bThrottle: false }); } // eslint-disable-line no-unused-vars
@@ -2504,7 +2504,7 @@ function _chart({
 			: chars.searchPlus,
 		x: this.x, y: this.y, w: this.buttonsCoords.size, h: this.buttonsCoords.size,
 		isVisible: (time, timer) => { return this.inFocus || (Date.now() - time < timer); },
-		notVisibleMode: this.buttons.alpha, bTimerOnVisible: true,
+		notVisibleMode: this.buttons.alpha, bTimerOnVisible: true, timer: this.buttons.timer,
 		lbtnFunc: (x, y, mask, parent) => { this.callbacks.zoom.onLbtnUp && this.callbacks.zoom.onLbtnUp.call(this, x, y, mask, parent); },
 		rbtnFunc: (x, y, mask, parent) => { this.callbacks.zoom.onRbtnUp && this.callbacks.zoom.onRbtnUp.call(this, x, y, mask, parent); },
 		lbtnDblFunc: (x, y, mask, parent) => { this.callbacks.zoom.onDblLbtn && this.callbacks.zoom.onDblLbtn.call(this, x, y, mask, parent); }
@@ -2513,7 +2513,7 @@ function _chart({
 		text: chars.cogs,
 		x: this.x, y: this.y, w: this.buttonsCoords.size, h: this.buttonsCoords.size,
 		isVisible: (time, timer) => { return this.inFocus || (Date.now() - time < timer); },
-		notVisibleMode: this.buttons.alpha, bTimerOnVisible: true,
+		notVisibleMode: this.buttons.alpha, bTimerOnVisible: true, timer: this.buttons.timer,
 		lbtnFunc: (x, y, mask, parent) => { this.callbacks.settings.onLbtnUp && this.callbacks.settings.onLbtnUp.call(this, x, y, mask, parent); },
 		rbtnFunc: (x, y, mask, parent) => { this.callbacks.settings.onRbtnUp && this.callbacks.settings.onRbtnUp.call(this, x, y, mask, parent); },
 		lbtnDblFunc: (x, y, mask, parent) => { this.callbacks.settings.onDblLbtn && this.callbacks.settings.onDblLbtn.call(this, x, y, mask, parent); }
@@ -2522,7 +2522,7 @@ function _chart({
 		text: chars.chartV2,
 		x: this.x, y: this.y, w: this.buttonsCoords.size, h: this.buttonsCoords.size,
 		isVisible: (time, timer) => { return this.inFocus || (Date.now() - time < timer); },
-		notVisibleMode: this.buttons.alpha, bTimerOnVisible: true,
+		notVisibleMode: this.buttons.alpha, bTimerOnVisible: true, timer: this.buttons.timer,
 		lbtnFunc: (x, y, mask, parent) => { this.callbacks.display.onLbtnUp && this.callbacks.display.onLbtnUp.call(this, x, y, mask, parent); },
 		rbtnFunc: (x, y, mask, parent) => { this.callbacks.display.onRbtnUp && this.callbacks.display.onRbtnUp.call(this, x, y, mask, parent); },
 		lbtnDblFunc: (x, y, mask, parent) => { this.callbacks.display.onDblLbtn && this.callbacks.display.onDblLbtn.call(this, x, y, mask, parent); }
@@ -2531,7 +2531,7 @@ function _chart({
 		text: chars.close,
 		x: this.x, y: this.y, w: this.buttonsCoords.size, h: this.buttonsCoords.size,
 		isVisible: (time, timer) => { return this.inFocus || (Date.now() - time < timer); },
-		notVisibleMode: this.buttons.alpha, bTimerOnVisible: true,
+		notVisibleMode: this.buttons.alpha, bTimerOnVisible: true, timer: this.buttons.timer,
 		lbtnFunc: (x, y, mask, parent) => { this.callbacks.custom.onLbtnUp && this.callbacks.custom.onLbtnUp.call(this, x, y, mask, parent); },
 		rbtnFunc: (x, y, mask, parent) => { this.callbacks.custom.onRbtnUp && this.callbacks.custom.onRbtnUp.call(this, x, y, mask, parent); },
 		lbtnDblFunc: (x, y, mask, parent) => { this.callbacks.custom.onDblLbtn && this.callbacks.custom.onDblLbtn.call(this, x, y, mask, parent); }

@@ -1,5 +1,5 @@
 ﻿'use strict';
-//13/11/24
+//14/11/24
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '1.5.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
@@ -41,7 +41,7 @@ let properties = {
 				y: { show: false, color: RGB(50, 50, 50), width: _scale(2), ticks: 5, labels: true }
 			},
 			configuration: { bDynColor: true, bDynColorBW: false, bLoadAsyncData: true },
-			buttons: { alpha: 25 },
+			buttons: { alpha: 25, timer: 1500 },
 		}
 	)), { func: isJSON }],
 	data: ['Data options', JSON.stringify({

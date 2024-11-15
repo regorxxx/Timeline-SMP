@@ -1,5 +1,5 @@
 ﻿'use strict';
-//07/11/24
+//15/11/24
 
 /* exported bindMenu */
 
@@ -25,7 +25,7 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 	// helper
 	const createMenuOption = (key, subKey, menuName = menu.getMainMenuName(), bCheck = true, addFunc = null) => {
 		return function (option) {
-			if (option.entryText === 'sep' && menu.getEntries().pop().entryText !== 'sep') { menu.newEntry({ menuName, entryText: 'sep' }); return; } // Add sep only if any entry has been added
+			if (menu.isSeparator(option) && !menu.isSeparator(menu.getEntries().pop())) { menu.newSeparator(menuName); return; } // Add sep only if any entry has been added
 			if (option.isEq && option.key === option.value || !option.isEq && option.key !== option.value || option.isEq === null) {
 				menu.newEntry({
 					menuName, entryText: option.entryText, func: () => {
@@ -79,7 +79,7 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 	const fineGraphs = new Set(['bars', 'doughnut', 'pie', 'timeline']);
 	// Header
 	menu.newEntry({ entryText: this.title, flags: MF_GRAYED });
-	menu.newEntry({ entryText: 'sep' });
+	menu.newSeparator();
 	// Menus
 	{
 		const subMenu = menu.newMenu('Chart type');
@@ -102,7 +102,7 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 			{ isEq: null, key: this.dataManipulation.distribution, value: null, newValue: null, entryText: 'Standard graph' },
 			{ isEq: null, key: this.dataManipulation.distribution, value: null, newValue: 'normal', entryText: 'Normal distrib.' },
 		].forEach(createMenuOption('dataManipulation', 'distribution', subMenu));
-		menu.newEntry({ entryText: 'sep' });
+		menu.newSeparator();
 	}
 	{
 		const subMenu = menu.newMenu('Sorting');
@@ -128,14 +128,14 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 				{ isEq: null, key: this.dataManipulation.distribution, value: 'normal inverse', newValue: 'normal', entryText: 'Mean centered' }
 			].forEach(createMenuOption('dataManipulation', 'distribution', subMenu));
 		}
-		menu.newEntry({ entryText: 'sep' });
+		menu.newSeparator();
 	}
 	{ // NOSONAR
 		{
 			const subMenu = menu.newMenu('Show (X-axis)');
 			if (this.buttons.zoom) {
 				menu.newEntry({ menuName: subMenu, entryText: 'Changed with zoom:', flags: MF_GRAYED });
-				menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+				menu.newSeparator(subMenu);
 			}
 			const options = [
 				{ isEq: false, key: this.dataManipulation.slice, value: [0, 4], newValue: [0, 4], entryText: '4 items' + (this.dataManipulation.distribution ? ' per tail' : '') },
@@ -144,7 +144,7 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 				{ isEq: false, key: this.dataManipulation.slice, value: [0, 50], newValue: [0, 50], entryText: '50 items' + (this.dataManipulation.distribution ? ' per tail' : '') }
 			];
 			options.forEach(createMenuOption('dataManipulation', 'slice', subMenu));
-			menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+			menu.newSeparator(subMenu);
 			menu.newEntry({
 				menuName: subMenu, entryText: 'Custom range...' + '\t[' + this.dataManipulation.slice + ']', func: () => {
 					const slice = [0, Infinity];
@@ -188,7 +188,7 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 						return !!filter && filterStr.includes(' > ') && filter({ y: options[i] + 1 }) && !filter({ y: options[i] }); // Just a hack to check the current value is the filter
 					});
 				}.bind(parent));
-				menu.newEntry({ menuName: subMenuGreat, entryText: 'sep' });
+				menu.newSeparator(subMenuGreat);
 				menu.newEntry({
 					menuName: subMenuGreat, entryText: 'Custom value...', func: () => {
 						let val = Input.number('real', -Infinity, 'Input real number:', 'Allow only Y-Value greater than', 40);
@@ -220,7 +220,7 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 						return !!filter && filterStr.includes(' < ') && filter({ y: options[i] + 1 }) && !filter({ y: options[i] }); // Just a hack to check the current value is the filter
 					});
 				}.bind(parent));
-				menu.newEntry({ menuName: subMenuLow, entryText: 'sep' });
+				menu.newSeparator(subMenuLow);
 				menu.newEntry({
 					menuName: subMenuLow, entryText: 'Custom value...', func: () => {
 						let val = Input.number('real', Infinity, 'Input real number:', 'Allow only Y-Value lower than', 40);
@@ -242,7 +242,7 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 				});
 			}
 			{
-				menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+				menu.newSeparator(subMenu);
 				menu.newEntry({
 					menuName: subMenu, entryText: 'Between 2 values...', func: () => {
 						const limits = [-Infinity, Infinity];
@@ -275,11 +275,11 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 			].forEach(createMenuOption('dataManipulation', 'filter', subMenu));
 		}
 		{
-			menu.newEntry({ entryText: 'sep' });
+			menu.newSeparator();
 			const subMenuGroup = menu.newMenu('Z-Axis groups' + (!this.graph.multi ? '\t[3D-Graphs]' : ''), void (0), this.graph.multi ? MF_STRING : MF_GRAYED);
 			if (this.graph.multi) {
 				menu.newEntry({ menuName: subMenuGroup, entryText: 'Z-points per X-value:', flags: MF_GRAYED });
-				menu.newEntry({ menuName: subMenuGroup, entryText: 'sep' });
+				menu.newSeparator(subMenuGroup);
 				const parent = this;
 				const options = [...new Set([this.stats.maxGroup, 10, 8, 5, 4, 3, 2, 1].map((frac) => {
 					return Math.round(this.stats.maxGroup / frac) || this.stats.minGroup; // Don't allow zero
@@ -291,7 +291,7 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 					createMenuOption('dataManipulation', 'group', subMenuGroup, false)(option);
 					menu.newCheckMenuLast(() => this.dataManipulation.group === options[i]);
 				}.bind(parent));
-				menu.newEntry({ menuName: subMenuGroup, entryText: 'sep' });
+				menu.newSeparator(subMenuGroup);
 				menu.newEntry({
 					menuName: subMenuGroup, entryText: 'Custom value...' + '\t[' + this.dataManipulation.group + ']', func: () => {
 						const val = Input.number('int positive', this.dataManipulation.group, 'Input number:', 'Number of Z-points per X-value', 40);
@@ -302,7 +302,7 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 				menu.newCheckMenuLast(() => !options.some((val) => this.dataManipulation.group === val));
 			}
 		}
-		menu.newEntry({ entryText: 'sep' });
+		menu.newSeparator();
 	}
 	{
 		const subMenu = menu.newMenu('Axis & labels');
@@ -323,7 +323,7 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 			[
 				{ isEq: null, key: this.axis.y.labels, value: null, newValue: { labels: !this.axis.y.labels }, entryText: (this.axis.y.labels ? 'Hide' : 'Show') + ' Y labels' }
 			].forEach(createMenuOption('axis', 'y', subMenuTwo, false));
-			menu.newEntry({ menuName: subMenuTwo, entryText: 'sep' });
+			menu.newSeparator(subMenuTwo);
 			[
 				{ isEq: null, key: this.axis.x.bAltLabels, value: null, newValue: !this.axis.x.bAltLabels, entryText: 'Alt. X labels' },
 			].forEach(createMenuOption('axis', ['x', 'bAltLabels'], subMenuTwo, true));
@@ -361,7 +361,7 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 			{ entryText: 'sep' },
 			{ isEq: null, key: this.chroma.scheme, value: null, newValue: 'random', entryText: 'Random' },
 		].forEach(createMenuOption('chroma', 'scheme', subMenu, true, () => { this.colors = []; })); // Remove colors to force new palette
-		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+		menu.newSeparator(subMenu);
 		{
 			const subMenuTwo = menu.newMenu('By scheme', subMenu);
 			let j = 0;
@@ -370,7 +370,7 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 				colorbrewer[key].forEach((scheme, i) => {
 					if (i === 0) {
 						menu.newEntry({ menuName: subMenuTwo, entryText: key.charAt(0).toUpperCase() + key.slice(1), flags: (j === 0 ? MF_GRAYED : MF_GRAYED | MF_MENUBARBREAK) });
-						menu.newEntry({ menuName: subMenuTwo, entryText: 'sep' });
+						menu.newSeparator(subMenuTwo);
 					}
 					[
 						{ isEq: null, key: this.chroma.scheme, value: null, newValue: scheme, entryText: scheme },
@@ -379,7 +379,7 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 				j++;
 			}
 		}
-		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+		menu.newSeparator(subMenu);
 		menu.newEntry({
 			menuName: subMenu, entryText: 'Colorblind safe', func: () => {
 				this.colors = [];

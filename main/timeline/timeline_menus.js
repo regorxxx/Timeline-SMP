@@ -1,5 +1,5 @@
 'use strict';
-//12/11/24
+//15/11/24
 
 /* exported onLbtnUpPoint, onLbtnUpSettings*/
 
@@ -28,16 +28,16 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 		: [point];
 	// Header
 	menu.newEntry({ entryText: this.title, flags: MF_GRAYED });
-	menu.newEntry({ entryText: 'sep' });
+	menu.newSeparator();
 	// Menus
 	points.forEach((subPoint) => {
 		const menuName = this.graph.multi ? menu.newMenu(subPoint.z) : menu.getMainMenuName();
 		{	// Playlists
 			const subMenu = [menu.newMenu('Create playlist', menuName), menu.newMenu('Create AutoPlaylist', menuName)];
 			menu.newEntry({ menuName: subMenu[0], entryText: 'De-duplicated and randomized:', flags: MF_GRAYED });
-			menu.newEntry({ menuName: subMenu[0], entryText: 'sep' });
+			menu.newSeparator(subMenu[0]);
 			menu.newEntry({ menuName: subMenu[1], entryText: 'Press Shift to configure:', flags: MF_GRAYED });
-			menu.newEntry({ menuName: subMenu[1], entryText: 'sep' });
+			menu.newSeparator(subMenu[1]);
 			const currPoints = this.dataDraw.map((serie) => serie.find((newPoint) => newPoint.x === point.x)).filter(Boolean);
 			[
 				{ name: 'By ' + this.axis.x.key, query: this.axis.x.tf + ' IS ' + subPoint.x, playlist: 'Timeline: ' + subPoint.x },
@@ -81,7 +81,7 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 				});
 			});
 		}
-		menu.newEntry({ menuName, entryText: 'sep' });
+		menu.newSeparator(menuName);
 		menu.newEntry({
 			menuName, entryText: 'Show point statistics...', func: () => {
 				const stats = this.computeStatisticsPoint(subPoint);
@@ -153,28 +153,28 @@ function onLbtnUpSettings() {
 	};
 	// Header
 	menu.newEntry({ entryText: this.title, flags: MF_GRAYED });
-	menu.newEntry({ entryText: 'sep' });
+	menu.newSeparator();
 	// Menus
 	{
 		const subMenu = menu.newMenu('Set X-axis data');
 		menu.newEntry({ menuName: subMenu, entryText: 'X-axis:', flags: MF_GRAYED });
-		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+		menu.newSeparator(subMenu);
 		const list = JSON.parse(properties.xEntries[1]);
 		list.forEach((entry) => {
-			if (entry.name === 'sep') { menu.newEntry({ menuName: subMenu, entryText: 'sep' }); }
+			if (menu.isSeparator(entry)) { menu.newSeparator(subMenu); }
 			else {
 				menu.newEntry({ menuName: subMenu, entryText: entry.name, func: () => this.setData(entry) });
 				menu.newCheckMenuLast(() => this.axis.x.tf === _qCond(entry.x));
 			}
 		});
-		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+		menu.newSeparator(subMenu);
 		menu.newEntry({
 			menuName: subMenu, entryText: 'By TF...', func: () => {
 				const entry = inputTF('x');
 				if (entry) { this.setData(entry); }
 			}
 		});
-		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+		menu.newSeparator(subMenu);
 		_createSubMenuEditEntries(menu, subMenu, {
 			name: 'Axis X TF entries',
 			list,
@@ -191,23 +191,23 @@ function onLbtnUpSettings() {
 	{
 		const subMenu = menu.newMenu('Set Y-axis data');
 		menu.newEntry({ menuName: subMenu, entryText: 'Y-axis:', flags: MF_GRAYED });
-		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+		menu.newSeparator(subMenu);
 		const list = JSON.parse(properties.yEntries[1]);
 		list.forEach((entry) => {
-			if (entry.name === 'sep') { menu.newEntry({ menuName: subMenu, entryText: 'sep' }); }
+			if (menu.isSeparator(entry)) { menu.newSeparator(subMenu); }
 			else {
 				menu.newEntry({ menuName: subMenu, entryText: entry.name, func: () => this.setData(entry) });
 				menu.newCheckMenuLast(() => this.axis.y.tf === _qCond(entry.y) && this.axis.y.bProportional === entry.bProportional);
 			}
 		});
-		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+		menu.newSeparator(subMenu);
 		menu.newEntry({
 			menuName: subMenu, entryText: 'By TF...', func: () => {
 				const entry = inputTF('y');
 				if (entry) { this.setData(entry); }
 			}
 		});
-		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+		menu.newSeparator(subMenu);
 		_createSubMenuEditEntries(menu, subMenu, {
 			name: 'Axis Y TF entries',
 			list,
@@ -224,16 +224,16 @@ function onLbtnUpSettings() {
 	{
 		const subMenu = menu.newMenu('Set Z-axis data');
 		menu.newEntry({ menuName: subMenu, entryText: 'Z-axis:', flags: MF_GRAYED });
-		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+		menu.newSeparator(subMenu);
 		const list = JSON.parse(properties.zEntries[1]);
 		list.forEach((entry) => {
-			if (entry.name === 'sep') { menu.newEntry({ menuName: subMenu, entryText: 'sep' }); }
+			if (menu.isSeparator(entry)) { menu.newSeparator(subMenu); }
 			else {
 				menu.newEntry({ menuName: subMenu, entryText: entry.name, func: () => this.setData(entry) });
 				menu.newCheckMenuLast(() => this.axis.z.tf === _qCond(entry.z));
 			}
 		});
-		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+		menu.newSeparator(subMenu);
 		menu.newEntry({
 			menuName: subMenu, entryText: 'None (disable axis)', func: () => {
 				this.axis.z = {};
@@ -241,14 +241,14 @@ function onLbtnUpSettings() {
 			}
 		});
 		menu.newCheckMenuLast(() => !Object.hasOwn(this.axis.z, 'tf'));
-		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+		menu.newSeparator(subMenu);
 		menu.newEntry({
 			menuName: subMenu, entryText: 'By TF...', func: () => {
 				const entry = inputTF('z');
 				if (entry) { this.setData(entry); }
 			}
 		});
-		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+		menu.newSeparator(subMenu);
 		_createSubMenuEditEntries(menu, subMenu, {
 			name: 'Axis Z TF entries',
 			list,
@@ -262,11 +262,11 @@ function onLbtnUpSettings() {
 			}
 		});
 	}
-	menu.newEntry({ entryText: 'sep' });
+	menu.newSeparator();
 	{
 		const subMenu = menu.newMenu('Data source');
 		menu.newEntry({ menuName: subMenu, entryText: 'Select source for tracks:', flags: MF_GRAYED });
-		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+		menu.newSeparator(subMenu);
 		const options = [
 			{ entryText: 'Library', sourceType: 'library' },
 			{ entryText: 'Current playlist', sourceType: 'activePlaylist' },
@@ -300,10 +300,10 @@ function onLbtnUpSettings() {
 	{
 		const subMenu = menu.newMenu('Data filtering');
 		menu.newEntry({ menuName: subMenu, entryText: 'By query:', flags: MF_GRAYED });
-		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+		menu.newSeparator(subMenu);
 		const list = JSON.parse(properties.queryEntries[1]);
 		list.forEach((entry) => {
-			if (entry.name === 'sep') { menu.newEntry({ menuName: subMenu, entryText: 'sep' }); }
+			if (menu.isSeparator(entry)) { menu.newSeparator(subMenu); }
 			else {
 				menu.newEntry({
 					menuName: subMenu, entryText: entry.name, func: () => {
@@ -315,7 +315,7 @@ function onLbtnUpSettings() {
 				menu.newCheckMenuLast(() => properties.dataQuery[1] === entry.query);
 			}
 		});
-		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+		menu.newSeparator(subMenu);
 		menu.newEntry({
 			menuName: subMenu, entryText: 'By query...', func: () => {
 				const input = Input.string('string', properties.dataQuery[1], 'Enter query:\n(dynamic queries also allowed, see readme)', 'Filter source by query', 'ALL');
@@ -325,7 +325,7 @@ function onLbtnUpSettings() {
 				this.setData({ query: input });
 			}
 		});
-		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+		menu.newSeparator(subMenu);
 		_createSubMenuEditEntries(menu, subMenu, {
 			name: 'Query entries',
 			list,
@@ -347,7 +347,7 @@ function onLbtnUpSettings() {
 			}
 		});
 		menu.newCheckMenuLast(() => properties.bAsync[1]);
-		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+		menu.newSeparator(subMenu);
 		menu.newEntry({
 			menuName: subMenu, entryText: 'Init data on startup', func: () => {
 				this.changeConfig({ configuration: { bLoadAsyncData: !this.configuration.bLoadAsyncData }, callbackArgs: { bSaveProperties: true } });
@@ -357,7 +357,7 @@ function onLbtnUpSettings() {
 			}
 		});
 		menu.newCheckMenuLast(() => this.configuration.bLoadAsyncData);
-		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+		menu.newSeparator(subMenu);
 		menu.newEntry({
 			menuName: subMenu, entryText: 'Auto-update data sources', func: () => {
 				properties.bAutoData[1] = !properties.bAutoData[1];
@@ -380,7 +380,7 @@ function onLbtnUpSettings() {
 			}, flags: dataSource.sourceType === 'library' || !properties.bAutoData[1] ? MF_GRAYED : MF_STRING
 		});
 		menu.newCheckMenuLast(() => dataSource.sourceType !== 'library' && !!properties.playingTF[1].length);
-		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+		menu.newSeparator(subMenu);
 		const subMenuTwo = menu.newMenu('Auto-update dynamic queries', subMenu, properties.dataQuery[1].count('#') >= 2 ? MF_STRING : MF_GRAYED);
 		[
 			{ key: 'onSelection', entryText: 'Selecting tracks (playlist)' },
@@ -406,9 +406,9 @@ function onLbtnUpSettings() {
 		menu.newCheckMenuLast(() => dynQueryMode.onPlayback && dynQueryMode.preferPlayback);
 	}
 	{
-		menu.newEntry({ entryText: 'sep' });
+		menu.newSeparator();
 		const subMenu = menu.newMenu('Other settings');
-		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+		menu.newSeparator(subMenu);
 		{
 			const subMenuTwo = menu.newMenu('Debug and testing', subMenu);
 			menu.newEntry({
@@ -422,7 +422,7 @@ function onLbtnUpSettings() {
 			});
 			menu.newCheckMenuLast(() => this.configuration.bProfile);
 		}
-		menu.newEntry({ menuName: subMenu, entryText: 'sep' });
+		menu.newSeparator(subMenu);
 		menu.newEntry({
 			menuName: subMenu, entryText: 'Automatically check for updates', func: () => {
 				properties.bAutoUpdateCheck[1] = !properties.bAutoUpdateCheck[1];
@@ -442,13 +442,13 @@ function onLbtnUpSettings() {
 			}
 		});
 	}
-	menu.newEntry({ entryText: 'sep' });
+	menu.newSeparator();
 	menu.newEntry({
 		entryText: 'Force data update', func: () => {
 			this.setData();
 		}
 	});
-	menu.newEntry({ entryText: 'sep' });
+	menu.newSeparator();
 	{	// Readmes
 		const subMenu = menu.newMenu('Readmes');
 		[

@@ -1,5 +1,5 @@
 ﻿'use strict';
-//25/11/24
+//26/11/24
 
 /* exported _chart */
 
@@ -424,7 +424,7 @@ function _chart({
 	};
 
 	this.paintGraph = (gr) => {
-		this.dataCoords = this.dataDraw.map(() => { return []; });
+		this.dataCoords = this.dataDraw.map(() => []);
 		let x, y, w, h, xOffsetKey, yOffsetKey;
 		let bHideToolbar;
 		let graphType = this.graph.type;
@@ -455,7 +455,7 @@ function _chart({
 		this.stats.minY = minY;
 		// Ticks
 		const ticks = this.steps(0, maxY, this.axis.y.ticks === 'auto' ? void (0) : Number(this.axis.y.ticks)); // NOSONAR
-		const tickText = ticks.map((tick) => { return this.nFormatter(tick, 1); });
+		const tickText = ticks.map((tick) => this.nFormatter(tick, 1));
 		// Retrieve all different label on all series
 		const points = [];
 		this.dataDraw.forEach((serie, i) => {
@@ -1033,7 +1033,7 @@ function _chart({
 	};
 
 	this.chromaColor = (scheme = this.chroma.scheme, len = this.series, mode = this.chroma.interpolation) => {
-		return Chroma.scale(scheme).mode(mode || 'lrgb').colors(len, 'rgb').map((arr) => { return RGB(...arr); });
+		return Chroma.scale(scheme).mode(mode || 'lrgb').colors(len, 'rgb').map((arr) => RGB(...arr));
 	};
 
 	this.nFormatter = (num) => { // Y axis formatter
@@ -1051,7 +1051,7 @@ function _chart({
 	};
 
 	this.cleanPoints = () => {
-		this.dataCoords = this.dataDraw.map(() => { return []; });
+		this.dataCoords = this.dataDraw.map(() => []);
 		this.currPoint = [-1, -1];
 		this.nearPoint = [-1, -1];
 		this.stats.maxY = this.stats.minY = 0;
@@ -1174,14 +1174,14 @@ function _chart({
 					}
 				} // For multiple series, points may be stacked and they are preferred by Y position
 				if (tracedPoints.length) {
-					tracedPoints.sort((a, b) => { return a.point.x - b.point.x + a.point.y - b.point.y; });
+					tracedPoints.sort((a, b) => a.point.x - b.point.x + a.point.y - b.point.y);
 					if (bCacheNear) { this.nearPoint = [tracedPoints[0].serieIdx, tracedPoints[0].pointIdx]; }
 					return [tracedPoints[0].serieIdx, tracedPoints[0].pointIdx];
 				}
 			}
 		}
 		if (bCacheNear && distances.length) {
-			this.nearPoint = distances.sort((a, b) => { return a.dist - b.dist; })[0].idx; // NOSONAR
+			this.nearPoint = distances.sort((a, b) => a.dist - b.dist)[0].idx; // NOSONAR
 		}
 		return [-1, -1];
 	};
@@ -1633,12 +1633,12 @@ function _chart({
 		if (Object.values(Array.prototype).includes(sortFunc)) {
 			const method = Object.entries(Array.prototype).find((pair) => pair[1] === sortFunc)[0];
 			if (sortArg) {
-				this.dataDraw = this.dataDraw.map((serie) => { return serie[method](...sortArg); });
+				this.dataDraw = this.dataDraw.map((serie) => serie[method](...sortArg));
 			} else {
-				this.dataDraw = this.dataDraw.map((serie) => { return serie[method](); });
+				this.dataDraw = this.dataDraw.map((serie) => serie[method]());
 			}
 		} else {
-			this.dataDraw = this.dataDraw.map((serie) => { return serie.sort(this.dataManipulation.sort); });
+			this.dataDraw = this.dataDraw.map((serie) => serie.sort(this.dataManipulation.sort));
 		}
 	};
 
@@ -1654,7 +1654,7 @@ function _chart({
 
 	this.filter = () => { // Filter points with user provided function
 		if (!this.dataManipulation.filter) { return; }
-		this.dataDraw = this.dataDraw.map((serie) => { return serie.filter(this.dataManipulation.filter); });
+		this.dataDraw = this.dataDraw.map((serie) => serie.filter(this.dataManipulation.filter));
 		if (this.configuration.bDebug) { memoryPrint('filter', this.dataDraw); }
 	};
 
@@ -1699,7 +1699,7 @@ function _chart({
 				}
 			}
 		} else {
-			this.dataDraw = this.dataDraw.map((serie) => { return serie.slice(...slice); });
+			this.dataDraw = this.dataDraw.map((serie) => serie.slice(...slice));
 		}
 	};
 
@@ -1709,7 +1709,9 @@ function _chart({
 	};
 
 	this.normalApply = (series, bInverse = false) => { // Sort as normal distribution
-		const sort = bInverse ? (a, b) => { return b.y - a.y; } : (a, b) => { return a.y - b.y; };
+		const sort = bInverse
+			? (a, b) => b.y - a.y
+			: (a, b) => a.y - b.y;
 		series = series.map((serie) => { return serie.sort(sort).reduceRight((acc, val, i) => { return i % 2 === 0 ? [...acc, val] : [val, ...acc]; }, []); });
 		const slice = this.dataManipulation.slice;
 		if (!slice || !slice.length === 2 || (slice[0] === 0 && slice[1] === Infinity)) { return series; } // NOSONAR
@@ -1803,7 +1805,7 @@ function _chart({
 					}
 				}
 				this.dataDraw.forEach((serie) => {
-					const total = serie.reduce((curr, val) => { return curr + val.y; }, 0);
+					const total = serie.reduce((curr, val) => curr + val.y, 0);
 					serie.forEach((val) => { val.y = val.y / total; });
 				});
 				if (newSerie) { this.dataDraw.push(newSerie); }
@@ -1980,7 +1982,7 @@ function _chart({
 
 	this.expandData = (group = this.dataManipulation.group) => {
 		if (this.graph.multi) { // 3-dimensional data with every point having multiple {Y,Z} points
-			const series = this.data.map((serie) => { return [...(serie || [])]; });
+			const series = this.data.map((serie) => [...(serie || [])]);
 			this.dataDraw = [];
 			for (let i = 0; i < group; i++) { this.dataDraw.push([]); }
 			series.forEach((serie) => {
@@ -1997,7 +1999,7 @@ function _chart({
 			});
 			this.series = this.dataDraw.length;
 		} else {
-			this.dataDraw = this.data.map((serie) => { return [...(serie || [])]; });
+			this.dataDraw = this.data.map((serie) => [...(serie || [])]);
 		}
 	};
 
@@ -2429,7 +2431,7 @@ function _chart({
 	/** @type {any[][]>} */
 	this.dataDraw = data || [];
 	/** @type {any[][][]>} */
-	this.dataCoords = this.dataDraw.map(() => { return []; });
+	this.dataCoords = this.dataDraw.map(() => []);
 	this.dataManipulation = { ...this.dataManipulation, ...(dataManipulation || {}) };
 	/** @type {null|string[]} */
 	this.sortKey = null;
@@ -2483,7 +2485,7 @@ function _chart({
 	this.leftBtn = new _button({
 		text: chars.left,
 		x: this.x, y: this.y, w: this.buttonsCoords.size / 2, h: this.buttonsCoords.size / 2,
-		isVisible: (time, timer) => { return this.inFocus || (Date.now() - time < timer); },
+		isVisible: (time, timer) => this.inFocus || (Date.now() - time < timer),
 		notVisibleMode: this.buttons.alpha, bTimerOnVisible: true, timer: this.buttons.timer,
 		scrollSteps: 1, scrollSpeed: 250,
 		lbtnFunc: (x, y, mask, parent, delta = 1) => { this.scrollX({ step: - Math.round(delta), bThrottle: false }); },
@@ -2492,7 +2494,7 @@ function _chart({
 	this.rightBtn = new _button({
 		text: chars.right,
 		x: this.x, y: this.y, w: this.buttonsCoords.size / 2, h: this.buttonsCoords.size / 2,
-		isVisible: (time, timer) => { return this.inFocus || (Date.now() - time < timer); },
+		isVisible: (time, timer) => this.inFocus || (Date.now() - time < timer),
 		notVisibleMode: this.buttons.alpha, bTimerOnVisible: true, timer: this.buttons.timer,
 		scrollSteps: 1, scrollSpeed: 250,
 		lbtnFunc: (x, y, mask, parent, delta = 1) => { this.scrollX({ step: Math.round(delta), bThrottle: false }); },
@@ -2503,7 +2505,7 @@ function _chart({
 			? chars.searchMinus
 			: chars.searchPlus,
 		x: this.x, y: this.y, w: this.buttonsCoords.size, h: this.buttonsCoords.size,
-		isVisible: (time, timer) => { return this.inFocus || (Date.now() - time < timer); },
+		isVisible: (time, timer) => this.inFocus || (Date.now() - time < timer),
 		notVisibleMode: this.buttons.alpha, bTimerOnVisible: true, timer: this.buttons.timer,
 		lbtnFunc: (x, y, mask, parent) => { this.callbacks.zoom.onLbtnUp && this.callbacks.zoom.onLbtnUp.call(this, x, y, mask, parent); },
 		rbtnFunc: (x, y, mask, parent) => { this.callbacks.zoom.onRbtnUp && this.callbacks.zoom.onRbtnUp.call(this, x, y, mask, parent); },
@@ -2512,7 +2514,7 @@ function _chart({
 	this.settingsBtn = new _button({
 		text: chars.cogs,
 		x: this.x, y: this.y, w: this.buttonsCoords.size, h: this.buttonsCoords.size,
-		isVisible: (time, timer) => { return this.inFocus || (Date.now() - time < timer); },
+		isVisible: (time, timer) => this.inFocus || (Date.now() - time < timer),
 		notVisibleMode: this.buttons.alpha, bTimerOnVisible: true, timer: this.buttons.timer,
 		lbtnFunc: (x, y, mask, parent) => { this.callbacks.settings.onLbtnUp && this.callbacks.settings.onLbtnUp.call(this, x, y, mask, parent); },
 		rbtnFunc: (x, y, mask, parent) => { this.callbacks.settings.onRbtnUp && this.callbacks.settings.onRbtnUp.call(this, x, y, mask, parent); },
@@ -2521,7 +2523,7 @@ function _chart({
 	this.displayBtn = new _button({
 		text: chars.chartV2,
 		x: this.x, y: this.y, w: this.buttonsCoords.size, h: this.buttonsCoords.size,
-		isVisible: (time, timer) => { return this.inFocus || (Date.now() - time < timer); },
+		isVisible: (time, timer) => this.inFocus || (Date.now() - time < timer),
 		notVisibleMode: this.buttons.alpha, bTimerOnVisible: true, timer: this.buttons.timer,
 		lbtnFunc: (x, y, mask, parent) => { this.callbacks.display.onLbtnUp && this.callbacks.display.onLbtnUp.call(this, x, y, mask, parent); },
 		rbtnFunc: (x, y, mask, parent) => { this.callbacks.display.onRbtnUp && this.callbacks.display.onRbtnUp.call(this, x, y, mask, parent); },
@@ -2530,7 +2532,7 @@ function _chart({
 	this.customBtn = new _button({
 		text: chars.close,
 		x: this.x, y: this.y, w: this.buttonsCoords.size, h: this.buttonsCoords.size,
-		isVisible: (time, timer) => { return this.inFocus || (Date.now() - time < timer); },
+		isVisible: (time, timer) => this.inFocus || (Date.now() - time < timer),
 		notVisibleMode: this.buttons.alpha, bTimerOnVisible: true, timer: this.buttons.timer,
 		lbtnFunc: (x, y, mask, parent) => { this.callbacks.custom.onLbtnUp && this.callbacks.custom.onLbtnUp.call(this, x, y, mask, parent); },
 		rbtnFunc: (x, y, mask, parent) => { this.callbacks.custom.onRbtnUp && this.callbacks.custom.onRbtnUp.call(this, x, y, mask, parent); },

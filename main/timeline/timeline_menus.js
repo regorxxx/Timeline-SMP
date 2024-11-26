@@ -1,5 +1,5 @@
 'use strict';
-//15/11/24
+//26/11/24
 
 /* exported onLbtnUpPoint, onLbtnUpSettings*/
 
@@ -308,6 +308,9 @@ function onLbtnUpSettings() {
 				menu.newEntry({
 					menuName: subMenu, entryText: entry.name, func: () => {
 						properties.dataQuery[1] = entry.query;
+						if (entry.dynQueryMode) {
+							for (let key in dynQueryMode) {	properties.dynQueryMode[key] = dynQueryMode[key]; }
+						}
 						overwriteProperties(properties);
 						this.setData(entry);
 					}
@@ -396,6 +399,7 @@ function onLbtnUpSettings() {
 			});
 			menu.newCheckMenuLast(() => dynQueryMode[o.key]);
 		});
+		menu.newSeparator(subMenuTwo);
 		menu.newEntry({
 			menuName: subMenuTwo, entryText: 'Prefer now playing', func: () => {
 				dynQueryMode.preferPlayback = !dynQueryMode.preferPlayback;
@@ -404,6 +408,14 @@ function onLbtnUpSettings() {
 			}, flags: !dynQueryMode.onPlayback ? MF_GRAYED : MF_STRING
 		});
 		menu.newCheckMenuLast(() => dynQueryMode.onPlayback && dynQueryMode.preferPlayback);
+		menu.newEntry({
+			menuName: subMenuTwo, entryText: 'Evaluate multiple selection', func: () => {
+				dynQueryMode.multipleSelection = !dynQueryMode.multipleSelection;
+				properties.dynQueryMode[1] = JSON.stringify(dynQueryMode);
+				overwriteProperties(properties);
+			}
+		});
+		menu.newCheckMenuLast(() => dynQueryMode.multipleSelection);
 	}
 	{
 		menu.newSeparator();

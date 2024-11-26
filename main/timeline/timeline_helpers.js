@@ -1,5 +1,5 @@
 'use strict';
-//11/11/24
+//26/11/24
 
 /* exported getData, getDataAsync */
 
@@ -7,7 +7,7 @@
 include('..\\..\\helpers\\helpers_xxx_prototypes.js');
 /* global _t:readable, _bt:readable */
 include('..\\..\\helpers\\helpers_xxx_tags.js');
-/* global queryReplaceWithCurrent:readable, checkQuery:readable */
+/* global queryReplaceWithCurrent:readable, checkQuery:readable, queryJoin:readable */
 include('..\\..\\helpers\\helpers_xxx_file.js');
 /* global _isFile:readable, folders:readable, _jsonParseFileCheck:readable, utf8:readable */
 include('..\\..\\helpers\\helpers_xxx_playlists.js');
@@ -94,13 +94,13 @@ function getData({
 			const serieCounters = bSingleY
 				? Number(y)
 				: fb.TitleFormat(_bt(queryReplaceWithCurrent(y))).EvalWithMetadbs(handleList)
-					.map((val) => { return val ? Number(val) : 0; }); // Y
+					.map((val) => val ? Number(val) : 0); // Y
 			const dic = new Map();
 			const handlesMap = new Map();
 			xTags.forEach((arr, i) => {
 				arr.forEach((x) => {
-					if (!dic.has(x)) { dic.set(x, {}); }
-					const val = dic.get(x);
+					let val = dic.get(x);
+					if (!val) { val = {}; dic.set(x, val); }
 					serieTags[i].forEach((serie) => {
 						const count = bSingleY ? serieCounters : serieCounters[i];
 						if (Object.hasOwn(val, serie)) {
@@ -110,7 +110,6 @@ function getData({
 							val[serie] = { count, total: 1 };
 						}
 					});
-					dic.set(x, val);
 					if (bIncludeHandles) {
 						const handles = handlesMap.get(x);
 						if (!handles) { handlesMap.set(x, [handleList[i]]); }
@@ -119,7 +118,11 @@ function getData({
 				});
 			});
 			dic.forEach((value, key, map) => {
-				map.set(key, Object.entries(value).map((pair) => { return { key: pair[0], ...pair[1] /* count, total */ }; }).sort((a, b) => { return b.count - a.count; }));
+				map.set(
+					key,
+					Object.entries(value).map((pair) => { return { key: pair[0], ...pair[1] /* count, total */ }; })
+						.sort((a, b) => b.count - a.count)
+				);
 			});
 			data = [Array.from(dic, (points) => points[1].map((point) => { return { x: points[0], y: (bProportional ? point.count / point.total : point.count), z: point.key, ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {}) }; }))];
 			break;
@@ -383,13 +386,13 @@ async function getDataAsync({
 			const serieCounters = bSingleY
 				? Number(y)
 				: (await fb.TitleFormat(_bt(queryReplaceWithCurrent(y))).EvalWithMetadbsAsync(handleList))
-					.map((val) => { return val ? Number(val) : 0; }); // Y
+					.map((val) => val ? Number(val) : 0); // Y
 			const dic = new Map();
 			const handlesMap = new Map();
 			xTags.forEach((arr, i) => {
 				arr.forEach((x) => {
-					if (!dic.has(x)) { dic.set(x, {}); }
-					const val = dic.get(x);
+					let val = dic.get(x);
+					if (!val) { val = {}; dic.set(x, val); }
 					serieTags[i].forEach((serie) => {
 						const count = bSingleY ? serieCounters : serieCounters[i];
 						if (Object.hasOwn(val, serie)) {
@@ -399,7 +402,6 @@ async function getDataAsync({
 							val[serie] = { count, total: 1 };
 						}
 					});
-					dic.set(x, val);
 					if (bIncludeHandles) {
 						const handles = handlesMap.get(x);
 						if (!handles) { handlesMap.set(x, [handleList[i]]); }
@@ -635,7 +637,10 @@ function getSource(type, arg) {
 }
 
 function filterSource(query, source, handle = null) {
-	query = queryReplaceWithCurrent(query, handle, { bToLowerCase: true });
+	if (handle instanceof FbMetadbHandleList) {
+		query = [...new Set(handle.Convert().map((h) => queryReplaceWithCurrent(query, h, { bToLowerCase: true })))];
+		query = query.length ? queryJoin(query, 'OR') : '';
+	} else { query = queryReplaceWithCurrent(query, handle, { bToLowerCase: true }); }
 	if (!checkQuery(query)) { return new FbMetadbHandleList(); }
 	return (query.length && query !== 'ALL' ? fb.GetQueryItems(source, query) : source);
 }

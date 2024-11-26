@@ -1,7 +1,15 @@
-﻿Filters any source by a query built according to the reference track.
-The track can be configured to prefer either the selected/forcused or
-now playing trak. Chart is then updated whenever the reference track
-changes, thus allowing to create dynamic charts.
+﻿Filters any source by a query built according to the reference track(s).
+The track(s) can be configured to prefer either the selected/forcused or
+now playing track(s) and also if only the first (focused) or entire
+selection should be used. Chart is then updated whenever the reference
+track(s) changes, thus allowing to create dynamic charts.
+
+Alternatively, you can disable the 2 triggers to auto-update data
+calculation and only apply the query on demand according to selection.
+
+Note an AutoPlaylist (or the same query as a filter) may also be used as
+source if something similar is desired for specific artists, tags, etc.
+without the need of updating on real time.
 
 Rules:
 -------------
@@ -20,14 +28,15 @@ expression.
 enclosed on parenthesis to work.
 - In any case queries are tested before using it, so errors will be
 shown as a popup.
+- When evaluating on multiple selected items, a query is created per track,
+deduplicated and joined with 'OR'.
 
 Special variables:
 -------------
-Don't require a track to be evaluated (i.e. they always work with
-themes):
+Don't require a track to be evaluated (i.e. they always work):
 	- #DAY# 	-> 14 (current day)
 	- #MONTH#	-> 11 (current month)
-	- #YEAR#	-> 2023 (current year)
+	- #YEAR#	-> 2024 (current year)
 
 Some examples:
 -------------
@@ -87,8 +96,3 @@ Since the TF expression is not executed during query evaluation!
 Note in these cases there is (usually) no need to add quotes at the
 dynamic term when using a function since the final value must be a
 string/number, not another function (like the last example).
-
-(*) Since '#TAG# IS VALUE' forces tag to be equal to value, muti-value
-tags follow the same rationale. If you want to use another logic (OR,
-combinations, etc.) between different values of the same tag
-then the tool to use would be 'Search Same By'.

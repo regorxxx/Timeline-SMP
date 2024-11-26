@@ -1,5 +1,5 @@
 ﻿'use strict';
-//14/11/24
+//26/11/24
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '1.5.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
@@ -40,7 +40,7 @@ let properties = {
 				x: { show: true, color: RGB(50, 50, 50), width: _scale(2), ticks: 'auto', labels: true, bAltLabels: true },
 				y: { show: false, color: RGB(50, 50, 50), width: _scale(2), ticks: 5, labels: true }
 			},
-			configuration: { bDynColor: true, bDynColorBW: false, bLoadAsyncData: true },
+			configuration: { bDynColor: true, bDynColorBW: true, bLoadAsyncData: true },
 			buttons: { alpha: 25, timer: 1500 },
 		}
 	)), { func: isJSON }],
@@ -88,6 +88,31 @@ let properties = {
 		{ query: globQuery.loved, name: 'Loved tracks' },
 		{ query: globQuery.hated, name: 'Hated tracks' },
 		{ name: 'sep' },
+		{
+			query: globTags.artist + ' IS #' + globTags.artistRaw + '#', name: 'Selected artist(s)',
+			dynQueryMode: {
+				onSelection: true,
+				onPlayback: true,
+				preferPlayback: true
+			}
+		},
+		{
+			query: globTags.genre + ' IS #' + globTags.genre + '#', name: 'Selected genre(s)',
+			dynQueryMode: {
+				onSelection: true,
+				onPlayback: true,
+				preferPlayback: true
+			}
+		},
+		{
+			query: globTags.style + ' IS #' + globTags.style + '#', name: 'Selected style(s)',
+			dynQueryMode: {
+				onSelection: true,
+				onPlayback: true,
+				preferPlayback: true
+			}
+		},
+		{ name: 'sep' },
 		{ query: 'ALL', name: 'All' },
 	]), { func: isJSON }],
 	bAsync: ['Data asynchronous calculation', true, { func: isBoolean }],
@@ -103,27 +128,44 @@ let properties = {
 		'2003_LAST_PLAYED_AGO',
 		'2003_LAST_PLAYED_AGO2'
 	]), { func: isJSON }],
-	firstPopup: ['Timeline: Fired once', false, { func: isBoolean }, false],
+	firstPopup: ['Timeline: Fired once', false, { func: isBoolean }],
 	dynQueryMode: ['Update data with dynamic queries', JSON.stringify({
 		onSelection: true,
 		onPlayback: true,
-		preferPlayback: true
+		preferPlayback: true,
+		multipleSelection: false
 	}), { func: isJSON }],
 };
 Object.keys(properties).forEach(p => properties[p].push(properties[p][1]));
 setProperties(properties, '', 0);
 properties = getPropertiesPairs(properties, '', 0);
+Object.keys(properties).forEach(p => {
+	if (properties[p][2].func === isJSON) {
+		const obj = JSON.parse(properties[p][1]);
+		const def = JSON.parse(properties[p][3]);
+		if (!Array.isArray(obj) && !isArrayEqual(Object.keys(obj), Object.keys(def))) {
+			for (let key in def) {
+				if (!Object.hasOwn(obj, key)) { obj[key] = def[key]; }
+			}
+			properties[p][1] = JSON.stringify(obj);
+			overwriteProperties(properties);
+		}
+	}
+});
 
 // Helpers
 const dynQueryMode = JSON.parse(properties.dynQueryMode[1]);
 const getSel = () => {
-	return dynQueryMode.onSelection
-		? dynQueryMode.onPlayback
-			? dynQueryMode.preferPlayback
-				? fb.GetNowPlaying() || fb.GetFocusItem(true)
-				: fb.GetFocusItem(true) || fb.GetNowPlaying()
-			: fb.GetFocusItem(true)
-		: dynQueryMode.onPlayback ? fb.GetNowPlaying() : fb.GetSelection();
+	let sel = dynQueryMode.multipleSelection ? fb.GetSelections(1) : fb.GetFocusItem(true);
+	if (dynQueryMode.multipleSelection && !sel.Count) { sel = fb.GetFocusItem(true);}
+	if (dynQueryMode.onSelection) {
+		if (dynQueryMode.onPlayback) {
+			if (dynQueryMode.preferPlayback) { return fb.GetNowPlaying() || sel; }
+			else { return sel || fb.GetNowPlaying(); }
+		} else { return sel; }
+	}
+	else if (dynQueryMode.onPlayback) { return fb.GetNowPlaying() || sel; }
+	else { return sel; }
 };
 
 // Info Popup
@@ -338,12 +380,26 @@ function refreshData(plsIdx, callback, bForce = false) {
 		};
 		const needsUpdateByDynQuery = () => {
 			const query = properties.dataQuery[1];
+			let oldQuery, newQuery;
 			if (query.count('#') < 2) { return false; }
 			const currSel = getSel();
+			if (currSel && !selectedHandle || !currSel && selectedHandle) { return true; }
 			if (selectedHandle && currSel) {
-				if (currSel.RawPath === selectedHandle.RawPath) { return false; }
+				if (currSel.RawPath && selectedHandle.RawPath && currSel.RawPath === selectedHandle.RawPath) { return false; }
+				if (currSel instanceof FbMetadbHandleList) {
+					newQuery = [...new Set(
+						currSel.Convert().map((h) => queryReplaceWithCurrent(query, h, { bToLowerCase: true }))
+					)].sort((a, b) => a.localeCompare(b));
+					newQuery = newQuery.length ? queryJoin(newQuery, 'OR') : '';
+				} else { newQuery = queryReplaceWithCurrent(query, currSel, { bToLowerCase: true }); }
+				if (selectedHandle instanceof FbMetadbHandleList) {
+					oldQuery = [...new Set(
+						selectedHandle.Convert().map((h) => queryReplaceWithCurrent(query, h, { bToLowerCase: true }))
+					)].sort((a, b) => a.localeCompare(b));
+					oldQuery = oldQuery.length ? queryJoin(oldQuery, 'OR') : '';
+				} else { oldQuery = queryReplaceWithCurrent(query, selectedHandle, { bToLowerCase: true }); }
 			}
-			if (queryReplaceWithCurrent(query, selectedHandle) === queryReplaceWithCurrent(query, currSel)) { return false; }
+			if (oldQuery === newQuery) { return false; }
 			selectedHandle = currSel;
 			return true;
 		};
@@ -442,7 +498,7 @@ addEventListener('on_mouse_move', (x, y, mask) => {
 			}
 		});
 	} else {
-		charts.some((chart) => { return chart.move(x, y, mask); });
+		charts.some((chart) => chart.move(x, y, mask));
 	}
 });
 
@@ -451,28 +507,28 @@ addEventListener('on_mouse_leave', () => {
 });
 
 addEventListener('on_mouse_rbtn_up', (x, y, mask) => {
-	charts.some((chart) => { return chart.rbtnUp(x, y, mask); });
+	charts.some((chart) => chart.rbtnUp(x, y, mask));
 	return true; // left shift + left windows key will bypass this callback and will open default context menu.
 });
 
 addEventListener('on_mouse_lbtn_up', (x, y, mask) => {
 	if (!window.ID) { return; }
-	charts.some((chart) => { return chart.lbtnUp(x, y, mask); });
+	charts.some((chart) => chart.lbtnUp(x, y, mask));
 });
 
 addEventListener('on_mouse_lbtn_down', (x, y, mask) => {
 	if (!window.ID) { return; }
-	charts.some((chart) => { return chart.lbtnDown(x, y, mask); });
+	charts.some((chart) => chart.lbtnDown(x, y, mask));
 });
 
 addEventListener('on_mouse_lbtn_dblclk', (x, y, mask) => {
 	if (!window.ID) { return; }
-	charts.some((chart) => { return chart.lbtnDblClk(x, y, mask); });
+	charts.some((chart) => chart.lbtnDblClk(x, y, mask));
 });
 
 addEventListener('on_mouse_wheel', (step) => {
 	if (!window.ID) { return; }
-	charts.some((chart) => { return chart.mouseWheel(step); });
+	charts.some((chart) => chart.mouseWheel(step));
 });
 
 addEventListener('on_mouse_wheel_h', (step) => {
@@ -489,12 +545,12 @@ addEventListener('on_mouse_wheel_h', (step) => {
 
 addEventListener('on_key_down', (vKey) => {
 	if (!window.ID) { return; }
-	charts.some((chart) => { return chart.keyDown(vKey); });
+	charts.some((chart) => chart.keyDown(vKey));
 });
 
 addEventListener('on_key_up', (vKey) => {
 	if (!window.ID) { return; }
-	charts.some((chart) => { return chart.keyUp(vKey); });
+	charts.some((chart) => chart.keyUp(vKey));
 });
 
 addEventListener('on_playback_new_track', () => { // To show playing now playlist indicator...

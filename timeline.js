@@ -1,5 +1,5 @@
 ﻿'use strict';
-//26/11/24
+//28/11/24
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '1.5.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
@@ -14,7 +14,7 @@ include('main\\statistics\\statistics_xxx.js');
 include('main\\statistics\\statistics_xxx_menu.js');
 /* global createStatisticsMenu:readable */
 include('main\\timeline\\timeline_helpers.js');
-/* global  _gdiFont:readable, MK_LBUTTON:readable, deepAssign:readable, RGB:readable, isJSON:readable, _scale:readable, isString:readable, isBoolean:readable, globSettings:readable, setProperties:readable, getPropertiesPairs:readable, checkUpdate:readable, overwriteProperties:readable, getDataAsync:readable, _qCond:readable, queryJoin:readable, getData:readable, getPlaylistIndexArray:readable, _t:readable, isArrayEqual:readable, queryReplaceWithCurrent:readable */
+/* global  _gdiFont:readable, MK_LBUTTON:readable, deepAssign:readable, RGB:readable, isJSON:readable, _scale:readable, isString:readable, isBoolean:readable, globSettings:readable, setProperties:readable, getPropertiesPairs:readable, checkUpdate:readable, overwriteProperties:readable, getDataAsync:readable, _qCond:readable, queryJoin:readable, getData:readable, getPlaylistIndexArray:readable, _t:readable, isArrayEqual:readable, queryReplaceWithCurrent:readable, toType:readable */
 include('main\\timeline\\timeline_menus.js');
 /* global onLbtnUpPoint:readable, onLbtnUpSettings:readable, createBackgroundMenu:readable */
 include('main\\window\\window_xxx_background.js');
@@ -32,7 +32,7 @@ let properties = {
 		(new _chart).exportConfig(),
 		{
 			graph: { type: 'timeline', multi: true, borderWidth: _scale(1), pointAlpha: Math.round(60 * 255 / 100) },
-			dataManipulation: { sort: 'natural|x', group: 3, filter: null, slice: [0, Infinity], distribution: null },
+			dataManipulation: { sort: { x: 'natural', y: null, z: null, my: 'natural num', mz: null}, group: 3, filter: null, slice: [0, Infinity], distribution: null },
 			background: { color: null },
 			chroma: { scheme: 'Set1' },
 			margin: { left: _scale(20), right: _scale(20), top: _scale(10), bottom: _scale(15) },
@@ -53,7 +53,7 @@ let properties = {
 	dataSource: ['Data source', JSON.stringify({ sourceType: 'library', sourceArg: null }), { func: isJSON }],
 	xEntries: ['Axis X TF entries', JSON.stringify([
 		{ x: _t(globTags.date), keyX: 'Date' },
-		{ x: '$right($div(' + _t(globTags.date) + ',10)0s,3)', keyX: 'Decade' },
+		{ x: '$div(' + _t(globTags.date) + ',10)0s', keyX: 'Decade' },
 		{ x: _t(globTags.bpm), keyX: 'BPM' },
 		{ x: '$mul($div(' + _t(globTags.bpm) + ',10),10)s', keyX: 'BPM (range)' },
 		{ x: _t(globTags.rating), keyX: 'Rating' },
@@ -157,7 +157,7 @@ Object.keys(properties).forEach(p => {
 const dynQueryMode = JSON.parse(properties.dynQueryMode[1]);
 const getSel = () => {
 	let sel = dynQueryMode.multipleSelection ? fb.GetSelections(1) : fb.GetFocusItem(true);
-	if (dynQueryMode.multipleSelection && !sel.Count) { sel = fb.GetFocusItem(true);}
+	if (dynQueryMode.multipleSelection && !sel.Count) { sel = fb.GetFocusItem(true); }
 	if (dynQueryMode.onSelection) {
 		if (dynQueryMode.onPlayback) {
 			if (dynQueryMode.preferPlayback) { return fb.GetNowPlaying() || sel; }
@@ -385,19 +385,9 @@ function refreshData(plsIdx, callback, bForce = false) {
 			const currSel = getSel();
 			if (currSel && !selectedHandle || !currSel && selectedHandle) { return true; }
 			if (selectedHandle && currSel) {
-				if (currSel.RawPath && selectedHandle.RawPath && currSel.RawPath === selectedHandle.RawPath) { return false; }
-				if (currSel instanceof FbMetadbHandleList) {
-					newQuery = [...new Set(
-						currSel.Convert().map((h) => queryReplaceWithCurrent(query, h, { bToLowerCase: true }))
-					)].sort((a, b) => a.localeCompare(b));
-					newQuery = newQuery.length ? queryJoin(newQuery, 'OR') : '';
-				} else { newQuery = queryReplaceWithCurrent(query, currSel, { bToLowerCase: true }); }
-				if (selectedHandle instanceof FbMetadbHandleList) {
-					oldQuery = [...new Set(
-						selectedHandle.Convert().map((h) => queryReplaceWithCurrent(query, h, { bToLowerCase: true }))
-					)].sort((a, b) => a.localeCompare(b));
-					oldQuery = oldQuery.length ? queryJoin(oldQuery, 'OR') : '';
-				} else { oldQuery = queryReplaceWithCurrent(query, selectedHandle, { bToLowerCase: true }); }
+				if (toType(currSel) === 'FbMetadbHandle' && toType(selectedHandle) === 'FbMetadbHandle' && currSel.RawPath === selectedHandle.RawPath) { return false; }
+				newQuery = queryReplaceWithCurrent(query, currSel, { bToLowerCase: true });
+				oldQuery = queryReplaceWithCurrent(query, selectedHandle, { bToLowerCase: true });
 			}
 			if (oldQuery === newQuery) { return false; }
 			selectedHandle = currSel;

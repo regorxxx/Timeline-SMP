@@ -20,6 +20,8 @@
 - Data: added support for [foo_playcount_2003](https://marc2k3.github.io/component/playcount-2003/) tags to check if a source needs to be auto-updated. i.e. '%2003_LAST_PLAYED%', '%2003_PLAYCOUNT%','%2003_LAST_PLAYED_AGO%' and '%2003_LAST_PLAYED_AGO2%'.
 - Data: added support for [Dynamic Queries](https://github.com/regorxxx/Playlist-Tools-SMP) at data filtering. Charts can now be created dynamically according to the current selection/now playing item, for ex. to show distribution of rating for selected artist only, etc. New settings have been added to 'Auto-update dynamic queries' submenu to tweak the behavior. Data updating follows a algorithm to avoid unnecessary re-calculations, i.e. if the new track is the same than the previous one or it would produce the same query, data is not refreshed; thus charts using dynamic queries and displaying data which also changes on playback will not be immediately refreshed (for performance reasons). There is also an additional setting to evaluate the query on multiple selection.
 - Data: new setting to avoid data loading on startup. This may be used to calculate data and display the chart only on demand. Previously there was an option to force a data update, but it was available only after loading it at least once. Thus charts associated to the entire library were always calculated at least once at startup, which may had been undesirable.
+- Data: added setting to change how the Z-groups are sorted within the group (independently from the global data).
+- Data: added setting to filter Z-groups points to either show all or non-zero values (on Y axis).
 - UI: 'fill' chart type.
 - UI: settings button tooltip now shows 'Shift + Win + R. Click' shortcut to open SMP/JSpliter panel menu (which works globally on any script and panel, at any position).
 - UI: settings button tooltip now shows 'Double Click' shortcut to force data update (see above).
@@ -35,6 +37,8 @@
 - [JSplitter (SMP)](https://foobar2000.ru/forum/viewtopic.php?t=6378&start=360) support for locked playlists.
 - Statistics: general improvements and optimizations of point statistics. Now also show the total number of tracks before deduplication.
 - Data: source filters are now also applied to playlist creation when clicking on points.
+- Data: sorting routines have been changed and now multiple sorting is allowed (by every axis).
+- Data: added multi-value handling for ALBUM ARTIST tags on queries (for playlist creation and statistics).
 - UI: point menu now allows to select any point along the same Y-Z plane while using lines, scatter or fill charts. Previously it only worked on the point from the first serie (and that's why the other chart types exist though, to properly display multi-dimensional charts).
 - UI: tooltip now shows all points along the same Y-Z plane while using lines, scatter or fill charts. See comment above.
 - UI: axis legend is now shown at tooltip and point statistics popup.
@@ -57,8 +61,10 @@
 ### Removed
 ### Fixed
 - Statistics: point statistics not working for 2D charts.
+- Statistics: Crash showing point stats on 3D graphs in some cases.
 - Data: 'Values shown' option was not applied for async data unless panel was reloaded.
 - Data: 'Force data update' option did not properly apply the current chart settings.
+- Data: minor error on decades X-axis preset.
 - UI: zoom button showing '-' instead of '+' if there was no data drawn.
 - UI: minor highlighting errors on 'lines' chart type.
 - UI: color palette 'colorblind safe' setting was not saved properly between sessions.

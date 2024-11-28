@@ -1,5 +1,5 @@
 'use strict';
-//26/11/24
+//28/11/24
 
 /* exported getData, getDataAsync */
 
@@ -7,7 +7,7 @@
 include('..\\..\\helpers\\helpers_xxx_prototypes.js');
 /* global _t:readable, _bt:readable */
 include('..\\..\\helpers\\helpers_xxx_tags.js');
-/* global queryReplaceWithCurrent:readable, checkQuery:readable, queryJoin:readable */
+/* global queryReplaceWithCurrent:readable, checkQuery:readable */
 include('..\\..\\helpers\\helpers_xxx_file.js');
 /* global _isFile:readable, folders:readable, _jsonParseFileCheck:readable, utf8:readable */
 include('..\\..\\helpers\\helpers_xxx_playlists.js');
@@ -72,7 +72,8 @@ function getData({
 	queryHandle = null,
 	bProportional = false,
 	bRemoveDuplicates = true,
-	bIncludeHandles = false
+	bIncludeHandles = false,
+	zGroups = { filter: false, sort: null /* (a, b) => b.count - a.count */ }
 } = {}) {
 	const noSplitTags = new Set(['ALBUM']); noSplitTags.forEach((tag) => noSplitTags.add(_t(tag)));
 	const dedupByIdTags = new Set(['TITLE']); dedupByIdTags.forEach((tag) => noSplitTags.add(_t(tag)));
@@ -97,6 +98,15 @@ function getData({
 					.map((val) => val ? Number(val) : 0); // Y
 			const dic = new Map();
 			const handlesMap = new Map();
+			if (!zGroups.filter) {
+				const xLabels = new Set(xTags.flat(Infinity));
+				const zLabels = new Set(serieTags.flat(Infinity));
+				xLabels.forEach((x) => {
+					const val = {};
+					dic.set(x, val);
+					zLabels.forEach((serie) => val[serie] = { count: 0, total: 0 });
+				});
+			}
 			xTags.forEach((arr, i) => {
 				arr.forEach((x) => {
 					let val = dic.get(x);
@@ -120,11 +130,18 @@ function getData({
 			dic.forEach((value, key, map) => {
 				map.set(
 					key,
-					Object.entries(value).map((pair) => { return { key: pair[0], ...pair[1] /* count, total */ }; })
-						.sort((a, b) => b.count - a.count)
+					Object.entries(value).map((pair) => { return { key: pair[0], ...pair[1] }; })
 				);
 			});
-			data = [Array.from(dic, (points) => points[1].map((point) => { return { x: points[0], y: (bProportional ? point.count / point.total : point.count), z: point.key, ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {}) }; }))];
+			if (zGroups.sort) { dic.forEach((value) => value.sort(zGroups.sort)); }
+			data = [
+				Array.from(
+					dic,
+					(/** @type {[string, {key: string, count: number, total: number}[]]} */points) => points[1].map((point) => {
+						return { x: points[0], y: (bProportional ? point.count / point.total : point.count), z: point.key, ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {}) };
+					})
+				)
+			];
 			break;
 		}
 		case 'tf': {
@@ -364,7 +381,8 @@ async function getDataAsync({
 	queryHandle = null,
 	bProportional = false,
 	bRemoveDuplicates = true,
-	bIncludeHandles = false
+	bIncludeHandles = false,
+	zGroups = { filter: false, sort: null /* (a, b) => b.count - a.count */ }
 } = {}) {
 	const noSplitTags = new Set(['ALBUM', 'TITLE']); noSplitTags.forEach((tag) => noSplitTags.add(_t(tag)));
 	const dedupByIdTags = new Set(['TITLE']); dedupByIdTags.forEach((tag) => noSplitTags.add(_t(tag)));
@@ -389,6 +407,15 @@ async function getDataAsync({
 					.map((val) => val ? Number(val) : 0); // Y
 			const dic = new Map();
 			const handlesMap = new Map();
+			if (!zGroups.filter) {
+				const xLabels = new Set(xTags.flat(Infinity));
+				const zLabels = new Set(serieTags.flat(Infinity));
+				xLabels.forEach((x) => {
+					const val = {};
+					dic.set(x, val);
+					zLabels.forEach((serie) => val[serie] = { count: 0, total: 0 });
+				});
+			}
 			xTags.forEach((arr, i) => {
 				arr.forEach((x) => {
 					let val = dic.get(x);
@@ -410,9 +437,20 @@ async function getDataAsync({
 				});
 			});
 			dic.forEach((value, key, map) => {
-				map.set(key, Object.entries(value).map((pair) => { return { key: pair[0], ...pair[1] /* count, total */ }; }).sort((a, b) => { return b.count - a.count; }));
+				map.set(
+					key,
+					Object.entries(value).map((pair) => { return { key: pair[0], ...pair[1] }; })
+				);
 			});
-			data = [Array.from(dic, (points) => points[1].map((point) => { return { x: points[0], y: (bProportional ? point.count / point.total : point.count), z: point.key, ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {}) }; }))];
+			if (zGroups.sort) { dic.forEach((value) => value.sort(zGroups.sort)); }
+			data = [
+				Array.from(
+					dic,
+					(/** @type {[string, {key: string, count: number, total: number}[]]} */ points) => points[1].map((point) => {
+						return { x: points[0], y: (bProportional ? point.count / point.total : point.count), z: point.key, ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {}) };
+					})
+				)
+			];
 			break;
 		}
 		case 'tf': {
@@ -637,10 +675,7 @@ function getSource(type, arg) {
 }
 
 function filterSource(query, source, handle = null) {
-	if (handle instanceof FbMetadbHandleList) {
-		query = [...new Set(handle.Convert().map((h) => queryReplaceWithCurrent(query, h, { bToLowerCase: true })))];
-		query = query.length ? queryJoin(query, 'OR') : '';
-	} else { query = queryReplaceWithCurrent(query, handle, { bToLowerCase: true }); }
+	query = queryReplaceWithCurrent(query, handle, { bToLowerCase: true });
 	if (!checkQuery(query)) { return new FbMetadbHandleList(); }
 	return (query.length && query !== 'ALL' ? fb.GetQueryItems(source, query) : source);
 }

@@ -1,9 +1,9 @@
 'use strict';
-//26/11/24
+//28/11/24
 
 /* exported onLbtnUpPoint, onLbtnUpSettings*/
 
-/* global _p:readable, checkQuery:readable, globTags:readable, globQuery:readable, round:readable, capitalizeAll:readable, properties:readable, WshShell:readable, popup:readable, _qCond:readable, overwriteProperties:readable, checkUpdate:readable, globSettings:readable , isArrayEqual:readable, _b:readable, folders:readable, dynQueryMode:readable, refreshData:readable, isUUID:readable, queryJoin:readable, queryReplaceWithCurrent:readable, selectedHandle:readable, VK_SHIFT:readable */
+/* global _p:readable, checkQuery:readable, globTags:readable, globQuery:readable, round:readable, capitalizeAll:readable, properties:readable, WshShell:readable, popup:readable, _qCond:readable, overwriteProperties:readable, checkUpdate:readable, globSettings:readable , isArrayEqual:readable, _b:readable, folders:readable, dynQueryMode:readable, refreshData:readable, isUUID:readable, queryJoin:readable, queryReplaceWithCurrent:readable, selectedHandle:readable, VK_SHIFT:readable, fallbackTagsQuery:readable */
 include('..\\..\\helpers\\helpers_xxx_file.js');
 /* global _open:readable, utf8:readable */
 include('..\\..\\helpers\\helpers_xxx_playlists.js');
@@ -43,13 +43,13 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 				{ name: 'By ' + this.axis.x.key, query: this.axis.x.tf + ' IS ' + subPoint.x, playlist: 'Timeline: ' + subPoint.x },
 				...(this.graph.multi
 					? [
-						{ name: 'By ' + this.axis.z.key, query: this.axis.z.tf + ' IS ' + subPoint.z, playlist: 'Timeline: ' + subPoint.z },
+						{ name: 'By ' + this.axis.z.key, query: fallbackTagsQuery(this.axis.z.tf, subPoint.z), playlist: 'Timeline: ' + subPoint.z },
 						{
-							name: 'By ' + this.axis.x.key + ' and ' + this.axis.z.key, query: this.axis.x.tf + ' IS ' + subPoint.x + ' AND ' + this.axis.z.tf + ' IS ' + subPoint.z,
+							name: 'By ' + this.axis.x.key + ' and ' + this.axis.z.key, query: this.axis.x.tf + ' IS ' + subPoint.x + ' AND ' + _p(fallbackTagsQuery(this.axis.z.tf, subPoint.z)),
 							playlist: 'Timeline: ' + subPoint.x + ' - ' + subPoint.z
 						},
 						{
-							name: 'By ' + this.axis.x.key + ' and top ' + this.axis.z.key, query: this.axis.x.tf + ' IS ' + subPoint.x + ' AND ' + _p(currPoints.map((newPoint) => this.axis.z.tf + ' IS ' + newPoint.z).join(' OR ')),
+							name: 'By ' + this.axis.x.key + ' and top ' + this.axis.z.key, query: this.axis.x.tf + ' IS ' + subPoint.x + ' AND ' + _p(currPoints.map((newPoint) => fallbackTagsQuery(this.axis.z.tf, newPoint.z)).join(' OR ')),
 							playlist: 'Timeline: ' + subPoint.x + ' - Top ' + currPoints.length + ' ' + this.axis.z.key
 						}
 					]
@@ -57,26 +57,30 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 			].filter(Boolean).forEach((entry) => {
 				menu.newEntry({
 					menuName: subMenu[0], entryText: entry.name, func: () => {
-						let query = queryJoin([entry.query, properties.dataQuery[1]].filter(Boolean), 'AND');
+						let query = properties.dataQuery[1].count('#') > 2
+							? entry.query
+							: queryJoin([entry.query, properties.dataQuery[1]].filter(Boolean), 'AND');
 						query = queryReplaceWithCurrent(query, selectedHandle, { bToLowerCase: true });
-						if (checkQuery(entry.query)) {
+						if (checkQuery(query)) {
 							let handleList = fb.GetQueryItems(fb.GetLibraryItems(), query);
 							handleList = removeDuplicates({ handleList, sortOutput: '', checkKeys: globTags.remDupl, sortBias: globQuery.remDuplBias, bAdvTitle: true, bMultiple: true, bPreserveSort: false });
 							sendToPlaylist(handleList, entry.playlist);
-							console.log(query);
-						}
+							console.log('Playlist created:', query);
+						} else { console.log('Query error:', query); }
 					}
 				});
 				menu.newEntry({
 					menuName: subMenu[1], entryText: entry.name, func: () => {
-						let query = queryJoin([entry.query, properties.dataQuery[1]].filter(Boolean), 'AND');
+						let query = properties.dataQuery[1].count('#') > 2
+							? entry.query
+							: queryJoin([entry.query, properties.dataQuery[1]].filter(Boolean), 'AND');
 						query = queryReplaceWithCurrent(query, selectedHandle, { bToLowerCase: true });
 						if (checkQuery(query)) {
 							plman.ActivePlaylist = plman.CreateAutoPlaylist(plman.PlaylistCount, entry.playlist, query);
 							if (utils.IsKeyPressed(VK_SHIFT)) {
 								plman.ShowAutoPlaylistUI(plman.ActivePlaylist);
 							}
-						}
+						} else { console.log('Query error:', query); }
 					}
 				});
 			});
@@ -103,7 +107,7 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 					'\n' +
 					(
 						this.graph.multi
-							? 'Total Tracks (any ' + this.axis.x.key + ') -not deduplicated-: ' + fb.GetQueryItems(libItems, this.axis.z.tf + ' IS ' + subPoint.z).Count +
+							? 'Total Tracks (any ' + this.axis.x.key + ') -not deduplicated-: ' + (fb.GetQueryItemsCheck(libItems, fallbackTagsQuery(this.axis.z.tf, subPoint.z)) || {}).Count +
 							'\n'
 							: ''
 					) +
@@ -155,7 +159,7 @@ function onLbtnUpSettings() {
 	menu.newEntry({ entryText: this.title, flags: MF_GRAYED });
 	menu.newSeparator();
 	// Menus
-	{
+	{	// X
 		const subMenu = menu.newMenu('Set X-axis data');
 		menu.newEntry({ menuName: subMenu, entryText: 'X-axis:', flags: MF_GRAYED });
 		menu.newSeparator(subMenu);
@@ -188,7 +192,7 @@ function onLbtnUpSettings() {
 			}
 		});
 	}
-	{
+	{	// Y
 		const subMenu = menu.newMenu('Set Y-axis data');
 		menu.newEntry({ menuName: subMenu, entryText: 'Y-axis:', flags: MF_GRAYED });
 		menu.newSeparator(subMenu);
@@ -221,7 +225,7 @@ function onLbtnUpSettings() {
 			}
 		});
 	}
-	{
+	{	// Z
 		const subMenu = menu.newMenu('Set Z-axis data');
 		menu.newEntry({ menuName: subMenu, entryText: 'Z-axis:', flags: MF_GRAYED });
 		menu.newSeparator(subMenu);
@@ -263,7 +267,7 @@ function onLbtnUpSettings() {
 		});
 	}
 	menu.newSeparator();
-	{
+	{	// Data source
 		const subMenu = menu.newMenu('Data source');
 		menu.newEntry({ menuName: subMenu, entryText: 'Select source for tracks:', flags: MF_GRAYED });
 		menu.newSeparator(subMenu);
@@ -297,7 +301,7 @@ function onLbtnUpSettings() {
 			return (idx !== -1 ? idx : 0);
 		}, options);
 	}
-	{
+	{	// Data filtering
 		const subMenu = menu.newMenu('Data filtering');
 		menu.newEntry({ menuName: subMenu, entryText: 'By query:', flags: MF_GRAYED });
 		menu.newSeparator(subMenu);
@@ -309,7 +313,7 @@ function onLbtnUpSettings() {
 					menuName: subMenu, entryText: entry.name, func: () => {
 						properties.dataQuery[1] = entry.query;
 						if (entry.dynQueryMode) {
-							for (let key in dynQueryMode) {	properties.dynQueryMode[key] = dynQueryMode[key]; }
+							for (let key in dynQueryMode) { properties.dynQueryMode[key] = dynQueryMode[key]; }
 						}
 						overwriteProperties(properties);
 						this.setData(entry);
@@ -341,7 +345,7 @@ function onLbtnUpSettings() {
 			}
 		});
 	}
-	{
+	{	// Data calculation
 		const subMenu = menu.newMenu('Data calculation');
 		menu.newEntry({
 			menuName: subMenu, entryText: 'Asynchronous calculation', func: () => {
@@ -417,7 +421,7 @@ function onLbtnUpSettings() {
 		});
 		menu.newCheckMenuLast(() => dynQueryMode.multipleSelection);
 	}
-	{
+	{	// Other
 		menu.newSeparator();
 		const subMenu = menu.newMenu('Other settings');
 		menu.newSeparator(subMenu);
@@ -464,8 +468,8 @@ function onLbtnUpSettings() {
 	{	// Readmes
 		const subMenu = menu.newMenu('Readmes');
 		[
-			{path: folders.xxx + 'helpers\\readme\\timeline.txt', name: 'Timeline-SMP'},
-			{path: folders.xxx + 'helpers\\readme\\timeline_dynamic_query.txt', name: 'Dynamic queries'}
+			{ path: folders.xxx + 'helpers\\readme\\timeline.txt', name: 'Timeline-SMP' },
+			{ path: folders.xxx + 'helpers\\readme\\timeline_dynamic_query.txt', name: 'Dynamic queries' }
 		].forEach((o) => {
 			menu.newEntry({
 				menuName: subMenu, entryText: o.name, func: () => {

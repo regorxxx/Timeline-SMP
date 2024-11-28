@@ -1,5 +1,5 @@
 ﻿'use strict';
-//15/11/24
+//28/11/24
 
 /* exported bindMenu */
 
@@ -9,7 +9,7 @@ try { include('..\\..\\helpers\\menu_xxx.js'); } catch (e) {
 	try { include('..\\..\\examples\\_statistics\\menu_xxx.js'); } catch (e) { fb.ShowPopupMessage('Missing menu framework file', window.Name); }
 }
 /* global _attachedMenu:readable, _menu:readable */
-/* global MF_GRAYED:readable, _scale:readable, MF_STRING:readable, colorbrewer:readable, MF_MENUBARBREAK:readable, Input:readable, isArrayEqual:readable */
+/* global MF_GRAYED:readable, MF_CHECKED:readable, _scale:readable, MF_STRING:readable, colorbrewer:readable, MF_MENUBARBREAK:readable, Input:readable, isArrayEqual:readable */
 
 function bindMenu(parent) {
 	return _attachedMenu.call(parent, { rMenu: createStatisticsMenu.bind(parent), popup: parent.pop });
@@ -49,12 +49,17 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 				});
 				if (bCheck) {
 					menu.newCheckMenu(menuName, option.entryText, void (0), () => {
+						if (key === 'dataManipulation' && subKey.includes('sort')) {
+							return Array.isArray(subKey)
+								? !!this.sortKey && option.newValue === this.sortKey[subKey[1]]
+								: option.newValue === this.sortKey || ['x', 'y', this.graph.multi ? 'z' : '']
+									.filter(Boolean).every((k) => option.newValue === this.sortKey[k]);
+						}
 						const val = subKey
 							? Array.isArray(subKey)
 								? subKey.reduce((acc, curr) => acc[curr], this[key])
 								: this[key][subKey]
 							: this[key];
-						if (key === 'dataManipulation' && subKey === 'sort' && option.newValue === this.convertSortLabel(this.sortKey)) { return true; }
 						if (option.newValue && typeof option.newValue === 'function') { return !!(val && val.name === option.newValue.name); }
 						if (option.newValue && typeof option.newValue === 'object') {
 							if (Array.isArray(val)) {
@@ -107,20 +112,44 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 	{
 		const subMenu = menu.newMenu('Sorting');
 		if (this.dataManipulation.distribution === null) {
+			menu.newEntry({ menuName: subMenu, entryText: 'Applied in ' + (this.graph.multi ? 'Z-' : '') + 'Y-X order:', flags: MF_GRAYED });
+			menu.newSeparator(subMenu);
+			['x', 'y', this.graph.multi ? 'z' : ''].filter(Boolean).forEach((axis) => {
+				const subMenuTwo = menu.newMenu('By ' + axis.toUpperCase() + ' axis', subMenu, this.dataManipulation.sort[axis] ? MF_CHECKED : void (0));
+				[
+					{ isEq: null, key: null, value: null, newValue: 'natural' + (axis === 'y' ? ' num' : ''), entryText: 'Natural sorting' },
+					{ isEq: null, key: null, value: null, newValue: 'reverse' + (axis === 'y' ? ' num' : ''), entryText: 'Reverse sorting' },
+					{ entryText: 'sep' },
+				].forEach(createMenuOption('dataManipulation', ['sort', axis], subMenuTwo));
+				[
+					{ isEq: null, key: null, value: null, newValue: null, entryText: 'No sorting' }
+				].forEach(createMenuOption('dataManipulation', ['sort', axis], subMenuTwo));
+			});
+			if (this.graph.multi) {
+				menu.newSeparator(subMenu);
+				const subMenuTwo = menu.newMenu('Z-Axis groups', subMenu, this.dataManipulation.sort.my || this.dataManipulation.sort.mz ? MF_CHECKED : void (0));
+				[
+					{ isEq: null, key: null, value: null, newValue: 'natural num', entryText: 'Natural sorting (Y)' },
+					{ isEq: null, key: null, value: null, newValue: 'reverse num', entryText: 'Reverse sorting (Y)' },
+					{ isEq: null, key: null, value: null, newValue: 'natural total', entryText: 'Natural sorting (ΣY)' },
+					{ isEq: null, key: null, value: null, newValue: 'reverse total', entryText: 'Reverse sorting (ΣY)' },
+					{ entryText: 'sep' },
+				].forEach(createMenuOption('dataManipulation', ['sort', 'my'], subMenuTwo));
+				[
+					{ isEq: null, key: null, value: null, newValue: 'natural', entryText: 'Natural sorting (Z)' },
+					{ isEq: null, key: null, value: null, newValue: 'reverse', entryText: 'Reverse sorting (Z)' },
+					{ entryText: 'sep' },
+				].forEach(createMenuOption('dataManipulation', ['sort', 'mz'], subMenuTwo));
+				[
+					{ isEq: null, key: null, value: null, newValue: null, entryText: 'No sorting (Y)' },
+				].forEach(createMenuOption('dataManipulation', ['sort', 'my'], subMenuTwo));
+				[
+					{ isEq: null, key: null, value: null, newValue: null, entryText: 'No sorting (Z)' },
+				].forEach(createMenuOption('dataManipulation', ['sort', 'mz'], subMenuTwo));
+			}
+			menu.newSeparator(subMenu);
 			[
-				{ isEq: null, key: this.dataManipulation.sort, value: null, newValue: 'natural|x', entryText: 'Natural sorting (X)' },
-				{ isEq: null, key: this.dataManipulation.sort, value: null, newValue: 'reverse|x', entryText: 'Reverse sorting (X)' },
-				{ entryText: 'sep' },
-				{ isEq: null, key: this.dataManipulation.sort, value: null, newValue: 'natural|y', entryText: 'Natural sorting (Y)' },
-				{ isEq: null, key: this.dataManipulation.sort, value: null, newValue: 'reverse|y', entryText: 'Reverse sorting (Y)' },
-				{ entryText: 'sep' },
-				...(this.graph.multi
-					? [
-						{ isEq: null, key: this.dataManipulation.sort, value: null, newValue: 'natural|z', entryText: 'Natural sorting (Z)' },
-						{ isEq: null, key: this.dataManipulation.sort, value: null, newValue: 'reverse|z', entryText: 'Reverse sorting (Z)' },
-						{ entryText: 'sep' }
-					] : []),
-				{ isEq: null, key: this.dataManipulation.sort, value: null, newValue: null, entryText: 'No sorting' }
+				{ isEq: null, key: null, value: null, newValue: null, entryText: 'No sorting' }
 			].forEach(createMenuOption('dataManipulation', 'sort', subMenu));
 		} else {
 			[
@@ -276,30 +305,43 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 		}
 		{
 			menu.newSeparator();
-			const subMenuGroup = menu.newMenu('Z-Axis groups' + (!this.graph.multi ? '\t[3D-Graphs]' : ''), void (0), this.graph.multi ? MF_STRING : MF_GRAYED);
-			if (this.graph.multi) {
-				menu.newEntry({ menuName: subMenuGroup, entryText: 'Z-points per X-value:', flags: MF_GRAYED });
-				menu.newSeparator(subMenuGroup);
-				const parent = this;
-				const options = [...new Set([this.stats.maxGroup, 10, 8, 5, 4, 3, 2, 1].map((frac) => {
-					return Math.round(this.stats.maxGroup / frac) || this.stats.minGroup; // Don't allow zero
-				}))];
+			{	// Z-Axis groups
+				const subMenuGroup = menu.newMenu('Filter (Z-Axis)' + (!this.graph.multi ? '\t[3D-Graphs]' : ''), void (0), this.graph.multi ? MF_STRING : MF_GRAYED);
+				if (this.graph.multi) {
+					menu.newEntry({ menuName: subMenuGroup, entryText: 'Filter Z-points on groups:', flags: MF_GRAYED });
+					menu.newSeparator(subMenuGroup);
+					[
+						{ isEq: null, key: this.dataManipulation.mFilter, value: false, newValue: true, entryText: 'Non-zero Y-values' },
+						{ isEq: null, key: this.dataManipulation.mFilter, value: true, newValue: false, entryText: 'All available points' },
+					].forEach(createMenuOption('dataManipulation', 'mFilter', subMenuGroup));
+				}
+			}
+			{	// Z-Axis groups
+				const subMenuGroup = menu.newMenu('Groups (Z-Axis)' + (!this.graph.multi ? '\t[3D-Graphs]' : ''), void (0), this.graph.multi ? MF_STRING : MF_GRAYED);
+				if (this.graph.multi) {
+					menu.newEntry({ menuName: subMenuGroup, entryText: 'Z-points per X-value to show:', flags: MF_GRAYED });
+					menu.newSeparator(subMenuGroup);
+					const parent = this;
+					const options = [...new Set([this.stats.maxGroup, 10, 8, 5, 4, 3, 2, 1].map((frac) => {
+						return Math.round(this.stats.maxGroup / frac) || this.stats.minGroup; // Don't allow zero
+					}))];
 
-				options.map((val) => {
-					return { isEq: null, key: this.dataManipulation.group, value: null, newValue: val, entryText: val + ' point(s)' };
-				}).forEach(function (option, i) {
-					createMenuOption('dataManipulation', 'group', subMenuGroup, false)(option);
-					menu.newCheckMenuLast(() => this.dataManipulation.group === options[i]);
-				}.bind(parent));
-				menu.newSeparator(subMenuGroup);
-				menu.newEntry({
-					menuName: subMenuGroup, entryText: 'Custom value...' + '\t[' + this.dataManipulation.group + ']', func: () => {
-						const val = Input.number('int positive', this.dataManipulation.group, 'Input number:', 'Number of Z-points per X-value', 40);
-						if (val === null) { return; }
-						this.changeConfig({ dataManipulation: { group: val }, callbackArgs: { bSaveProperties: true } });
-					}
-				});
-				menu.newCheckMenuLast(() => !options.some((val) => this.dataManipulation.group === val));
+					options.map((val) => {
+						return { isEq: null, key: this.dataManipulation.group, value: null, newValue: val, entryText: val + ' point(s)' };
+					}).forEach(function (option, i) {
+						createMenuOption('dataManipulation', 'group', subMenuGroup, false)(option);
+						menu.newCheckMenuLast(() => this.dataManipulation.group === options[i]);
+					}.bind(parent));
+					menu.newSeparator(subMenuGroup);
+					menu.newEntry({
+						menuName: subMenuGroup, entryText: 'Custom value...' + '\t[' + this.dataManipulation.group + ']', func: () => {
+							const val = Input.number('int positive', this.dataManipulation.group, 'Input number:', 'Number of Z-points per X-value', 40);
+							if (val === null) { return; }
+							this.changeConfig({ dataManipulation: { group: val }, callbackArgs: { bSaveProperties: true } });
+						}
+					});
+					menu.newCheckMenuLast(() => !options.some((val) => this.dataManipulation.group === val));
+				}
 			}
 		}
 		menu.newSeparator();

@@ -1,5 +1,5 @@
 ﻿'use strict';
-//26/11/24
+//28/11/24
 
 /* exported _chart */
 
@@ -12,7 +12,7 @@ function _chart({
 	colors = [/* rgbSerie1, ... */],
 	chroma = {/* scheme, colorBlindSafe, interpolation */ }, // diverging, qualitative, sequential, random or [color, ...] see https://vis4.net/chromajs/#color-scales
 	graph = {/* type, multi, borderWidth, point, pointAlpha */ },
-	dataManipulation = {/* sort, filter, slice, distribution , probabilityPlot, group*/ },
+	dataManipulation = {/* sort, filter, mFilter, slice, distribution , probabilityPlot, group */ },
 	background = {/* color, image*/ },
 	grid = {
 		x: {/* show, color, width */ },
@@ -45,7 +45,7 @@ function _chart({
 	h = window.Height,
 	title,
 	gFont = _gdiFont('Segoe UI', _scale(10)),
-	tooltipText = '' /* function or string */
+	tooltipText = '', /* function or string */
 } = {}) {
 	// Global tooltip
 	this.tooltip = new _tt(null);
@@ -55,7 +55,7 @@ function _chart({
 		this.colors = [];
 		this.chroma = { scheme: 'sequential', colorBlindSafe: true, interpolation: 'lrgb' }; // diverging, qualitative, sequential, random or [color, ...] see https://vis4.net/chromajs/#color-scales
 		this.graph = { type: 'bars', multi: false, borderWidth: _scale(1), point: null, pointAlpha: 255 };
-		this.dataManipulation = { sort: 'natural', filter: null, slice: [0, 10], distribution: null, probabilityPlot: null, group: 4 };
+		this.dataManipulation = { sort: { x: 'natural', y: null, z: null, my: 'reverse num', mz: null }, filter: null, mFilter: true, slice: [0, 10], distribution: null, probabilityPlot: null, group: 4 };
 		this.background = { color: RGB(255, 255, 255), image: null };
 		this.grid = { x: { show: false, color: RGB(0, 0, 0), width: _scale(1) }, y: { show: false, color: RGB(0, 0, 0), width: _scale(1) } };
 		this.axis = {
@@ -67,7 +67,7 @@ function _chart({
 			timeline: { bAxisCenteredX: false },
 		};
 		this.margin = { left: _scale(20), right: _scale(20), top: _scale(20), bottom: _scale(20) };
-		this.buttons = { xScroll: false, settings: false, display: false, zoom: false, custom: false, alpha: 25, timer: 1500  };
+		this.buttons = { xScroll: false, settings: false, display: false, zoom: false, custom: false, alpha: 25, timer: 1500 };
 		this.callbacks = {
 			point: { onLbtnUp: null, onRbtnUp: null, onDblLbtn: null },
 			focus: {
@@ -1052,6 +1052,7 @@ function _chart({
 
 	this.cleanPoints = () => {
 		this.dataCoords = this.dataDraw.map(() => []);
+		/** @type {[number, number]} */
 		this.currPoint = [-1, -1];
 		this.nearPoint = [-1, -1];
 		this.stats.maxY = this.stats.minY = 0;
@@ -1625,40 +1626,72 @@ function _chart({
 		Data manipulation
 	*/
 
-	this.sort = () => { // Sort points with user provided function, may be a compare function, Array method or pair of Array method + argument
+	this.sort = (data = this.dataDraw) => { // Sort drawn points
 		if (!this.dataManipulation.sort) { return; }
-		const bHasArg = Array.isArray(this.dataManipulation.sort);
-		const sortFunc = bHasArg ? this.dataManipulation.sort[0] : this.dataManipulation.sort;
-		const sortArg = bHasArg ? this.dataManipulation.sort[1] : void (0);
+		if (this.configuration.bProfile) { this.profile.CheckPoint('Sort & Slice data'); }
+		for (let axis of ['z', 'y', 'x']) {
+			this.applySorter(this.dataManipulation.sort[axis], data);
+		}
+		if (this.configuration.bProfile) { this.profile.CheckPointStep('Sort & Slice data'); }
+		return data;
+	};
+
+	this.multiSort = (data) => { // Sort Z-groups
+		if (!this.dataManipulation.sort) { return data; }
+		for (let axis of ['mz', 'my']) {
+			this.applySorter(this.dataManipulation.sort[axis], data, true);
+		}
+		return data;
+	};
+
+	this.applySorter = (sorter, data, bFlat = false) => { // Sort data with user provided function, may be a compare function, Array method or pair of Array method + argument
+		if (!sorter) { return; }
+		const bHasArg = Array.isArray(sorter);
+		const sortFunc = bHasArg ? sorter[0] : sorter;
+		const sortArg = bHasArg ? sorter[1] : void (0);
 		if (Object.values(Array.prototype).includes(sortFunc)) {
 			const method = Object.entries(Array.prototype).find((pair) => pair[1] === sortFunc)[0];
 			if (sortArg) {
-				this.dataDraw = this.dataDraw.map((serie) => serie[method](...sortArg));
+				if (bFlat) { data[method](...sortArg); }
+				else { data.map((serie) => serie[method](...sortArg)); }
 			} else {
-				this.dataDraw = this.dataDraw.map((serie) => serie[method]());
+				if (bFlat) { data[method](); }
+				else { data.map((serie) => serie[method]()); }
 			}
 		} else {
-			this.dataDraw = this.dataDraw.map((serie) => serie.sort(this.dataManipulation.sort));
+			if (bFlat) { data.sort(sorter); }
+			else { data.map((serie) => serie.sort(sorter)); } // NOSONAR
 		}
+		return data;
 	};
 
 	this.cleanData = () => { // Filter points without valid x or y values
 		if (!this.dataDraw) { return; }
+		if (this.configuration.bProfile) { this.profile.CheckPoint('Clean data'); }
 		this.dataDraw = this.dataDraw
 			.map((serie) => {
 				return serie.filter((point) => {
 					return (Object.hasOwn(point, 'x') && point.x !== null && point.x !== '' && Object.hasOwn(point, 'y') && Number.isFinite(point.y));
 				});
 			});
+		if (this.configuration.bProfile) { this.profile.CheckPointStep('Clean data'); }
 	};
 
 	this.filter = () => { // Filter points with user provided function
 		if (!this.dataManipulation.filter) { return; }
+		if (this.configuration.bProfile) { this.profile.CheckPoint('Filter data'); }
 		this.dataDraw = this.dataDraw.map((serie) => serie.filter(this.dataManipulation.filter));
 		if (this.configuration.bDebug) { memoryPrint('filter', this.dataDraw); }
+		if (this.configuration.bProfile) { this.profile.CheckPointStep('Filter data'); }
+	};
+
+	this.multiFilter = (data) => { // Filter Z-groups
+		if (!this.dataManipulation.mFilter) { return data; }
+		return data.filter((point) => point.y);
 	};
 
 	this.slice = () => { // Draw only selected points
+		if (this.configuration.bProfile) { this.profile.CheckPoint('Sort & Slice data'); }
 		const slice = this.dataManipulation.slice;
 		if (!slice || !slice.length === 2 || (slice[0] === 0 && slice[1] === Infinity)) { return; } // NOSONAR
 		// If end is greater than the length of the array, it uses the length of the array
@@ -1701,6 +1734,7 @@ function _chart({
 		} else {
 			this.dataDraw = this.dataDraw.map((serie) => serie.slice(...slice));
 		}
+		if (this.configuration.bProfile) { this.profile.CheckPointStep('Sort & Slice data'); }
 	};
 
 	this.normal = (bInverse = false) => { // Sort as normal distribution
@@ -1752,6 +1786,7 @@ function _chart({
 	};
 
 	this.probabilityPlot = (pPlot = this.dataManipulation.probabilityPlot || '') => {
+		if (this.configuration.bProfile) { this.profile.CheckPoint('Probability plot'); }
 		let bCumulative = false;
 		switch (pPlot.toLowerCase()) {
 			case 'cdf plot': { bCumulative = true; } // NOSONAR
@@ -1782,6 +1817,7 @@ function _chart({
 				if (bCumulative) { // Create new objects to not overwrite original references...
 					this.dataDraw.forEach((serie) => { serie.forEach((val, i, arr) => { arr[i] = { x: val.x, y: val.y + (i ? arr[i - 1].y : 0) }; }); });
 				}
+				if (this.configuration.bProfile) { this.profile.CheckPointStep('Probability plot'); }
 				return true;
 			}
 			case 'p-p plot': {
@@ -1826,12 +1862,15 @@ function _chart({
 						val.x = last[i].y;
 					});
 				});
+				if (this.configuration.bProfile) { this.profile.CheckPointStep('Probability plot'); }
 				return true;
 			}
 			case 'q-q plot':
+				if (this.configuration.bProfile) { this.profile.CheckPointStep('Probability plot'); }
 				return true;
 			case 'none':
 			default:
+				if (this.configuration.bProfile) { this.profile.CheckPointStep('Probability plot'); }
 				return false;
 		}
 	};
@@ -1924,30 +1963,35 @@ function _chart({
 	};
 
 	this.computeStatisticsPoint = (point = this.getCurrentPoint(), precision = 1) => {
-		const serieIdx = this.dataDraw.length === 1
+		const serieIdx = this.dataDraw.length === 1 || this.graph.multi
 			? 0
 			: this.getCurrentPoint() === point
 				? this.getCurrentPointIndex()
-				: this.dataDraw.findIndex((serie) => serie.findIndex((p) => {
-					return ['x', 'y', 'z'].every((c) => !p[c] && !point[c] || p[c] === point[c]);
+				: this.dataDraw.findIndex((serie) => serie.find((p) => {
+					return ['x', 'y', 'z'].every((c) => point === p || !p[c] && !point[c] || p[c] === point[c]);
 				}));
-		const bIs3D = this.graph.multi;
 		let currNum = 0, totalNum = 0;
-		const total = bIs3D
-			? this.data[serieIdx]
-				.map((pointArr) => pointArr.map((subPoint) => subPoint.y)).flat(Infinity)
-				.reduce((acc, curr) => { totalNum++; return acc + curr; }, 0)
-			: this.data[serieIdx]
-				.map((dataPoint) => dataPoint.y).flat(Infinity)
-				.reduce((acc, curr) => { totalNum++; return acc + curr; }, 0);
-		const totalCurr = bIs3D
-			? this.data[serieIdx]
-				.map((pointArr) => pointArr.filter((dataPoint) => dataPoint.z === point.z))
-				.map((pointArr) => pointArr.map((subPoint) => subPoint.y)).flat(Infinity)
-				.reduce((acc, curr) => { currNum++; return acc + curr; }, 0)
-			: total;
+		const total = this.dataTotal.length
+			? [...this.dataTotal[serieIdx].values()].reduce((acc, curr) => acc + curr, 0)
+			: this.graph.multi
+				? this.data.flat(Infinity)
+					.map((point) => point.y)
+					.reduce((acc, curr) => { totalNum++; return acc + curr; }, 0)
+				: this.data[serieIdx]
+					.map((dataPoint) => dataPoint.y)
+					.reduce((acc, curr) => { totalNum++; return acc + curr; }, 0);
+		const totalCurr = this.dataTotal.length
+			? this.graph.multi
+				? this.dataTotal[serieIdx].get(point.z)
+				: total
+			: this.graph.multi
+				? this.data.flat(Infinity)
+					.filter((dataPoint) => dataPoint.z === point.z)
+					.map((point) => point.y)
+					.reduce((acc, curr) => { currNum++; return acc + curr; }, 0)
+				: total;
 		const avg = total / totalNum;
-		const avgCurr = bIs3D
+		const avgCurr = this.graph.multi
 			? totalCurr / currNum
 			: avg;
 		const stats = {
@@ -1980,19 +2024,46 @@ function _chart({
 		return stats;
 	};
 
+	this.calcTotals = () => {
+		if (this.configuration.bProfile) { this.profile.CheckPoint('Calc totals'); }
+		this.dataTotal.length = 0;
+		if (this.graph.multi) {
+			this.data.forEach((serie) => {
+				const serieTotals = new Map();
+				serie.forEach((pointArr) =>
+					pointArr.forEach((point) => serieTotals.set(point.z, (serieTotals.get(point.z) || 0) + (point.y || 0)))
+				);
+				serie.forEach((pointArr) =>
+					pointArr.forEach((point) => point.total = serieTotals.get(point.z))
+				);
+				this.dataTotal.push(serieTotals);
+			});
+		} else {
+			this.data.forEach((serie) => {
+				const serieTotals = new Map();
+				serie.forEach((point) => serieTotals.set(point.x, (serieTotals.get(point.x) || 0) + point.y));
+				this.dataTotal.push(serieTotals);
+			});
+		}
+		if (this.configuration.bProfile) { this.profile.CheckPointStep('Calc totals'); }
+	};
+
 	this.expandData = (group = this.dataManipulation.group) => {
+		if (this.configuration.bProfile) { this.profile.CheckPoint('Expand data'); }
 		if (this.graph.multi) { // 3-dimensional data with every point having multiple {Y,Z} points
+			if (this.data.length > 1) { throw new Error('Can not map more than 1 serie to 3D charts'); }
 			const series = this.data.map((serie) => [...(serie || [])]);
 			this.dataDraw = [];
 			for (let i = 0; i < group; i++) { this.dataDraw.push([]); }
 			series.forEach((serie) => {
 				serie.forEach((pointArr) => {
+					const sortedPoints = this.multiSort(this.multiFilter([...pointArr]));
 					const len = pointArr.length;
 					this.stats.minGroup = Math.min(len, this.stats.maxGroup);
 					this.stats.maxGroup = Math.max(len, this.stats.maxGroup);
 					for (let j = 0; j < len; j++) {
 						if (j >= group) { break; }
-						const point = pointArr[j];
+						const point = sortedPoints[j];
 						this.dataDraw[j].push(point);
 					}
 				});
@@ -2001,27 +2072,30 @@ function _chart({
 		} else {
 			this.dataDraw = this.data.map((serie) => [...(serie || [])]);
 		}
+		if (this.configuration.bProfile) { this.profile.CheckPointStep('Expand data'); }
 	};
 
 	this.manipulateData = () => {
 		if (!this.data) { return false; }
 		if (this.configuration.bDebug) { memoryPrint('manipulate data init'); }
 		if (this.configuration.bProfile) { this.profile.Reset(); }
+		this.calcTotals();
+		if (this.configuration.bProfile) { this.profile.CheckPointPrint('Calc totals'); }
 		this.expandData();
-		if (this.configuration.bProfile) { this.profile.Print('Expand data', false); }
+		if (this.configuration.bProfile) { this.profile.CheckPointPrint('Expand data'); }
 		this.cleanData();
-		if (this.configuration.bProfile) { this.profile.Print('Clean data', false); }
+		if (this.configuration.bProfile) { this.profile.CheckPointPrint('Clean data'); }
 		this.filter();
-		if (this.configuration.bProfile) { this.profile.Print('Filter data', false); }
+		if (this.configuration.bProfile) { this.profile.CheckPointPrint('Filter data'); }
 		this.stats.points = this.dataDraw.map((serie) => serie.length);
 		if (!this.distribution()) {
 			this.sort();
 			this.slice();
-			if (this.configuration.bProfile) { this.profile.Print('Sort & Slice data', false); }
+			if (this.configuration.bProfile) { this.profile.CheckPointPrint('Sort & Slice data'); }
 		}
 		if (this.dataManipulation.probabilityPlot) {
 			this.probabilityPlot();
-			if (this.configuration.bProfile) { this.profile.Print('Probability plot', false); }
+			if (this.configuration.bProfile) { this.profile.CheckPointPrint('Probability plot', false); }
 		}
 		this.stats.pointsDraw = this.dataDraw.map((serie) => serie.length);
 		if (this.configuration.bDebug) { memoryPrint('manipulate data end', this.dataDraw); }
@@ -2049,16 +2123,24 @@ function _chart({
 				this.dataManipulation.slice = [0, Math.max(this.configuration.maxSliceOnDataChange, 0)]; // Draw all data on data type change
 			}
 		}
-		if (data) { this.data = data; this.dataDraw = data; this.series = data.length; }
-		if (dataAsync) { this.dataAsync = dataAsync; this.data = []; this.dataDraw = []; this.series = 0; }
+		if (data) { this.data = data; this.dataDraw = data; this.series = data.length; this.dataTotal = []; }
+		if (dataAsync) { this.dataAsync = dataAsync; this.data = []; this.dataDraw = []; this.series = 0; this.dataTotal = []; }
 		if (dataManipulation) {
-			this.dataManipulation = { ...this.dataManipulation, ...dataManipulation };
+			if (dataManipulation.sort) {
+				Object.keys(this.sortKey).forEach((axis) => {
+					if (this.sortKey[axis]) { this.dataManipulation.sort[axis] = this.sortKey[axis]; }
+				});
+				this.dataManipulation.sort = { ...this.dataManipulation.sort, ...dataManipulation.sort };
+			}
+			['filter', 'mFilter', 'slice', 'distribution', 'probabilityPlot', 'group'].forEach((key) => {
+				if (Object.hasOwn(dataManipulation, key)) { this.dataManipulation[key] = dataManipulation[key]; }
+			});
 			if (Object.hasOwn(dataManipulation, 'sort')) { this.sortKey = null; }
 			if (Object.hasOwn(dataManipulation, 'distribution')) {
 				if (dataManipulation.distribution && dataManipulation.distribution.toLowerCase() !== 'none') {
 					this.dataManipulation.sort = this.sortKey = null;
 				} else if (!Object.hasOwn(dataManipulation, 'sort')) {
-					this.dataManipulation.sort = 'natural';
+					this.dataManipulation.sort = { x: 'natural', y: null, z: null, my: 'reverse num', mz: null };
 					this.sortKey = null;
 				}
 			}
@@ -2260,78 +2342,90 @@ function _chart({
 			}
 		}
 		if (this.dataManipulation.sort) {
-			if (typeof this.dataManipulation.sort === 'string') {
-				this.sortKey = this.convertSortLabel(this.dataManipulation.sort);
-				const type = this.sortKey[0];
-				const axis = this.sortKey[1];
-				const sorter = NatSort();
-				switch (type) {
-					case 'natural':
-						this.dataManipulation.sort = function natural(a, b) { return sorter(a[axis], b[axis]); };
-						break;
-					case 'reverse':
-						this.dataManipulation.sort = function reverse(a, b) { return sorter(b[axis], a[axis]); };
-						break;
-					case 'natural num':
-						this.dataManipulation.sort = function naturalNum(a, b) { return a[axis] - b[axis]; };
-						break;
-					case 'reverse num':
-						this.dataManipulation.sort = function reverseNum(a, b) { return b[axis] - a[axis]; };
-						break;
-					case 'string natural':
-						this.dataManipulation.sort = function naturalString(a, b) { return a[axis].localeCompare(b[axis]); };
-						break;
-					case 'string reverse':
-						this.dataManipulation.sort = function reverseString(a, b) { return 0 - a[axis].localeCompare(b[axis]); };
-						break;
-					case 'random':
-						this.dataManipulation.sort = Array.prototype.shuffle;
-						break;
-					case 'radix':
-						this.dataManipulation.sort = Array.prototype.radixSort;
-						break;
-					case 'radix reverse':
-						this.dataManipulation.sort = [Array.prototype.radixSort, true];
-						break;
-					case 'radix int':
-						this.dataManipulation.sort = Array.prototype.radixSortInt;
-						break;
-					case 'radix int reverse':
-						this.dataManipulation.sort = [Array.prototype.radixSortInt, true];
-						break;
-					default:
-						console.log('Statistics: sort name ' + _p(type) + ' not recognized.');
-						bPass = false;
-				}
-			} else if (Array.isArray(this.dataManipulation.sort)) {
-				if (this.dataManipulation.sort.length > 2) {
-					console.log('Statistics: sort name ' + _p(this.dataManipulation.sort) + ' not recognized.');
-					bPass = false;
-				}
-				if (!isFunction(this.dataManipulation.sort[0])) {
-					if (typeof this.dataManipulation.sort[0] === 'string') {
-						this.sortKey = this.convertSortLabel(this.dataManipulation.sort);
-						const type = this.sortKey[0];
-						if (['schwartzian transform', 'schwartzian'].includes(type)) {
-							this.dataManipulation.sort[0] = Array.prototype.schwartzianSort;
-						} else if (['radix reverse', 'radix'].includes(type)) {
-							if (type === 'radix reverse') { this.dataManipulation.sort[1] = true; }
-							this.dataManipulation.sort[0] = Array.prototype.radixSort;
-						} else if (['radix int reverse', 'radix int'].includes(type)) {
-							if (type === 'radix int reverse') { this.dataManipulation.sort[1] = true; }
-							this.dataManipulation.sort[0] = Array.prototype.radixSortInt;
-						} else {
-							console.log('Statistics: sort name' + _p(type) + ' not recognized');
+			if (!this.sortKey) { this.sortKey = { x: null, y: null, z: null, my: null, mz: null }; }
+			if (typeof this.dataManipulation.sort !== 'object') {
+				this.dataManipulation.sort = { x: 'natural', y: null, z: null, my: 'reverse num', mz: null };
+			}
+			for (let label in this.dataManipulation.sort) {
+				if (!['x', 'y', 'z', 'my', 'mz'].includes(label)) { continue; }
+				const axis = label.replace('m', '');
+				const sortAxis = this.dataManipulation.sort[label];
+				if (typeof sortAxis === 'string') {
+					const type = this.sortKey[label] = sortAxis.toLowerCase();
+					const sorter = NatSort();
+					switch (type) {
+						case 'natural':
+							this.dataManipulation.sort[label] = function natural(a, b) { return sorter(a[axis], b[axis]); };
+							break;
+						case 'reverse':
+							this.dataManipulation.sort[label] = function reverse(a, b) { return sorter(b[axis], a[axis]); };
+							break;
+						case 'natural num':
+							this.dataManipulation.sort[label] = function naturalNum(a, b) { return a[axis] - b[axis]; };
+							break;
+						case 'reverse num':
+							this.dataManipulation.sort[label] = function reverseNum(a, b) { return b[axis] - a[axis]; };
+							break;
+						case 'string natural':
+							this.dataManipulation.sort[label] = function naturalString(a, b) { return a[axis].localeCompare(b[axis]); };
+							break;
+						case 'string reverse':
+							this.dataManipulation.sort[label] = function reverseString(a, b) { return 0 - a[axis].localeCompare(b[axis]); };
+							break;
+						case 'random':
+							this.dataManipulation.sort[label] = Array.prototype.shuffle;
+							break;
+						case 'radix':
+							this.dataManipulation.sort[label] = Array.prototype.radixSort;
+							break;
+						case 'radix reverse':
+							this.dataManipulation.sort[label] = [Array.prototype.radixSort, true];
+							break;
+						case 'radix int':
+							this.dataManipulation.sort[label] = Array.prototype.radixSortInt;
+							break;
+						case 'radix int reverse':
+							this.dataManipulation.sort[label] = [Array.prototype.radixSortInt, true];
+							break;
+						case 'natural total':
+							this.dataManipulation.sort[label] = function naturalNum(a, b) { return a.total - b.total; };
+							break;
+						case 'reverse total':
+							this.dataManipulation.sort[label] = function reverseNum(a, b) { return b.total - a.total; };
+							break;
+						default:
+							console.log('Statistics: sort name ' + _p(type) + ' not recognized.');
 							bPass = false;
-						}
-					} else {
-						console.log('Statistics: sort method ' + _p(this.dataManipulation.sort[0]) + ' is not a function.');
+					}
+				} else if (Array.isArray(sortAxis)) {
+					if (sortAxis.length > 2) {
+						console.log('Statistics: sort name ' + _p(sortAxis) + ' not recognized.');
 						bPass = false;
 					}
-				}
-				if (this.dataManipulation.sort[1] && !Array.isArray(this.dataManipulation.sort[1])) {
-					console.log('Statistics: sort arguments ' + _p(this.dataManipulation.sort[1]) + ' is not an array.');
-					bPass = false;
+					if (!isFunction(sortAxis[0])) {
+						if (typeof sortAxis[0] === 'string') {
+							const type = this.sortKey[label] = sortAxis[0].toLowerCase();
+							if (['schwartzian transform', 'schwartzian'].includes(type)) {
+								sortAxis[0] = Array.prototype.schwartzianSort;
+							} else if (['radix reverse', 'radix'].includes(type)) {
+								if (type === 'radix reverse') { sortAxis[1] = true; }
+								sortAxis[0] = Array.prototype.radixSort;
+							} else if (['radix int reverse', 'radix int'].includes(type)) {
+								if (type === 'radix int reverse') { sortAxis[1] = true; }
+								sortAxis[0] = Array.prototype.radixSortInt;
+							} else {
+								console.log('Statistics: sort name' + _p(type) + ' not recognized');
+								bPass = false;
+							}
+						} else {
+							console.log('Statistics: sort method ' + _p(sortAxis[0]) + ' is not a function.');
+							bPass = false;
+						}
+					}
+					if (sortAxis[1] && !Array.isArray(sortAxis[1])) {
+						console.log('Statistics: sort arguments ' + _p(sortAxis[1]) + ' is not an array.');
+						bPass = false;
+					}
 				}
 			}
 		}
@@ -2370,21 +2464,8 @@ function _chart({
 		};
 	};
 
-	this.convertSortLabel = (input) => {
-		if (!input) {
-			return null;
-		} else if (Array.isArray(input)) {
-			const sort = (input.length === 1 ? [...input, 'x'] : input.slice(0, 2)).join('|');
-			return sort;
-		} else {
-			const key = input.toLowerCase().split('|');
-			if (key.length === 1) { key.push('x'); }
-			if (key.length > 2) { key.length = 2; }
-			return key;
-		}
-	};
-	this.exportSortLabel = (bConvert = true) => {
-		return (bConvert ? this.convertSortLabel(this.sortKey) : this.sortKey);
+	this.exportSortLabel = () => {
+		return this.sortKey;
 	};
 
 	this.initData = () => {
@@ -2432,8 +2513,11 @@ function _chart({
 	this.dataDraw = data || [];
 	/** @type {any[][][]>} */
 	this.dataCoords = this.dataDraw.map(() => []);
+	/** @type {Map[]>} */
+	this.dataTotal = [];
+	/** @type {{sort: {x:string|null, y:string|null, z:string|null, my:string|null, mz:string|null}, filter: null|function, slice: [number, number], distribution: null|string, probabilityPlot: null|string, group: number}} */
 	this.dataManipulation = { ...this.dataManipulation, ...(dataManipulation || {}) };
-	/** @type {null|string[]} */
+	/** @type {null|{x:string|null, y:string|null, z:string|null, my:string|null, mz:string|null}}} */
 	this.sortKey = null;
 	/** @type {number}} */
 	this.series = data ? data.length : 0;
@@ -2441,7 +2525,7 @@ function _chart({
 	this.graph = { ...this.graph, ...(graph || {}) };
 	/** @type {{color: number, image: {imageGDI: GdiGraphics}}} */
 	this.background = { ...this.background, ...(background || {}) };
-	/** @type {nunmber[]|number[][]} */
+	/** @type {number[]|number[][]} */
 	this.colors = colors;
 	/** @type {{scheme: 'diverging'|'qualitative'|'sequential'|'random'|number[], colorBlindSafe: Boolean, interpolation: 'lrgb'|'rgb'|'lab'|'hsl'|'lch'}} @see https://vis4.net/chromajs/#color-scales */
 	this.chroma = { ...this.chroma, ...(chroma || {}) };
@@ -2470,6 +2554,7 @@ function _chart({
 		if (callbacks.config) { this.callbacks.config = { ...this.callbacks.config, ...callbacks.config }; }
 	}
 	this.currPoint = [-1, -1];
+	/** @type {[number, number]} */
 	this.nearPoint = [-1, -1];
 	this.stats = { maxY: 0, minY: 0, points: [], pointsDraw: [], minGroup: 0, maxGroup: 0 };
 	this.x = x;

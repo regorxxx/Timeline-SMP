@@ -1,5 +1,5 @@
 'use strict';
-//28/11/24
+//09/12/24
 
 /* exported getData, getDataAsync */
 
@@ -15,7 +15,7 @@ include('..\\..\\helpers\\helpers_xxx_playlists.js');
 include('..\\filter_and_query\\remove_duplicates.js');
 /* global removeDuplicates:readable */
 include('..\\search\\top_tracks_from_date.js');
-/* global getPlayCount:readable, getSkipCount:readable */
+/* global getPlayCount:readable, getPlayCountV2:readable, getSkipCount:readable */
 include('..\\search_by_distance\\search_by_distance_culture.js');
 /* global getCountryISO:readable, music_graph_descriptors_countries:readable */
 
@@ -46,7 +46,7 @@ include('..\\search_by_distance\\search_by_distance_culture.js');
 */
 
 /**
- * Retrieve statistics data as x-y-z points
+ * Retrieve statistics data as x-y-z points.
  *
  * @function
  * @name getData
@@ -63,6 +63,7 @@ include('..\\search_by_distance\\search_by_distance_culture.js');
  * @param {boolean} o.bProportional - [=false] Calculate Y count proportional to population
  * @param {boolean} o.bRemoveDuplicates - [=true] Remove duplicates from source
  * @param {boolean} o.bIncludeHandles - [=true] Include associated handle per point
+ * @param {{filter:boolean, sort: function|null}} o.zGroups - [={ filter: false, sort: null } Settings to handle Z-data using 'timeline' option. If filter is true, then only non null z-values are output.
  * @returns {<Array.<Array,Array>>} Array of series with points [[{x, y, [z]},...], ...]
  */
 function getData({
@@ -259,8 +260,8 @@ function getData({
 			data = [Array.from(tagCount, (point) => { return { x: point[0].replace(idCharsRegExp, ''), y: point[1], ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {}) }; })];
 			break;
 		}
-		case 'playcount wordlmap':
-		case 'playcount wordlmap region': {
+		case 'playcount worldmap':
+		case 'playcount worldmap region': {
 			const file = (_isFile(fb.FoobarPath + 'portable_mode_enabled') ? '.\\profile\\' + folders.dataName : folders.data) + 'worldMap.json';
 			const worldMapData = _jsonParseFileCheck(file, 'Library json', window.Name, utf8).map((point) => { return { id: point.artist, country: (point.val.slice(-1) || [''])[0] }; });
 			const libraryTags = noSplitTags.has(x.toUpperCase())
@@ -278,7 +279,7 @@ function getData({
 						const isoCode = getCountryISO(idData.country);
 						if (isoCode) {
 							const id = idData
-								? option === 'playcount wordlmap region'
+								? option === 'playcount worldmap region'
 									? music_graph_descriptors_countries.getFirstNodeRegion(isoCode)
 									: idData.country
 								: null;
@@ -297,7 +298,7 @@ function getData({
 			data = [Array.from(tagCount, (point) => { return { x: point[0], y: point[1], ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {}) }; })];
 			break;
 		}
-		case 'playcount wordlmap city': {
+		case 'playcount worldmap city': {
 			const file = (_isFile(fb.FoobarPath + 'portable_mode_enabled') ? '.\\profile\\' + folders.dataName : folders.data) + 'worldMap.json';
 			const worldMapData = _jsonParseFileCheck(file, 'Library json', window.Name, utf8).map((point) => { return { id: point.artist, city: point.val[0] || '', country: (point.val.slice(-1) || [''])[0] }; });
 			const libraryTags = noSplitTags.has(x.toUpperCase())
@@ -355,7 +356,7 @@ function getData({
 }
 
 /**
- * Retrieve statistics data as x-y-z points
+ * Retrieve statistics data as x-y-z points. There are additional settings for compatibility with ListenBrainz API listens retrieval (compared to the {@link getData}).
  *
  * @function
  * @name getDataAsync
@@ -372,6 +373,8 @@ function getData({
  * @param {boolean} o.bProportional - [=false] Calculate Y count proportional to population
  * @param {boolean} o.bRemoveDuplicates - [=true] Remove duplicates from source
  * @param {boolean} o.bIncludeHandles - [=true] Include associated handle per point
+ * @param {{filter:boolean, sort: function|null}} o.zGroups - [={ filter: false, sort: null } Settings to handle Z-data using 'timeline' option. If filter is true, then only non null z-values are output.
+ * @param {{token:string, bOffline:boolean}} o.listenBrainz - [={token: '', bOffline: true}] ListenBrainz settings to retrieve playcounts. If no token provided, it's skipped
  * @returns {promise.<Array.<Array,Array>>} Array of series with points [[{x, y, [z]},...], ...]
  */
 async function getDataAsync({
@@ -382,7 +385,8 @@ async function getDataAsync({
 	bProportional = false,
 	bRemoveDuplicates = true,
 	bIncludeHandles = false,
-	zGroups = { filter: false, sort: null /* (a, b) => b.count - a.count */ }
+	zGroups = { filter: false, sort: null /* (a, b) => b.count - a.count */ },
+	listenBrainz = {token: '', user: '', bOffline: true}
 } = {}) {
 	const noSplitTags = new Set(['ALBUM', 'TITLE']); noSplitTags.forEach((tag) => noSplitTags.add(_t(tag)));
 	const dedupByIdTags = new Set(['TITLE']); dedupByIdTags.forEach((tag) => noSplitTags.add(_t(tag)));
@@ -482,7 +486,7 @@ async function getDataAsync({
 				? (await fb.TitleFormat(xTag).EvalWithMetadbsAsync(handleList)).map((val) => [val])
 				: (await fb.TitleFormat(xTag).EvalWithMetadbsAsync(handleList)).map((val) => val.split(/, ?/));
 			const playCount = optionArg && optionArg.timePeriod
-				? getPlayCount(handleList, optionArg.timePeriod, optionArg.timeKey, optionArg.fromDate).map((v) => v.playCount)
+				? (await getPlayCountV2(handleList, optionArg.timePeriod, optionArg.timeKey, optionArg.fromDate, true, listenBrainz)).map((v) => v.playCount)
 				: await fb.TitleFormat(globTags.playCount).EvalWithMetadbsAsync(handleList);
 			const skipCount = bIncludeSkip
 				? optionArg.timePeriod
@@ -534,7 +538,7 @@ async function getDataAsync({
 				? (await fb.TitleFormat(xTag).EvalWithMetadbsAsync(handleList)).map((val) => [val])
 				: (await fb.TitleFormat(xTag).EvalWithMetadbsAsync(handleList)).map((val) => val.split(/, ?/));
 			const playCount = optionArg && optionArg.timePeriod
-				? getPlayCount(handleList, optionArg.timePeriod, optionArg.timeKey, optionArg.fromDate).map((v) => v.playCount)
+				? (await getPlayCountV2(handleList, optionArg.timePeriod, optionArg.timeKey, optionArg.fromDate, true, listenBrainz)).map((v) => v.playCount)
 				: await fb.TitleFormat(globTags.playCount).EvalWithMetadbsAsync(handleList);
 			const tagCount = new Map();
 			const keyCount = new Map();
@@ -568,15 +572,15 @@ async function getDataAsync({
 			data = [Array.from(tagCount, (point) => { return { x: point[0].replace(idCharsRegExp, ''), y: point[1], ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {}) }; })];
 			break;
 		}
-		case 'playcount wordlmap':
-		case 'playcount wordlmap region': {
+		case 'playcount worldmap':
+		case 'playcount worldmap region': {
 			const file = (_isFile(fb.FoobarPath + 'portable_mode_enabled') ? '.\\profile\\' + folders.dataName : folders.data) + 'worldMap.json';
 			const worldMapData = _jsonParseFileCheck(file, 'Library json', window.Name, utf8).map((point) => { return { id: point.artist, country: (point.val.slice(-1) || [''])[0] }; });
 			const libraryTags = noSplitTags.has(x.toUpperCase())
 				? (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => [val])
 				: (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => val.split(/, ?/));
 			const playCount = optionArg && optionArg.timePeriod
-				? getPlayCount(handleList, optionArg.timePeriod, optionArg.timeKey, optionArg.fromDate).map((v) => v.playCount)
+				? (await getPlayCountV2(handleList, optionArg.timePeriod, optionArg.timeKey, optionArg.fromDate, true, listenBrainz)).map((v) => v.playCount)
 				: await fb.TitleFormat(globTags.playCount).EvalWithMetadbsAsync(handleList);
 			const tagCount = new Map();
 			const handlesMap = new Map();
@@ -587,7 +591,7 @@ async function getDataAsync({
 						const isoCode = getCountryISO(idData.country);
 						if (isoCode) {
 							const id = idData
-								? option === 'playcount wordlmap region'
+								? option === 'playcount worldmap region'
 									? music_graph_descriptors_countries.getFirstNodeRegion(isoCode)
 									: idData.country
 								: null;
@@ -606,14 +610,14 @@ async function getDataAsync({
 			data = [Array.from(tagCount, (point) => { return { x: point[0], y: point[1], ...(bIncludeHandles ? { handle: handlesMap.get(point[0]) } : {}) }; })];
 			break;
 		}
-		case 'playcount wordlmap city': {
+		case 'playcount worldmap city': {
 			const file = (_isFile(fb.FoobarPath + 'portable_mode_enabled') ? '.\\profile\\' + folders.dataName : folders.data) + 'worldMap.json';
 			const worldMapData = _jsonParseFileCheck(file, 'Library json', window.Name, utf8).map((point) => { return { id: point.artist, city: point.val[0] || '', country: (point.val.slice(-1) || [''])[0] }; });
 			const libraryTags = noSplitTags.has(x.toUpperCase())
 				? (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => [val])
 				: (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => val.split(/, ?/));
 			const playCount = optionArg && optionArg.timePeriod
-				? getPlayCount(handleList, optionArg.timePeriod, optionArg.timeKey, optionArg.fromDate).map((v) => v.playCount)
+				? (await getPlayCountV2(handleList, optionArg.timePeriod, optionArg.timeKey, optionArg.fromDate, true, listenBrainz)).map((v) => v.playCount)
 				: await fb.TitleFormat(globTags.playCount).EvalWithMetadbsAsync(handleList);
 			const tagCount = new Map();
 			const cityMap = new Map();

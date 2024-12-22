@@ -1,5 +1,5 @@
 ﻿'use strict';
-//28/11/24
+//15/12/24
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '1.5.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
@@ -50,13 +50,16 @@ let properties = {
 		z: { key: 'Artist', tf: _qCond(globTags.artist) }
 	}), { func: isJSON }],
 	dataQuery: ['Data query', 'ALL', { func: isString }],
-	dataSource: ['Data source', JSON.stringify({ sourceType: 'library', sourceArg: null }), { func: isJSON }],
+	dataSource: ['Data source', JSON.stringify({ sourceType: 'library', sourceArg: null, bRemoveDuplicates: true }), { func: isJSON }],
 	xEntries: ['Axis X TF entries', JSON.stringify([
 		{ x: _t(globTags.date), keyX: 'Date' },
 		{ x: '$div(' + _t(globTags.date) + ',10)0s', keyX: 'Decade' },
 		{ x: _t(globTags.bpm), keyX: 'BPM' },
 		{ x: '$mul($div(' + _t(globTags.bpm) + ',10),10)s', keyX: 'BPM (range)' },
 		{ x: _t(globTags.rating), keyX: 'Rating' },
+		{ name: 'sep' },
+		{ x: '%ALBUM%|$if3($meta(MUSICBRAINZ_ALBUMARTISTID,0),$meta(ALBUM ARTIST,0),$meta(ARTIST,0))', keyX: 'Album' },
+		{ x: globTags.artist, keyX: 'Artist' },
 		{ name: 'sep' },
 		{ x: _t(globTags.camelotKey), keyX: 'Camelot Key' }, // helpers_xxx_global.js
 		{ x: _t(globTags.openKey), keyX: 'Open Key' },
@@ -69,9 +72,11 @@ let properties = {
 		{ y: '1', keyY: 'Tracks', bProportional: false },
 		{ y: globTags.playCount, keyY: 'Listens', bProportional: false },
 		{ name: 'sep' },
-		{ y: globTags.playCount, keyY: 'Listens/Track', bProportional: true },
-		{ y: globTags.isLoved, keyY: 'Loves/Track', bProportional: true }, // requires not to ouput true value
-		{ y: globTags.isHated, keyY: 'Hates/Track', bProportional: true },
+		{ y: globTags.playCount, keyY: 'Avg. Listens', bProportional: true },
+		{ y: globTags.isLoved, keyY: 'Avg. Loves', bProportional: true }, // requires not to ouput true value
+		{ y: globTags.isHated, keyY: 'Avg. Hates', bProportional: true },
+		{ y: globTags.rating, keyY: 'Avg. Rating', bProportional: true },
+		{ name: 'sep' },
 		{ y: globTags.isRatedTop, keyY: 'Rated 5/Track', bProportional: true },
 	].map((v) => { return (Object.hasOwn(v, 'name') ? v : { ...v, name: 'By ' + v.keyY }); })), { func: isJSON }],
 	zEntries: ['Axis Z TF entries', JSON.stringify([
@@ -87,6 +92,11 @@ let properties = {
 		{ query: globQuery.ratingTop, name: 'Rated 5 tracks' },
 		{ query: globQuery.loved, name: 'Loved tracks' },
 		{ query: globQuery.hated, name: 'Hated tracks' },
+		{ name: 'sep' },
+		{ query: '"$stricmp($directory(%path%,2),\'Various\')" MISSING AND NOT (%ALBUM ARTIST% IS various artists OR %ALBUM ARTIST% IS va) AND COMPILATION MISSING', name: 'No compilations' },
+		{ query: 'NOT DESCRIPTION IS single', name: 'No singles' },
+		{ query: 'NOT DESCRIPTION IS ep', name: 'No EPs' },
+		{ query: '"$stricmp($directory(%path%,2),\'Various\')" MISSING AND NOT (%ALBUM ARTIST% IS various artists OR %ALBUM ARTIST% IS va) AND COMPILATION MISSING AND NOT DESCRIPTION IS single AND NOT DESCRIPTION IS ep', name: 'Only albums' },
 		{ name: 'sep' },
 		{
 			query: globTags.artist + ' IS #' + globTags.artistRaw + '#', name: 'Selected artist(s)',
@@ -106,6 +116,15 @@ let properties = {
 		},
 		{
 			query: globTags.style + ' IS #' + globTags.style + '#', name: 'Selected style(s)',
+			dynQueryMode: {
+				onSelection: true,
+				onPlayback: true,
+				preferPlayback: true
+			}
+		},
+		{ name: 'sep' },
+		{
+			query: '"$stricmp($directory(%path%,2),\'Various\')" MISSING AND NOT (%ALBUM ARTIST% IS various artists OR %ALBUM ARTIST% IS va) AND COMPILATION MISSING AND NOT DESCRIPTION IS single AND NOT DESCRIPTION IS ep AND (' + globTags.artist + ' IS #' + globTags.artistRaw + '#)', name: 'Albums by Selected artist(s)',
 			dynQueryMode: {
 				onSelection: true,
 				onPlayback: true,
@@ -273,7 +292,8 @@ newConfig.forEach((row) => row.forEach((config) => {
 				bHasZ ? config.axis.z.tf + ' PRESENT' : ''
 			], 'AND'),
 			queryHandle: getSel(),
-			bProportional: config.axis.y.bProportional
+			bProportional: config.axis.y.bProportional,
+			bRemoveDuplicates: dataSource.bRemoveDuplicates
 		});
 	} else if (defaultConfig.configuration.bLoadAsyncData) {
 		config.data = getData({
@@ -289,7 +309,8 @@ newConfig.forEach((row) => row.forEach((config) => {
 				bHasZ ? config.axis.z.tf + ' PRESENT' : ''
 			], 'AND'),
 			queryHandle: getSel(),
-			bProportional: config.axis.y.bProportional
+			bProportional: config.axis.y.bProportional,
+			bRemoveDuplicates: dataSource.bRemoveDuplicates
 		});
 	}
 	if (!bHasZ) { config.graph = { multi: false }; }
@@ -323,6 +344,7 @@ charts.forEach((chart, i) => {
 		const bHasTfX = Object.hasOwn(this.axis.x, 'tf') && this.axis.x.tf.length;
 		const bHasTfZ = Object.hasOwn(this.axis.z, 'tf') && this.axis.z.tf.length;
 		const dataSource = JSON.parse(properties.dataSource[1]);
+		const dataOpts = JSON.parse(properties.data[1]);
 		const chartConfig = JSON.parse(properties.chart[1]);
 		const newConfig = {
 			[properties.bAsync[1] ? 'dataAsync' : 'data']: (properties.bAsync[1] ? getDataAsync : getData)({
@@ -338,7 +360,8 @@ charts.forEach((chart, i) => {
 					bHasTfZ || bHasZ ? (bHasZ ? _qCond(entry.z) : this.axis.z.tf) + ' PRESENT' : ''
 				], 'AND'),
 				queryHandle: getSel(),
-				bProportional: entry.bProportional
+				bProportional: bHasY ? entry.bProportional : dataOpts.y.bProportional,
+				bRemoveDuplicates: Object.hasOwn(entry, 'bRemoveDuplicates') ? entry.bRemoveDuplicates : dataSource.bRemoveDuplicates
 			}),
 			axis: {},
 			dataManipulation: chartConfig.dataManipulation
@@ -373,9 +396,9 @@ function refreshData(plsIdx, callback, bForce = false) {
 			return isArrayEqual(playingTF, ['*'])
 				? true
 				: playingTF.some((tag) => {
-					return properties.dataQuery[1].toUpperCase().includes(tag) || ['x', 'y', 'z'].some((axis) => {
-						return chart.axis[axis].tf.toUpperCase().includes(tag);
-					});
+					const coords = ['x', 'y', chart.graph.multi ? 'z' : ''].filter(Boolean);
+					const hasTag = (o) => o.toUpperCase().includes(tag);
+					return hasTag(properties.dataQuery[1]) || coords.some((axis) => hasTag(chart.axis[axis].tf));
 				});
 		};
 		const needsUpdateByDynQuery = () => {
@@ -408,9 +431,7 @@ function refreshData(plsIdx, callback, bForce = false) {
 		const bActive = dataSource.sourceType === 'activePlaylist' || bPlaying && !fb.IsPlaying;
 		const bPlaylistChanged = ['on_playlist_items_removed', 'on_playlist_items_added'].includes(callback);
 		if (bPlaylistChanged && (bActive || bPlaying)) {
-			if ((activePlaylist !== plman.ActivePlaylist || plsIdx === plman.PlayingPlaylist)) {
-				bRefresh = updateCharts(true);
-			}
+			bRefresh = updateCharts(true);
 		}
 		if (callback === 'on_playback_new_track' && bPlaying) {
 			if (playingPlaylist !== plman.PlayingPlaylist) {

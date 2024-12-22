@@ -1,5 +1,5 @@
 'use strict';
-//28/11/24
+//15/12/24
 
 /* exported onLbtnUpPoint, onLbtnUpSettings*/
 
@@ -40,17 +40,17 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 			menu.newSeparator(subMenu[1]);
 			const currPoints = this.dataDraw.map((serie) => serie.find((newPoint) => newPoint.x === point.x)).filter(Boolean);
 			[
-				{ name: 'By ' + this.axis.x.key, query: this.axis.x.tf + ' IS ' + subPoint.x, playlist: 'Timeline: ' + subPoint.x },
+				{ name: 'By ' + this.axis.x.key, query: this.axis.x.tf + ' IS ' + subPoint.x, playlist: 'Timeline: ' + subPoint.x.replace(/\|.*/,'') },
 				...(this.graph.multi
 					? [
-						{ name: 'By ' + this.axis.z.key, query: fallbackTagsQuery(this.axis.z.tf, subPoint.z), playlist: 'Timeline: ' + subPoint.z },
+						{ name: 'By ' + this.axis.z.key, query: fallbackTagsQuery(this.axis.z.tf, subPoint.z), playlist: 'Timeline: ' + subPoint.z.replace(/\|.*/,'') },
 						{
 							name: 'By ' + this.axis.x.key + ' and ' + this.axis.z.key, query: this.axis.x.tf + ' IS ' + subPoint.x + ' AND ' + _p(fallbackTagsQuery(this.axis.z.tf, subPoint.z)),
-							playlist: 'Timeline: ' + subPoint.x + ' - ' + subPoint.z
+							playlist: 'Timeline: ' + subPoint.x.replace(/\|.*/,'') + ' - ' + subPoint.z.replace(/\|.*/,'')
 						},
 						{
 							name: 'By ' + this.axis.x.key + ' and top ' + this.axis.z.key, query: this.axis.x.tf + ' IS ' + subPoint.x + ' AND ' + _p(currPoints.map((newPoint) => fallbackTagsQuery(this.axis.z.tf, newPoint.z)).join(' OR ')),
-							playlist: 'Timeline: ' + subPoint.x + ' - Top ' + currPoints.length + ' ' + this.axis.z.key
+							playlist: 'Timeline: ' + subPoint.x.replace(/\|.*/,'') + ' - Top ' + currPoints.length + ' ' + this.axis.z.key.replace(/\|.*/,'')
 						}
 					]
 					: [])
@@ -144,7 +144,7 @@ function onLbtnUpSettings() {
 				bProportional: this.axis[axis].bProportional
 			};
 		} else {
-			const axisTF = Input.string('string', this.axis[axis].tf, 'Enter tag or TF expression:\n\n' + (axis === 'y' ? 'Expression should output a number per track (and TRUE). For example:\nListens: $max(%PLAY_COUNT%,%LASTFM_PLAY_COUNT%,0)\nRated 5 tracks: $ifequal(' + globTags.rating + ',5,1$not(0),0)' : 'For example:\n%GENRE%'), 'Axis ' + axis + ' TitleFormat', '%GENRE%');
+			const axisTF = Input.string('string', this.axis[axis].tf, 'Enter tag or TF expression:\n\n' + (axis === 'y' ? 'Expression should output a number per track (and TRUE value).\nFor example:\n\nListens: $max(%PLAY_COUNT%,%LASTFM_PLAY_COUNT%,0)\nRated 5 tracks: $ifequal(' + globTags.rating + ',5,1$not(0),0)' : 'For example:\n%GENRE%'), 'Axis ' + axis + ' TitleFormat', '%GENRE%');
 			if (axisTF === null) { return; }
 			const axisKey = Input.string('string', capitalizeAll(axisTF.replace(/%/g, '')), 'Enter axis name:', 'Axis ' + axis + ' name', 'Date') || Input.lastInput;
 			if (axisKey === null) { return; }
@@ -300,6 +300,16 @@ function onLbtnUpSettings() {
 			const idx = options.findIndex((opt) => opt.sourceType === dataSource.sourceType);
 			return (idx !== -1 ? idx : 0);
 		}, options);
+		menu.newSeparator(subMenu);
+		menu.newEntry({
+			menuName: subMenu, entryText: 'Remove duplicates', func: () => {
+				dataSource.bRemoveDuplicates = !dataSource.bRemoveDuplicates;
+				properties.dataSource[1] = JSON.stringify(dataSource);
+				overwriteProperties(properties);
+				this.setData({ ...dataSource });
+			}
+		});
+		menu.newCheckMenuLast(() => dataSource.bRemoveDuplicates);
 	}
 	{	// Data filtering
 		const subMenu = menu.newMenu('Data filtering');
@@ -424,7 +434,6 @@ function onLbtnUpSettings() {
 	{	// Other
 		menu.newSeparator();
 		const subMenu = menu.newMenu('Other settings');
-		menu.newSeparator(subMenu);
 		{
 			const subMenuTwo = menu.newMenu('Debug and testing', subMenu);
 			menu.newEntry({

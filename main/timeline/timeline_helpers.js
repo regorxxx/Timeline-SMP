@@ -1,9 +1,9 @@
 ﻿'use strict';
-//15/12/24
+//22/12/24
 
 /* exported getData, getDataAsync */
 
-/* global globQuery:readable, globTags:readable, */
+/* global globQuery:readable, globTags:readable, doOnce:readable */
 include('..\\..\\helpers\\helpers_xxx_prototypes.js');
 /* global _t:readable, _bt:readable */
 include('..\\..\\helpers\\helpers_xxx_tags.js');
@@ -86,7 +86,10 @@ function getData({
 	try { splitter = new RegExp('(?<!\\d), ?(?!\\d)'); }
 	catch (e) {
 		splitter = /, /;
-		console.log(window.Parent + ' '+  utils.Version + ': RegExp lookahead and lookbehind not supported');
+		doOnce(
+			'SMP RegExp Log',
+			() => console.log(window.Parent + ' '+  utils.Version + ': RegExp lookahead and lookbehind not supported')
+		);
 	}
 	if ((typeof z === 'undefined' || z === null || !z.length) && option === 'timeline') { option = 'tf'; }
 	let data;
@@ -437,7 +440,10 @@ async function getDataAsync({
 	try { splitter = new RegExp('(?<!\\d), ?(?!\\d)'); }
 	catch (e) {
 		splitter = /, /;
-		console.log(window.Parent + ' '+  utils.Version + ': RegExp lookahead and lookbehind not supported');
+		doOnce(
+			'SMP RegExp Log',
+			() => console.log(window.Parent + ' '+  utils.Version + ': RegExp lookahead and lookbehind not supported')
+		);
 	}
 	if ((typeof z === 'undefined' || z === null || !z.length) && option === 'timeline') { option = 'tf'; }
 	let data;

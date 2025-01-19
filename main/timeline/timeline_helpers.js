@@ -1,5 +1,5 @@
 ﻿'use strict';
-//22/12/24
+//09/01/25
 
 /* exported getData, getDataAsync */
 
@@ -11,7 +11,7 @@ include('..\\..\\helpers\\helpers_xxx_tags.js');
 include('..\\..\\helpers\\helpers_xxx_file.js');
 /* global _isFile:readable, folders:readable, _jsonParseFileCheck:readable, utf8:readable */
 include('..\\..\\helpers\\helpers_xxx_playlists.js');
-/* global getHandlesFromUIPlaylists:readable */
+/* global getSource:readable */
 include('..\\filter_and_query\\remove_duplicates.js');
 /* global removeDuplicates:readable */
 include('..\\search\\top_tracks_from_date.js');
@@ -749,17 +749,6 @@ async function getDataAsync({
 		}
 	}
 	return data;
-}
-
-function getSource(type, arg) {
-	switch (type) {
-		case 'playlist': return getHandlesFromUIPlaylists(arg, false); // [playlist names]
-		case 'playingPlaylist': return (plman.PlayingPlaylist !== -1 && fb.IsPlaying ? plman.GetPlaylistItems(plman.PlayingPlaylist) : getSource('activePlaylist'));
-		case 'activePlaylist': return (plman.ActivePlaylist !== -1 ? plman.GetPlaylistItems(plman.ActivePlaylist) : new FbMetadbHandleList());
-		case 'handleList': return arg;
-		case 'library':
-		default: return fb.GetLibraryItems();
-	}
 }
 
 function filterSource(query, source, handle = null) {

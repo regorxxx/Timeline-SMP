@@ -119,7 +119,7 @@ function _chart({
 		const pointType = (this.graph.point || 'circle').toLowerCase();
 		const selBar = this.graph.borderWidth * 2;
 		serie.forEach((value, j) => {
-			valH = value.y / maxY * (y - h);
+			valH = value.y / (maxY || 1) * (y - h);
 			const xPoint = x + xAxisValues.indexOf(value.x) * tickW;
 			const yPoint = y - valH;
 			const bFocused = this.currPoint[0] === i && this.currPoint[1] === j;
@@ -159,7 +159,7 @@ function _chart({
 				paintPoint(color);
 				if (bFocused) { paintPoint(borderColor); }
 			} else { // circle
-				this.dataCoords[i][j] = { x: xPoint - selBar / 4, y: yPoint - selBar / 4, w: selBar, h: valH + + selBar / 4 };
+				this.dataCoords[i][j] = { x: xPoint - selBar / 4, y: yPoint - selBar / 4, w: selBar, h: valH + selBar / 4 };
 				const paintPoint = (color) => {
 					gr.DrawEllipse(xPoint - selBar / 4, yPoint - selBar / 4, selBar / 2, selBar / 2, selBar / 2, color);
 				};
@@ -177,7 +177,7 @@ function _chart({
 		const borderColor = RGBA(...toRGB(invert(this.colors[i], true)), getBrightness(...toRGB(this.colors[i])) < 50 ? 300 : 25);
 		const color = RGBA(...toRGB(this.colors[i]), this.graph.pointAlpha);
 		serie.forEach((value, j) => {
-			valH = value.y / maxY * (y - h);
+			valH = value.y / (maxY || 1) * (y - h);
 			const idx = xAxisValues.indexOf(value.x);
 			const xPoint = x + idx * tickW;
 			const yPoint = y - valH;
@@ -208,7 +208,7 @@ function _chart({
 		const borderColor = RGBA(...toRGB(invert(this.colors[i], true)), getBrightness(...toRGB(this.colors[i])) < 50 ? 300 : 25);
 		const color = RGBA(...toRGB(this.colors[i]), this.graph.pointAlpha);
 		serie.forEach((value, j) => {
-			valH = value.y / maxY * (y - h);
+			valH = value.y / (maxY || 1) * (y - h);
 			const idx = xAxisValues.indexOf(value.x);
 			const xPoint = x + idx * tickW;
 			const yPoint = y - valH;
@@ -253,7 +253,7 @@ function _chart({
 		const borderColor = RGBA(...toRGB(invert(this.colors[i], true)), getBrightness(...toRGB(this.colors[i])) < 50 ? 300 : 25);
 		const color = RGBA(...toRGB(this.colors[i]), this.graph.pointAlpha);
 		serie.forEach((value, j) => {
-			valH = value.y / maxY * (y - h);
+			valH = value.y / (maxY || 1) * (y - h);
 			const idx = xAxisValues.indexOf(value.x);
 			const xPoint = x + idx * tickW;
 			const yPoint = y - valH;
@@ -288,7 +288,7 @@ function _chart({
 		const borderColor = RGBA(...toRGB(invert(this.colors[i], true)), getBrightness(...toRGB(this.colors[i])) < 50 ? 300 : 25);
 		const color = RGBA(...toRGB(this.colors[i]), this.graph.pointAlpha);
 		serie.forEach((value, j) => {
-			valH = value.y / maxY * (y - h);
+			valH = value.y / (maxY || 1) * (y - h);
 			const xPoint = xValues + xAxisValues.indexOf(value.x) * tickW;
 			const yPoint = y - valH;
 			const bFocused = this.currPoint[0] === i && this.currPoint[1] === j;
@@ -311,7 +311,7 @@ function _chart({
 		const borderColor = RGBA(...toRGB(invert(this.colors[i], true)), getBrightness(...toRGB(this.colors[i])) < 50 ? 300 : 25);
 		const color = RGBA(...toRGB(this.colors[i]), this.graph.pointAlpha);
 		serie.forEach((value, j) => {
-			valH = value.y / maxY / 2 * (y - h);
+			valH = value.y / (maxY || 1) / 2 * (y - h);
 			const xPoint = xValues + xAxisValues.indexOf(value.x) * tickW;
 			const yPoint = (y - h) / 2 - valH + this.margin.top;
 			const bFocused = this.currPoint[0] === i && this.currPoint[1] === j;
@@ -355,7 +355,9 @@ function _chart({
 			const bFocused = this.currPoint[0] === i && this.currPoint[1] === j;
 			circleArr = [...Object.values(c)];
 			const sumY = thisSerie.reduce((acc, val) => acc + val.y, 0);
-			const perc = value.y / sumY;
+			const perc = sumY !== 0
+				? value.y / sumY
+				: 1 / thisSerie.length;
 			const sliceTicks = perc * ticks;
 			const iAlpha = 2 * Math.PI * perc;
 			for (let h = 0; h < sliceTicks; h++) {
@@ -371,7 +373,7 @@ function _chart({
 					gr.DrawPolygon(borderColor, this.graph.borderWidth, circleArr);
 				}
 			}
-			circleArr.push(...Object.values(c));
+			circleArr = [...Object.values(c)];
 			alpha += iAlpha;
 			this.dataCoords[i][j] = { c: { ...c }, r1: 0, r2: r, alpha1: alpha - iAlpha, alpha2: alpha };
 			labelCoord.push({ from: { ...c }, to: { x: c.x + iX, y: c.y + iY }, val: perc * 100, alpha });
@@ -394,7 +396,9 @@ function _chart({
 			const bFocused = this.currPoint[0] === i && this.currPoint[1] === j;
 			circleArr = [];
 			const sumY = thisSerie.reduce((acc, val) => acc + val.y, 0);
-			const perc = value.y / sumY;
+			const perc = sumY !== 0
+				? value.y / sumY
+				: 1 / thisSerie.length;
 			const sliceTicks = perc * ticks;
 			const iAlpha = 2 * Math.PI * perc;
 			for (let h = 0; h < sliceTicks; h++) {

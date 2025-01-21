@@ -41,10 +41,13 @@
 - Data: source filters are now also applied to playlist creation when clicking on points.
 - Data: sorting routines have been changed and now multiple sorting is allowed (by every axis).
 - Data: added multi-value handling for ALBUM ARTIST tags on queries (for playlist creation and statistics).
+- UI: improved contrast between X-axis label backgrounds and text, using WCAG contrast ratio now. Previously it just inverted the label color to B&W.
+- UI: minor adjustments to X-axis title position.
+- UI: Y-axis title position will now be adjusted according to data labels position in pie and doughnut charts to avoid overlapping.
 - UI: point menu now allows to select any point along the same Y-Z plane while using lines, scatter or fill charts. Previously it only worked on the point from the first serie (and that's why the other chart types exist though, to properly display multi-dimensional charts).
 - UI: tooltip now shows all points along the same Y-Z plane while using lines, scatter or fill charts. See comment above.
 - UI: axis legend is now shown at tooltip and point statistics popup.
-- UI: X-axis keys are now shown even when not all keys can be displayed, omitting some of the values. This ensures that charts displaying numbers at the axis at least show the initial and some middle values. This applies for bars, lines, scatter, fill and timeline charts.
+- UI: X-axis labels are now shown even when not all labels can be displayed, omitting some of the values. This ensures that charts displaying numbers at the axis at least show the initial and some middle values. This applies for bars, lines, scatter, fill and timeline charts.
 - UI: minor adjustments to buttons tooltips.
 - UI: multiple menu entries at 'Display settings' have been renamed for clarity's sake.
 - UI: multiple menu entries at 'Main settings' have been renamed for clarity's sake.
@@ -73,8 +76,9 @@
 - UI: minor highlighting errors on 'lines' chart type.
 - UI: color palette 'colorblind safe' setting was not saved properly between sessions.
 - UI: '&' being displayed as '_' on tooltips.
-- UI: fixed last label background not being properly adjusted in some cases for bars, lines, fill and scatter charts.
 - UI: fixed minor UI background highlighting glitch when mouse was over a button but also over a point.
+- UI: fixed wrong highlighting for scatter charts. It was smaller by a few px in some cases on both axis.
+- UI: fixed X-axis first and last labels background not being properly adjusted in some cases for 'bars', 'lines' and 'scatter' charts.
 
 ## [1.5.0] - 2024-10-09
 ### Added

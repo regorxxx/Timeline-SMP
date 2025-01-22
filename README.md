@@ -4,7 +4,7 @@
 [![CodacyBadge][codacy_badge]](https://www.codacy.com/gh/regorxxx/Timeline-SMP/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=regorxxx/Timeline-SMP&amp;utm_campaign=Badge_Grade)
 ![GitHub](https://img.shields.io/github/license/regorxxx/Timeline-SMP)  
 A [foobar2000](https://www.foobar2000.org/) interactive Timeline 
-[Spider Monkey Panel](https://theqwertiest.github.io/foo_spider_monkey_panel/) of your library. 
+[Spider Monkey Panel](https://theqwertiest.github.io/foo_spider_monkey_panel/)/[JSplitter](https://foobar2000.ru/forum/viewtopic.php?t=6378) of your library. 
 Configurable by Title Format, lets you generate playlists based on selection. Based on [Statistics-Framework-SMP](https://regorxxx.github.io/foobar2000-Framework-SMP.github.io/scripts/statistics-framework-smp/)
 
 ![tl_ui](https://github.com/regorxxx/Timeline-SMP/assets/83307074/aad0ffe8-578d-4b97-8ef5-a393a5cb5057)
@@ -34,9 +34,19 @@ Configurable by Title Format, lets you generate playlists based on selection. Ba
 ## Also integrates
  1. [Statistics-Framework-SMP](https://github.com/regorxxx/Statistics-Framework-SMP): An open source framework to display charts on foobar2000.
 
+## Requirements
+ 1. [Spider Monkey Panel](https://theqwertiest.github.io/foo_spider_monkey_panel): Component required to install this javaScript addon. Only x32.
+ 2. [JSplitter](https://foobar2000.ru/forum/viewtopic.php?t=6378): Component required to install this javaScript addon. Both x32 and x64.
+ 3. FontAwesome: found at ’.\ resources\fontawesome-webfont.ttf’. See installation notes.
+
 ## Installation
-See [_TIPS and INSTALLATION (txt)](https://github.com/regorxxx/Timeline-SMP/blob/main/_TIPS%20and%20INSTALLATION.txt) and the [Wiki](https://github.com/regorxxx/Timeline-SMP/wiki/Installation).
+See [_INSTALLATION (txt)](https://github.com/regorxxx/Timeline-SMP/blob/main/_INSTALLATION.txt) and the [Wiki](https://github.com/regorxxx/Timeline-SMP/wiki/Installation).
 Not properly following the installation instructions will result in scripts not working as intended. Please don't report errors before checking this.
+
+## Support
+ 1. [Issues tracker](https://github.com/regorxxx/Timeline-SMP/issues).
+ 2. [Hydrogenaudio forum](https://hydrogenaud.io/index.php/topic,125040.0.html).
+ 3. [Wiki](https://github.com/regorxxx/Timeline-SMP/wiki).
 
 ## Nightly releases
 Automatic package [built from GitHub](https://nightly.link/regorxxx/Timeline-SMP/workflows/build/main/file.zip) (using the latest commit).

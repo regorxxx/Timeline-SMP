@@ -1,5 +1,5 @@
 'use strict';
-//24/01/25
+//27/01/25
 
 /* exported onLbtnUpPoint, onLbtnUpSettings*/
 
@@ -17,7 +17,6 @@ include('..\\..\\helpers\\menu_xxx_extras.js');
 include('..\\filter_and_query\\remove_duplicates.js');
 /* global removeDuplicates:readable */
 include('..\\window\\window_xxx_background_menu.js');
-include('..\\..\\helpers-external\\namethatcolor\\ntc.js'); // For createBackgroundMenu() on createStatisticsMenu() call
 
 function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-vars
 	// Constants
@@ -65,8 +64,8 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 							let handleList = fb.GetQueryItems(fb.GetLibraryItems(), query);
 							handleList = removeDuplicates({ handleList, sortOutput: '', checkKeys: globTags.remDupl, sortBias: globQuery.remDuplBias, bAdvTitle: true, bMultiple: true, bPreserveSort: false });
 							sendToPlaylist(handleList, entry.playlist);
-							console.log('Statistics: playlist created\n\t'+ query);
-						} else { console.log('Statistics: query error\n\t' + query); }
+							console.log('Statistics: playlist created\n\t '+ query);
+						} else { console.log('Statistics: query error\n\t ' + query); }
 					}
 				});
 				menu.newEntry({
@@ -80,7 +79,7 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 							if (utils.IsKeyPressed(VK_SHIFT)) {
 								plman.ShowAutoPlaylistUI(plman.ActivePlaylist);
 							}
-						} else { console.log('Statistics: query error\n\t', query); }
+						} else { console.log('Statistics: query error\n\t ', query); }
 					}
 				});
 			});
@@ -484,7 +483,7 @@ function onLbtnUpSettings() {
 				menuName: subMenu, entryText: o.name, func: () => {
 					const readme = _open(o.path, utf8);
 					if (readme.length) { fb.ShowPopupMessage(readme, o.name); }
-					else { console.log('Statistics: readme not found\n\t' + o.path); }
+					else { console.log('Statistics: readme not found\n\t ' + o.path); }
 				}
 			});
 		});

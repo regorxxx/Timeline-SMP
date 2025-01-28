@@ -36,7 +36,7 @@ function _chart({
 		zoom: {/* onLbtnUp, onRbtnUp, onDblLbtn, tooltip */ },
 		custom: {/* onLbtnUp, onRbtnUp, onDblLbtn, tooltip */ },
 		xScroll: {/* tooltip */ },
-		config: {/* change, backgroundColor */ }
+		config: {/* change, backgroundColor, artColors */ }
 	},
 	configuration = {/* bLoadAsyncData: true, bAltVerticalText: false, bPopupBackground: false, bDebug: false, bProfile: false, bSlicePerKey: true, bDynLabelColor: true, bDynLabelColorBW: true, bDynSerieColor: false, bDynBgColor: false, maxSliceOnDataChange: 100 */ },
 	x = 0,
@@ -84,7 +84,7 @@ function _chart({
 			},
 			custom: { onLbtnUp: null, onRbtnUp: null, onDblLbtn: null, tooltip: null },
 			xScroll: { tooltip: null },
-			config: { change: null, backgroundColor: null }
+			config: { change: null, backgroundColor: null, artColors: null }
 		};
 		this.configuration = {
 			bLoadAsyncData: true,

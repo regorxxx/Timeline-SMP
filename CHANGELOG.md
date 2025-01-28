@@ -24,6 +24,7 @@
 - Data: added setting to change how the Z-groups are sorted within the group (independently from the global data).
 - Data: added setting to filter Z-groups points to either show all or non-zero values (on Y axis).
 - Data: added setting to switch duplicates removal. In general it will be desirable to have it enabled, but in case the X-Axis is set to track Albums, it may remove tracks present in multiple albums distorting the statistics. In such cases it's recommendable to disable it.
+- UI: added dynamic colors support based on track's artwork. It follows the background cover mode settings and must be enabled on 'Color palette' submenu. Note the axis and labels follow a different setting in their own submenu (option added on previous versions).
 - UI: 'fill' chart type.
 - UI: settings button tooltip now shows 'Shift + Win + R. Click' shortcut to open SMP/JSpliter panel menu (which works globally on any script and panel, at any position).
 - UI: settings button tooltip now shows 'Double Click' shortcut to force data update (see above).

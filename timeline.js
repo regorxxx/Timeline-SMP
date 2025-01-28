@@ -1,5 +1,5 @@
 ﻿'use strict';
-//15/12/24
+//28/01/25
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '1.5.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
@@ -16,9 +16,11 @@ include('main\\statistics\\statistics_xxx_menu.js');
 include('main\\timeline\\timeline_helpers.js');
 /* global  _gdiFont:readable, MK_LBUTTON:readable, deepAssign:readable, RGB:readable, isJSON:readable, _scale:readable, isString:readable, isBoolean:readable, globSettings:readable, setProperties:readable, getPropertiesPairs:readable, checkUpdate:readable, overwriteProperties:readable, getDataAsync:readable, _qCond:readable, queryJoin:readable, getData:readable, getPlaylistIndexArray:readable, _t:readable, isArrayEqual:readable, queryReplaceWithCurrent:readable, toType:readable */
 include('main\\timeline\\timeline_menus.js');
-/* global onLbtnUpPoint:readable, onLbtnUpSettings:readable, createBackgroundMenu:readable */
+/* global onLbtnUpPoint:readable, onLbtnUpSettings:readable, createBackgroundMenu:readable, Chroma:readable */
 include('main\\window\\window_xxx_background.js');
 /* global _background:readable */
+include('main\\window\\window_xxx_dynamic_colors.js');
+/* global dynamicColors:readable */
 include('helpers\\helpers_xxx_properties.js');
 
 globProfiler.Print('helpers');
@@ -32,7 +34,7 @@ let properties = {
 		(new _chart).exportConfig(),
 		{
 			graph: { type: 'timeline', multi: true, borderWidth: _scale(1), pointAlpha: Math.round(60 * 255 / 100) },
-			dataManipulation: { sort: { x: 'natural', y: null, z: null, my: 'natural num', mz: null}, group: 3, filter: null, slice: [0, Infinity], distribution: null },
+			dataManipulation: { sort: { x: 'natural', y: null, z: null, my: 'natural num', mz: null }, group: 3, filter: null, slice: [0, Infinity], distribution: null },
 			background: { color: null },
 			chroma: { scheme: 'Set1' },
 			margin: { left: _scale(20), right: _scale(20), top: _scale(10), bottom: _scale(15) },
@@ -40,7 +42,7 @@ let properties = {
 				x: { show: true, color: RGB(50, 50, 50), width: _scale(2), ticks: 'auto', labels: true, bAltLabels: true },
 				y: { show: false, color: RGB(50, 50, 50), width: _scale(2), ticks: 5, labels: true }
 			},
-			configuration: { bDynColor: true, bDynColorBW: true, bLoadAsyncData: true },
+			configuration: { bDynLabelColor: true, bDynLabelColorBW: true, bDynSerieColor: false, bDynBgColor: false, bLoadAsyncData: true },
 			buttons: { alpha: 25, timer: 1500 },
 		}
 	)), { func: isJSON }],
@@ -154,6 +156,8 @@ let properties = {
 		preferPlayback: true,
 		multipleSelection: false
 	}), { func: isJSON }],
+	bDynamicColors: ['Adjust colors to artwork', true, { func: isBoolean }],
+	bDynamicColorsBg: ['Adjust colors to artwork (bg)', false, { func: isBoolean }]
 };
 Object.keys(properties).forEach(p => properties[p].push(properties[p][1]));
 setProperties(properties, '', 0);
@@ -215,13 +219,38 @@ const background = new _background({
 				overwriteProperties(properties);
 			}
 		},
-	},
+		artColors: (colArray) => {
+			if (!charts.some((chart) => chart.configuration.bDynSerieColor)) { return; }
+			if (colArray) {
+				const bChangeBg = charts.some((chart) => chart.configuration.bDynBgColor);
+				const { main, sec, note } = dynamicColors(
+					colArray,
+					bChangeBg ? RGB(122, 122, 122) : background.getColors()[0],
+					true
+				);
+				if (bChangeBg && background.colorMode !== 'none') {
+					const gradient = [Chroma(note).saturate(2).luminance(0.005).android(), note];
+					const bgColor = Chroma.scale(gradient).mode('lrgb')
+						.colors(background.colorModeOptions.color.length, 'android')
+						.reverse();
+					background.changeConfig({ config: { colorModeOptions: { color: bgColor } }, callbackArgs: { bSaveProperties: false } });
+				}
+				charts.forEach((chart) => chart.callbacks.config.artColors([main, sec]));
+			} else {
+				background.changeConfig({ config: { colorModeOptions: { color: JSON.parse(properties.background[1]).colorModeOptions.color } }, callbackArgs: { bSaveProperties: false } });
+				charts.forEach((chart) => chart.callbacks.config.artColors(JSON.parse(properties.chart[1]).chroma.scheme));
+			}
+		}
+	}
 });
 
 /*
 	Charts
 */
 const defaultConfig = deepAssign()(
+	JSON.parse(properties.chart[3], (key, value) => {
+		return (key === 'slice' && value ? value.map((v) => (v === null ? Infinity : v)) : value);
+	}),
 	JSON.parse(properties.chart[1], (key, value) => {
 		return (key === 'slice' && value ? value.map((v) => (v === null ? Infinity : v)) : value);
 	}),
@@ -254,9 +283,22 @@ const defaultConfig = deepAssign()(
 						properties.chart[1] = JSON.stringify(config);
 						properties.data[1] = JSON.stringify(this.exportDataLabels());
 						overwriteProperties(properties);
+						if (changeArgs.configuration && (Object.hasOwn(changeArgs.configuration, 'bDynSerieColor') || Object.hasOwn(changeArgs.configuration, 'bDynBgColor'))) {
+							background.updateImageBg(true);
+							if (!config.configuration.bDynSerieColor || !(changeArgs.configuration.bDynBgColor || config.configuration.bDynBgColor)) {
+								background.changeConfig({ config: { colorModeOptions: { color: JSON.parse(properties.background[1]).colorModeOptions.color } }, callbackArgs: { bSaveProperties: false } });
+							}
+						}
 					}
 				},
-				backgroundColor: background.getColors
+				backgroundColor: background.getColors,
+				artColors: function (scheme) {
+					if (scheme && this.configuration.bDynSerieColor) { // This flag has been added at script init
+						this.changeConfig({ colors: [], chroma: { scheme }, bPaint: true, callbackArgs: { bSaveProperties: false } });
+					} else {
+						this.changeConfig({ colors: [], chroma: { scheme: JSON.parse(properties.chart[1]).chroma.scheme }, bPaint: true, callbackArgs: { bSaveProperties: false } });
+					}
+				}
 			},
 		},
 		buttons: { xScroll: true, settings: true, display: true, zoom: true },

@@ -1,5 +1,5 @@
 ﻿'use strict';
-//28/11/24
+//28/01/25
 
 /* exported bindMenu */
 
@@ -407,13 +407,14 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 		{
 			const subMenuTwo = menu.newMenu('By scheme', subMenu);
 			let j = 0;
-			for (let key in (this.chroma.colorBlindSafe ? colorbrewer.colorBlind : colorbrewer)) {
+			for (let key in colorbrewer) {
 				if (key === 'colorBlind') { continue; }
 				colorbrewer[key].forEach((scheme, i) => {
 					if (i === 0) {
 						menu.newEntry({ menuName: subMenuTwo, entryText: key.charAt(0).toUpperCase() + key.slice(1), flags: (j === 0 ? MF_GRAYED : MF_GRAYED | MF_MENUBARBREAK) });
 						menu.newSeparator(subMenuTwo);
 					}
+					if (this.chroma.colorBlindSafe && !colorbrewer.colorBlind[key].includes(scheme)) { return; }
 					[
 						{ isEq: null, key: this.chroma.scheme, value: null, newValue: scheme, entryText: scheme },
 					].forEach(createMenuOption('chroma', 'scheme', subMenuTwo, true, () => { this.colors = []; })); // Remove colors to force new palette

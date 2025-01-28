@@ -75,6 +75,7 @@
 - UI: zoom button showing '-' instead of '+' if there was no data drawn.
 - UI: minor highlighting errors on 'lines' chart type.
 - UI: color palette 'colorblind safe' setting was not saved properly between sessions.
+- UI: color palette 'colorblind safe' setting was not applied properly to filter the available schemes on the menu.
 - UI: '&' being displayed as '_' on tooltips.
 - UI: fixed minor UI background highlighting glitch when mouse was over a button but also over a point.
 - UI: fixed wrong highlighting for scatter charts. It was smaller by a few px in some cases on both axis.

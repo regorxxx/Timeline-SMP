@@ -2144,7 +2144,7 @@ function _chart({
 		].filter(Boolean);
 	};
 
-	this.changeConfig = ({ data, dataAsync = null, colors, chroma, graph, dataManipulation, background, grid, axis, graphSpecs, margin, x, y, w, h, title, configuration, gFont, bPaint = true, bForceLoadData = false, callback = this.callbacks.config.change /* (config, arguments, callbackArgs) => void(0) */, callbackArgs = null }) => {
+	this.changeConfig = function ({ data, dataAsync = null, colors, chroma, graph, dataManipulation, background, grid, axis, graphSpecs, margin, x, y, w, h, title, configuration, gFont, bPaint = true, bForceLoadData = false, callback = this.callbacks.config.change /* (config, arguments, callbackArgs) => void(0) */, callbackArgs = null }) {
 		let bCheckColors = false;
 		if (gFont) { this.gFont = gFont; }
 		if (this.data && this.data.length) {
@@ -2580,7 +2580,12 @@ function _chart({
 		if (callbacks.display) { this.callbacks.display = { ...this.callbacks.display, ...callbacks.display }; }
 		if (callbacks.zoom) { this.callbacks.zoom = { ...this.callbacks.zoom, ...callbacks.zoom }; }
 		if (callbacks.custom) { this.callbacks.custom = { ...this.callbacks.custom, ...callbacks.custom }; }
-		if (callbacks.config) { this.callbacks.config = { ...this.callbacks.config, ...callbacks.config }; }
+		if (callbacks.config) {
+			this.callbacks.config = { ...this.callbacks.config, ...callbacks.config };
+			for (const key in this.callbacks.config) {
+				if (this.callbacks.config[key]) { this.callbacks.config[key] = this.callbacks.config[key].bind(this); }
+			}
+		}
 	}
 	this.currPoint = [-1, -1];
 	/** @type {[number, number]} */

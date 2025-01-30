@@ -1,5 +1,5 @@
 ﻿'use strict';
-//28/01/25
+//30/01/25
 
 /* exported bindMenu */
 
@@ -16,6 +16,7 @@ function bindMenu(parent) {
 }
 
 // Generic statistics menu which should work on almost any chart
+/** @this _chart */
 function createStatisticsMenu(bClear = true) { // Must be bound to _chart() instance
 	// Constants
 	this.tooltip.SetValue(null);
@@ -81,7 +82,8 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 	const filtGreat = (num) => ((a) => a.y > num);
 	const filtLow = (num) => ((a) => a.y < num);
 	const filtBetween = (lim) => ((a) => a.y > lim[0] && a.y < lim[1]);
-	const fineGraphs = new Set(['bars', 'doughnut', 'pie', 'timeline']);
+	const fineGraphs = new Set(['bars', 'fill', 'doughnut', 'pie', 'timeline']);
+	const sizeGraphs = new Set(['scatter', 'lines']);
 	// Header
 	menu.newEntry({ entryText: this.title, flags: MF_GRAYED });
 	menu.newSeparator();
@@ -349,6 +351,15 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 	{
 		const subMenu = menu.newMenu('Axis & labels');
 		{
+			const subMenuTwo = menu.newMenu('Grid', subMenu);
+			[
+				{ isEq: null, key: this.grid.x.show, value: null, newValue: { show: !this.grid.x.show }, entryText: (this.grid.x.show ? 'Hide' : 'Show') + ' X grid' }
+			].forEach(createMenuOption('grid', 'x', subMenuTwo, false));
+			[
+				{ isEq: null, key: this.grid.y.show, value: null, newValue: { show: !this.grid.y.show }, entryText: (this.grid.y.show ? 'Hide' : 'Show') + ' Y grid' }
+			].forEach(createMenuOption('grid', 'y', subMenuTwo, false));
+		}
+		{
 			const subMenuTwo = menu.newMenu('Axis', subMenu);
 			[
 				{ isEq: null, key: this.axis.x.show, value: null, newValue: { show: !this.axis.x.show }, entryText: (this.axis.x.show ? 'Hide' : 'Show') + ' X axis' }
@@ -445,17 +456,19 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 	{
 		const type = this.graph.type.toLowerCase();
 		const subMenu = menu.newMenu('Other settings');
-		{
-			const configSubMenu = menu.newMenu((type === 'lines' ? 'Line' : 'Point') + ' size', subMenu);
-			[1, 2, 3, 4].map((val) => {
-				return { isEq: null, key: this.graph.borderWidth, value: null, newValue: _scale(val), entryText: val.toString() };
-			}).forEach(createMenuOption('graph', 'borderWidth', configSubMenu));
-		}
-		if (type === 'scatter' || type === 'p-p plot') {
-			const configSubMenu = menu.newMenu('Point type', subMenu);
-			['circle', 'circumference', 'cross', 'triangle', 'plus'].map((val) => {
-				return { isEq: null, key: this.graph.point, value: null, newValue: val, entryText: val };
-			}).forEach(createMenuOption('graph', 'point', configSubMenu));
+		if (sizeGraphs.has(type)) {
+			{
+				const configSubMenu = menu.newMenu((type === 'lines' ? 'Line' : 'Point') + ' size', subMenu);
+				[1, 2, 3, 4].map((val) => {
+					return { isEq: null, key: this.graph.borderWidth, value: null, newValue: _scale(val), entryText: val.toString() };
+				}).forEach(createMenuOption('graph', 'borderWidth', configSubMenu));
+			}
+			if (type === 'scatter' || type === 'p-p plot') {
+				const configSubMenu = menu.newMenu('Point type', subMenu);
+				['circle', 'circumference', 'cross', 'triangle', 'plus'].map((val) => {
+					return { isEq: null, key: this.graph.point, value: null, newValue: val, entryText: val };
+				}).forEach(createMenuOption('graph', 'point', configSubMenu));
+			}
 		}
 		{
 			const configSubMenu = menu.newMenu('Point transparency', subMenu);

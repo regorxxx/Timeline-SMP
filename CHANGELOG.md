@@ -34,6 +34,7 @@
 - UI: Y-Axis filter at display menu now allows any custom value for 'greater than'/'lower than' filters.
 - UI: option to filter data between 2 custom values on Y-Axis at display menu.
 - UI: custom option for Z-Axis groups setting at display menu.
+- UI: exposed grid settings.
 - Debug: added multiple debug logging settings to 'Other settings' menu.
 - Readme: readme is shown as popup on first installation and available at the settings menu.
 ### Changed
@@ -81,6 +82,7 @@
 - UI: fixed minor UI background highlighting glitch when mouse was over a button but also over a point.
 - UI: fixed wrong highlighting for scatter charts. It was smaller by a few px in some cases on both axis.
 - UI: fixed X-axis first and last labels background not being properly adjusted in some cases for 'bars', 'lines' and 'scatter' charts.
+- UI: minor x-position fix on timeline and bars charts.
 
 ## [1.5.0] - 2024-10-09
 ### Added

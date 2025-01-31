@@ -1,27 +1,38 @@
 ﻿'use strict';
-//30/01/25
+//31/01/25
 
-/* exported bindMenu */
+/* exported createStatisticsMenu */
 
 // Don't load this helper unless menu framework is also present
 // https://github.com/regorxxx/Menu-Framework-SMP
 try { include('..\\..\\helpers\\menu_xxx.js'); } catch (e) {
 	try { include('..\\..\\examples\\_statistics\\menu_xxx.js'); } catch (e) { fb.ShowPopupMessage('Missing menu framework file', window.Name); }
 }
-/* global _attachedMenu:readable, _menu:readable */
+
+/* global _menu:readable */
 /* global MF_GRAYED:readable, MF_CHECKED:readable, _scale:readable, MF_STRING:readable, colorbrewer:readable, MF_MENUBARBREAK:readable, Input:readable, isArrayEqual:readable */
 
-function bindMenu(parent) {
-	return _attachedMenu.call(parent, { rMenu: createStatisticsMenu.bind(parent), popup: parent.pop });
-}
-
-// Generic statistics menu which should work on almost any chart
-/** @this _chart */
-function createStatisticsMenu(bClear = true) { // Must be bound to _chart() instance
+/**
+ * Generic statistics menu which should work on almost any chart. Must be bound to a _chart() instance.
+ * Usage: createStatisticsMenu.call(this, args).btn_up(...)
+ *
+ * @function
+ * @name createStatisticsMenu
+ * @this _chart
+ * @param {object} [o] - Arguments
+ * @param {_menu} [o.bClear] - [=true] Flag to reset menu on every call
+ * @param {_menu} [o.menuKey] - [='menu'] Key where the menu object will be stored within this context
+ * @param {function} [o.onBtnUp] - [=null] Callback called after menu is closed
+ * @param {boolean} [o.bShowMulti] - [=true] Flag to show/hide 3D-related (Z-axis) settings
+ * @param {set<string>} [o.hideCharts] - Set of chart types which should be hidden
+ * @returns {_menu}
+ */
+function createStatisticsMenu({ bClear = true, menuKey = 'menu', onBtnUp = null, bShowMulti = true, hideCharts = new Set('lines-hq') } = {}) {
 	// Constants
 	this.tooltip.SetValue(null);
-	if (!this.menu) { this.menu = new _menu(); }
-	const menu = this.menu;
+	if (!this[menuKey]) { this[menuKey] = new _menu({ onBtnUp }); }
+	/** @type {_menu} */
+	const menu = this[menuKey];
 	if (bClear) { menu.clear(true); } // Reset on every call
 	// helper
 	const createMenuOption = (key, subKey, menuName = menu.getMainMenuName(), bCheck = true, addFunc = null) => {
@@ -46,7 +57,7 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 							}
 						}
 						else { this.changeConfig({ [key]: option.newValue, callbackArgs: { bSaveProperties: true } }); }
-					}, flags: Object.hasOwn(option, 'flags') ? option.flags: MF_STRING
+					}, flags: Object.hasOwn(option, 'flags') ? option.flags : MF_STRING
 				});
 				if (bCheck) {
 					menu.newCheckMenu(menuName, option.entryText, void (0), () => {
@@ -82,8 +93,8 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 	const filtGreat = (num) => ((a) => a.y > num);
 	const filtLow = (num) => ((a) => a.y < num);
 	const filtBetween = (lim) => ((a) => a.y > lim[0] && a.y < lim[1]);
-	const fineGraphs = new Set(['bars', 'fill', 'doughnut', 'pie', 'timeline']);
-	const sizeGraphs = new Set(['scatter', 'lines']);
+	const fineGraphs = new Set(['bars', 'fill', 'doughnut', 'pie', 'timeline']).difference(hideCharts || new Set());
+	const sizeGraphs = new Set(['scatter', 'lines']).difference(hideCharts || new Set());
 	// Header
 	menu.newEntry({ entryText: this.title, flags: MF_GRAYED });
 	menu.newSeparator();
@@ -99,7 +110,7 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 			{ isEq: null, key: this.graph.type, value: null, newValue: 'fill', entryText: 'Fill' },
 			{ isEq: null, key: this.graph.type, value: null, newValue: 'doughnut', entryText: 'Doughnut' },
 			{ isEq: null, key: this.graph.type, value: null, newValue: 'pie', entryText: 'Pie' },
-		].forEach(createMenuOption('graph', 'type', subMenu, void (0), (option) => {
+		].filter((opt) => !hideCharts.has(opt.newValue)).forEach(createMenuOption('graph', 'type', subMenu, void (0), (option) => {
 			this.graph.borderWidth = fineGraphs.has(option.newValue) ? _scale(1) : _scale(4);
 		}));
 	}
@@ -305,7 +316,7 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 				{ isEq: null, key: this.dataManipulation.filter, value: null, newValue: null, entryText: 'No filter' },
 			].forEach(createMenuOption('dataManipulation', 'filter', subMenu));
 		}
-		{
+		if (bShowMulti) {
 			menu.newSeparator();
 			{	// Z-Axis groups
 				const subMenuGroup = menu.newMenu('Filter (Z-Axis)' + (!this.graph.multi ? '\t[3D-Graphs]' : ''), void (0), this.graph.multi ? MF_STRING : MF_GRAYED);
@@ -401,7 +412,7 @@ function createStatisticsMenu(bClear = true) { // Must be bound to _chart() inst
 				{ isEq: null, key: this.configuration.bDynLabelColor, value: null, newValue: !this.configuration.bDynLabelColor, entryText: 'Invert background color' },
 			].forEach(createMenuOption('configuration', 'bDynLabelColor', subMenuTwo, true));
 			[
-				{ isEq: null, key: this.configuration.bDynLabelColorBW, value: null, newValue: !this.configuration.bDynLabelColorBW, entryText: 'Only in B&W' },
+				{ isEq: null, key: this.configuration.bDynLabelColorBW, value: null, newValue: !this.configuration.bDynLabelColorBW, entryText: 'Only in B&W', flags: this.configuration.bDynLabelColor ? MF_STRING : MF_GRAYED },
 			].forEach(createMenuOption('configuration', 'bDynLabelColorBW', subMenuTwo, true));
 		}
 	}

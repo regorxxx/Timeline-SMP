@@ -1,9 +1,9 @@
 ﻿'use strict';
-//09/08/24
+//31/01/25
 
 /* exported getDataAsync, getData */
 
-/* global _isFile:readable, _jsonParseFileCheck:readable, folders:readable, utf8:readable, topTracksFromDate:readable, _bt:readable, _scale:readable, Chroma:readable, RGB:readable, grid:readable, _attachedMenu:readable, _chart:readable, createStatisticsMenuV2:readable, defaultConfig:readable */
+/* global _isFile:readable, _jsonParseFileCheck:readable, folders:readable, utf8:readable, topTracksFromDate:readable, _bt:readable, _scale:readable, Chroma:readable, RGB:readable, grid:readable, _menu:readable, _chart:readable, createStatisticsMenuV2:readable, defaultConfig:readable */
 
 async function getDataAsync(option = 'TF', tf = 'GENRE') {
 	let data;
@@ -202,4 +202,4 @@ grid.cells = Array.from({length: grid.rows}, (row, i) => {
 		return { column: j, row: i, val: new _chart({ ...defaultConfig, x, y, w, h }).changeConfig({ ...newConfig[i][j], bPaint: false, title }) };
 	});
 }).flat(Infinity);
-grid.forEach((chart) => { _attachedMenu.call(chart, { rMenu: createStatisticsMenuV2.bind(chart), popup: chart.pop }); }); // Binds the generic right click menu to every chart
+grid.forEach((chart) => { _menu.attachInstance({ parent: chart, rMenu: createStatisticsMenuV2.bind(chart), popup: chart.pop }); }); // Binds the generic right click menu to every chart

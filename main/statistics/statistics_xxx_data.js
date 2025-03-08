@@ -1,5 +1,5 @@
 ﻿'use strict';
-//31/01/25
+//07/03/25
 
 /* exported getDataAsync, getData */
 
@@ -9,7 +9,7 @@ async function getDataAsync(option = 'TF', tf = 'GENRE') {
 	let data;
 	switch (option.toLowerCase()) {
 		case 'world map': {
-			const file = (_isFile(fb.FoobarPath + 'portable_mode_enabled') ? '.\\profile\\' + folders.dataName : folders.data) + 'worldMap_library.json';
+			const file = '.\\profile\\' + folders.dataName + 'worldMap_library.json'; // TODO Expose paths at properties
 			const libraryPoints = _jsonParseFileCheck(file, 'Library json', window.Name, utf8).map((point) => { return { x: point.id, y: point.val }; });
 			data = [libraryPoints];
 			break;
@@ -77,7 +77,7 @@ function getData(option = 'TF', tf = 'GENRE') {
 	let data;
 	switch (option.toLowerCase()) {
 		case 'world map': {
-			const file = (_isFile(fb.FoobarPath + 'portable_mode_enabled') ? '.\\profile\\' + folders.dataName : folders.data) + 'worldMap_library.json';
+			const file = '.\\profile\\' + folders.dataName + 'worldMap_library.json'; // TODO Expose paths at properties
 			const libraryPoints = _jsonParseFileCheck(file, 'Library json', window.Name, utf8).map((point) => { return { x: point.id, y: point.val }; });
 			data = [libraryPoints];
 			break;

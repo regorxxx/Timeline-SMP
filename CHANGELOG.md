@@ -35,6 +35,7 @@
 - UI: option to filter data between 2 custom values on Y-Axis at display menu.
 - UI: custom option for Z-Axis groups setting at display menu.
 - UI: exposed grid settings.
+- UI: exposed background gradient focus setting, i.e. where the center color will be at its highest intensity.
 - Debug: added multiple debug logging settings to 'Other settings' menu.
 - Readme: readme is shown as popup on first installation and available at the settings menu.
 ### Changed

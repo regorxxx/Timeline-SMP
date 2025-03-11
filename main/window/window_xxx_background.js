@@ -183,7 +183,7 @@ function _background({
 				gr.DrawEllipse(j - rand, i - rand, 1, 1, scale, color2);
 			}
 		}
-		img.StackBlur(6);
+		img.StackBlur(scale * 2);
 		return img;
 	};
 	const debounced = {

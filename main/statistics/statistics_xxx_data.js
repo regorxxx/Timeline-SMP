@@ -1,9 +1,9 @@
 ﻿'use strict';
-//07/03/25
+//11/03/25
 
 /* exported getDataAsync, getData */
 
-/* global _isFile:readable, _jsonParseFileCheck:readable, folders:readable, utf8:readable, topTracksFromDate:readable, _bt:readable, _scale:readable, Chroma:readable, RGB:readable, grid:readable, _menu:readable, _chart:readable, createStatisticsMenuV2:readable, defaultConfig:readable */
+/* global _jsonParseFileCheck:readable, folders:readable, utf8:readable, topTracksFromDate:readable, _bt:readable, _scale:readable, Chroma:readable, RGB:readable, grid:readable, _menu:readable, _chart:readable, createStatisticsMenuV2:readable, defaultConfig:readable */
 
 async function getDataAsync(option = 'TF', tf = 'GENRE') {
 	let data;

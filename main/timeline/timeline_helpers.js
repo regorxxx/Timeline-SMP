@@ -9,7 +9,7 @@ include('..\\..\\helpers\\helpers_xxx_prototypes.js');
 include('..\\..\\helpers\\helpers_xxx_tags.js');
 /* global queryReplaceWithCurrent:readable, checkQuery:readable */
 include('..\\..\\helpers\\helpers_xxx_file.js');
-/* global _isFile:readable, folders:readable, _jsonParseFileCheck:readable, utf8:readable */
+/* global folders:readable, _jsonParseFileCheck:readable, utf8:readable */
 include('..\\..\\helpers\\helpers_xxx_playlists.js');
 /* global getSource:readable */
 include('..\\filter_and_query\\remove_duplicates.js');
@@ -84,7 +84,7 @@ function getData({
 	const handleList = bRemoveDuplicates ? deduplicateSource(source) : source;
 	let splitter;
 	try { splitter = new RegExp('(?<!\\d), ?(?!\\d)'); }
-	catch (e) {
+	catch (e) { // eslint-disable-line no-unused-vars
 		splitter = /, /;
 		doOnce(
 			'SMP RegExp Log',
@@ -298,7 +298,7 @@ function getData({
 		}
 		case 'playcount worldmap':
 		case 'playcount worldmap region': {
-			const file = (_isFile(fb.FoobarPath + 'portable_mode_enabled') ? '.\\profile\\' + folders.dataName : folders.data) + 'worldMap.json';
+			const file = '.\\profile\\' + folders.dataName + 'worldMap.json';
 			const worldMapData = _jsonParseFileCheck(file, 'Library json', window.Name, utf8).map((point) => { return { id: point.artist, country: (point.val.slice(-1) || [''])[0] }; });
 			const xTags = noSplitTags.has(x.toUpperCase().replace(/\|.*/, ''))
 				? fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => [val])
@@ -341,7 +341,7 @@ function getData({
 			break;
 		}
 		case 'playcount worldmap city': {
-			const file = (_isFile(fb.FoobarPath + 'portable_mode_enabled') ? '.\\profile\\' + folders.dataName : folders.data) + 'worldMap.json';
+			const file = '.\\profile\\' + folders.dataName + 'worldMap.json';
 			const worldMapData = _jsonParseFileCheck(file, 'Library json', window.Name, utf8).map((point) => { return { id: point.artist, city: point.val[0] || '', country: (point.val.slice(-1) || [''])[0] }; });
 			const xTags = noSplitTags.has(x.toUpperCase().replace(/\|.*/, ''))
 				? fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => [val])
@@ -438,7 +438,7 @@ async function getDataAsync({
 	const handleList = bRemoveDuplicates ? deduplicateSource(source) : source;
 	let splitter;
 	try { splitter = new RegExp('(?<!\\d), ?(?!\\d)'); }
-	catch (e) {
+	catch (e) { // eslint-disable-line no-unused-vars
 		splitter = /, /;
 		doOnce(
 			'SMP RegExp Log',
@@ -652,7 +652,7 @@ async function getDataAsync({
 		}
 		case 'playcount worldmap':
 		case 'playcount worldmap region': {
-			const file = (_isFile(fb.FoobarPath + 'portable_mode_enabled') ? '.\\profile\\' + folders.dataName : folders.data) + 'worldMap.json';
+			const file = '.\\profile\\' + folders.dataName + 'worldMap.json';
 			const worldMapData = _jsonParseFileCheck(file, 'Library json', window.Name, utf8).map((point) => { return { id: point.artist, country: (point.val.slice(-1) || [''])[0] }; });
 			const xTags = noSplitTags.has(x.toUpperCase().replace(/\|.*/, ''))
 				? (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => [val])
@@ -695,7 +695,7 @@ async function getDataAsync({
 			break;
 		}
 		case 'playcount worldmap city': {
-			const file = (_isFile(fb.FoobarPath + 'portable_mode_enabled') ? '.\\profile\\' + folders.dataName : folders.data) + 'worldMap.json';
+			const file = '.\\profile\\' + folders.dataName + 'worldMap.json';
 			const worldMapData = _jsonParseFileCheck(file, 'Library json', window.Name, utf8).map((point) => { return { id: point.artist, city: point.val[0] || '', country: (point.val.slice(-1) || [''])[0] }; });
 			const xTags = noSplitTags.has(x.toUpperCase().replace(/\|.*/, ''))
 				? (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => [val])

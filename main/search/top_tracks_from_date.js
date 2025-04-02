@@ -1,5 +1,5 @@
 ﻿'use strict';
-//10/12/24
+//02/04/25
 
 /*
 	Top X Tracks From Date
@@ -371,10 +371,10 @@ function getPlayCount(handleList, timePeriod, timeKey = null, fromDate = new Dat
 					});
 				}
 			} else { // For tracks without advanced statistics
-				if (!dateFirst) { continue; }
+				if (!dateFirst) { dataPool.push({ idx: i, playCount: count, listens }); continue; }
 				const firstListen = new Date(dateFirst);
 				const diffFirst = timeKeys[timeKey](firstListen, fromDate);
-				if (!dateLast) { continue; }
+				if (!dateLast) { dataPool.push({ idx: i, playCount: count, listens }); continue; }
 				const lastListen = new Date(dateLast);
 				const diffLast = timeKeys[timeKey](lastListen, fromDate);
 				// If first and last plays were from selected period, then all play counts too
@@ -511,12 +511,12 @@ async function getPlayCountV2(handleList, timePeriod, timeKey = null, fromDate =
 		const max_ts = Math.round(
 			timePeriod && timeKey
 				? fromDate.getTime() / 1000
-				: new Date(String(timePeriod + 1)).getTime() / 1000
+				: Date.UTC(timePeriod + 1) / 1000
 		);
 		const min_ts = Math.round(
 			timePeriod && timeKey
 				? Math.max(max_ts - timeOnPeriod(timePeriod, timeKey).seconds, 0)
-				: new Date(String(timePeriod)).getTime() / 1000
+				: Date.UTC(timePeriod) / 1000
 		);
 		lbData = (await ListenBrainz.retrieveListensForHandleList(handleList, listenBrainz.user, { max_ts, min_ts }, listenBrainz.token, true, listenBrainz.bOffline));
 	}
@@ -600,10 +600,10 @@ async function getPlayCountV2(handleList, timePeriod, timeKey = null, fromDate =
 					});
 				}
 			} else { // For tracks without advanced statistics
-				if (!dateFirst) { continue; }
+				if (!dateFirst) { dataPool.push({ idx: i, playCount: count, listens }); continue; }
 				const firstListen = new Date(dateFirst);
 				const diffFirst = timeKeys[timeKey](firstListen, fromDate);
-				if (!dateLast) { continue; }
+				if (!dateLast) { dataPool.push({ idx: i, playCount: count, listens }); continue; }
 				const lastListen = new Date(dateLast);
 				const diffLast = timeKeys[timeKey](lastListen, fromDate);
 				// If first and last plays were from selected period, then all play counts too

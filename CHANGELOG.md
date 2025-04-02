@@ -17,7 +17,7 @@
 
 ## [Unreleased][]
 ### Added
-- Presets: added new presets for Axis TF and data filtering. Restore defaults to see them.
+- Presets: added new presets for Axis TF and data filtering. In particular some related to displaying listens by specific time ranges and to show histograms by day, month, etc. Restore defaults to see them.
 - Data: added support for [foo_playcount_2003](https://marc2k3.github.io/component/playcount-2003/) tags to check if a source needs to be auto-updated. i.e. '%2003_LAST_PLAYED%', '%2003_PLAYCOUNT%','%2003_LAST_PLAYED_AGO%' and '%2003_LAST_PLAYED_AGO2%'.
 - Data: added support for [Dynamic Queries](https://github.com/regorxxx/Playlist-Tools-SMP) at data filtering. Charts can now be created dynamically according to the current selection/now playing item, for ex. to show distribution of rating for selected artist only, etc. New settings have been added to 'Auto-update dynamic queries' submenu to tweak the behavior. Data updating follows a algorithm to avoid unnecessary re-calculations, i.e. if the new track is the same than the previous one or it would produce the same query, data is not refreshed; thus charts using dynamic queries and displaying data which also changes on playback will not be immediately refreshed (for performance reasons). There is also an additional setting to evaluate the query on multiple selection.
 - Data: new setting to avoid data loading on startup. This may be used to calculate data and display the chart only on demand. Previously there was an option to force a data update, but it was available only after loading it at least once. Thus charts associated to the entire library were always calculated at least once at startup, which may had been undesirable.

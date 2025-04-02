@@ -1,11 +1,11 @@
 ﻿'use strict';
-//09/01/25
+//30/03/25
 
 /* exported getData, getDataAsync */
 
 /* global globQuery:readable, globTags:readable, doOnce:readable */
 include('..\\..\\helpers\\helpers_xxx_prototypes.js');
-/* global _t:readable, _bt:readable */
+/* global _t:readable, _bt:readable, range:readable */
 include('..\\..\\helpers\\helpers_xxx_tags.js');
 /* global queryReplaceWithCurrent:readable, checkQuery:readable */
 include('..\\..\\helpers\\helpers_xxx_file.js');
@@ -88,7 +88,7 @@ function getData({
 		splitter = /, /;
 		doOnce(
 			'SMP RegExp Log',
-			() => console.log(window.Parent + ' '+  utils.Version + ': RegExp lookahead and lookbehind not supported')
+			() => console.log(window.Parent + ' ' + utils.Version + ': RegExp lookahead and lookbehind not supported')
 		);
 	}
 	if ((typeof z === 'undefined' || z === null || !z.length) && option === 'timeline') { option = 'tf'; }
@@ -442,7 +442,7 @@ async function getDataAsync({
 		splitter = /, /;
 		doOnce(
 			'SMP RegExp Log',
-			() => console.log(window.Parent + ' '+  utils.Version + ': RegExp lookahead and lookbehind not supported')
+			() => console.log(window.Parent + ' ' + utils.Version + ': RegExp lookahead and lookbehind not supported')
 		);
 	}
 	if ((typeof z === 'undefined' || z === null || !z.length) && option === 'timeline') { option = 'tf'; }
@@ -744,6 +744,64 @@ async function getDataAsync({
 			})];
 			break;
 		}
+		case 'playcount period': {
+			const bIncludeSkip = optionArg && optionArg.bSkipCount;
+			const listens = (optionArg && optionArg.timePeriod
+				? await getPlayCountV2(handleList, optionArg.timePeriod, optionArg.timeKey, optionArg.fromDate, true, listenBrainz)
+				: await getPlayCountV2(handleList, Infinity, 'Weeks', void (0), true, listenBrainz)
+			).map((v) => v.listens);
+			const skipCount = bIncludeSkip
+				? (optionArg.timePeriod
+					? getSkipCount(handleList, optionArg.timePeriod, optionArg.timeKey, optionArg.fromDate)
+					: getSkipCount(handleList, Infinity, 'Weeks', void (0))
+				).map((v) => v.skips)
+				: null;
+			const tagCount = new Map();
+			timeRange(x, optionArg.fromDate, optionArg.toDate).forEach((key) => tagCount.set(key.toString(), {
+				playCount: 0,
+				handles: bIncludeHandles ? [] : null,
+				skipCount: bIncludeSkip ? 0 : null,
+				time: 0
+			}));
+			const minDate = optionArg && optionArg.toDate
+				? optionArg.toDate.getTime()
+				: null;
+			listens.forEach((listenArr, i) => {
+				listenArr.forEach((listen) => {
+					let date;
+					switch (x.toUpperCase()) {
+						case '#DAY#': date = listen.getUTCDate().toString().padStart(2, '0'); break;
+						case '#WEEK#': date = ['1st', '2nd', '3rd', '4th', '5th'][Math.floor(listen.getUTCDate() / 7)]; break;
+						// case '#WEEK#': date = 1 + Math.floor(listen.getUTCDate() / 7); break;
+						case '#MONTH#': date = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'][listen.getUTCMonth()]; break;
+						// case '#MONTH#': date = (listen.getUTCMonth() + 1); break;
+						case '#YEAR#': date = listen.getUTCFullYear(); break;
+					}
+					if (minDate && listen.getTime() < minDate) { return; }
+					const old = tagCount.get(date.toString()) || {
+						playCount: 0,
+						handles: bIncludeHandles ? [] : null,
+						skipCount: bIncludeSkip ? 0 : null,
+						time: 0
+					};
+					old.playCount += 1;
+					if (bIncludeHandles) { old.handles.push(handleList[i]); }
+					if (bIncludeSkip) { old.skipCount += Number(skipCount[i]); }
+					old.time += handleList[i].Length;
+					tagCount.set(date.toString(), old);
+				});
+			});
+			data = [Array.from(tagCount, (point) => {
+				return {
+					x: point[0].replace(idCharsRegExp, ''),
+					y: point[1].playCount,
+					...(bIncludeHandles ? { handle: point[1].handles } : {}),
+					...(bIncludeSkip ? { skipCount: point[1].skipCount } : {}),
+					time: point[1].time
+				};
+			})];
+			break;
+		}
 		default: {
 			throw new Error('Non recognized option:' + option);
 		}
@@ -759,4 +817,26 @@ function filterSource(query, source, handle = null) {
 
 function deduplicateSource(source) {
 	return removeDuplicates({ handleList: source, checkKeys: globTags.remDupl, sortBias: globQuery.remDuplBias, bPreserveSort: true, bAdvTitle: true });
+}
+
+function timeRange(tag, fromDate, toDate) {
+	switch (tag.toUpperCase()) {
+		case '#DAY#':
+			return range(
+				1,
+				new Date(
+					fromDate.getUTCFullYear(),
+					fromDate.getUTCMonth() + 1,
+					0
+				).getDate()
+			).map((v) => v.toString().padStart(2, '0'));
+		case '#WEEK#':
+			return ['1st', '2nd', '3rd', '4th', '5th'];
+			// return range(1, 5);
+		case '#MONTH#':
+			return ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+			// return range(1, 12);
+		case '#YEAR#':
+			return range(toDate.getUTCFullYear(), fromDate.getUTCFullYear());
+	}
 }

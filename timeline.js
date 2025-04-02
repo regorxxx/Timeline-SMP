@@ -1,5 +1,5 @@
 ﻿'use strict';
-//28/01/25
+//02/04/25
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '1.5.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
@@ -53,11 +53,12 @@ let properties = {
 	}), { func: isJSON }],
 	dataQuery: ['Data query', 'ALL', { func: isString }],
 	dataSource: ['Data source', JSON.stringify({ sourceType: 'library', sourceArg: null, bRemoveDuplicates: true }), { func: isJSON }],
+	timeRange: ['Time range', JSON.stringify({ timePeriod: null, timeKey: null }), { func: isJSON }],
 	xEntries: ['Axis X TF entries', JSON.stringify([
 		{ x: _t(globTags.date), keyX: 'Date' },
 		{ x: '$div(' + _t(globTags.date) + ',10)0s', keyX: 'Decade' },
 		{ x: _t(globTags.bpm), keyX: 'BPM' },
-		{ x: '$mul($div(' + _t(globTags.bpm) + ',10),10)s', keyX: 'BPM (range)' },
+		{ x: '$mul($div(' + _t(globTags.bpm) + ',10),10)s', keyX: 'BPM (tens)' },
 		{ x: _t(globTags.rating), keyX: 'Rating' },
 		{ name: 'sep' },
 		{ x: '%ALBUM%|$if3($meta(MUSICBRAINZ_ALBUMARTISTID,0),$meta(ALBUM ARTIST,0),$meta(ARTIST,0))', keyX: 'Album' },
@@ -72,7 +73,8 @@ let properties = {
 	].map((v) => { return (Object.hasOwn(v, 'name') ? v : { ...v, name: 'By ' + v.keyX }); })), { func: isJSON }],
 	yEntries: ['Axis Y TF entries', JSON.stringify([ // Better use queries to filter by 0 and 1...
 		{ y: '1', keyY: 'Tracks', bProportional: false },
-		{ y: globTags.playCount, keyY: 'Listens', bProportional: false },
+		{ y: globTags.playCount, keyY: 'Play count', bProportional: false },
+		{ y: '#LISTENS#', keyY: 'Listens (range)', bProportional: false },
 		{ name: 'sep' },
 		{ y: globTags.playCount, keyY: 'Avg. Listens', bProportional: true },
 		{ y: globTags.isLoved, keyY: 'Avg. Loves', bProportional: true }, // requires not to ouput true value
@@ -80,6 +82,8 @@ let properties = {
 		{ y: globTags.rating, keyY: 'Avg. Rating', bProportional: true },
 		{ name: 'sep' },
 		{ y: globTags.isRatedTop, keyY: 'Rated 5/Track', bProportional: true },
+		{ y: globTags.playCountRateSinceAdded, keyY: 'Listen rate (added)', bProportional: true },
+		{ y: globTags.playCountRateSincePlayed, keyY: 'Listen rate (first played)', bProportional: true },
 	].map((v) => { return (Object.hasOwn(v, 'name') ? v : { ...v, name: 'By ' + v.keyY }); })), { func: isJSON }],
 	zEntries: ['Axis Z TF entries', JSON.stringify([
 		{ z: globTags.artist, keyZ: 'Artist' },
@@ -190,6 +194,29 @@ const getSel = () => {
 	else if (dynQueryMode.onPlayback) { return fb.GetNowPlaying() || sel; }
 	else { return sel; }
 };
+const getTimeRange = (properties) => {
+	const timeRange = JSON.parse(properties.timeRange[1], (key, val) => val === null ? Infinity : val);
+	if (timeRange.timePeriod === Infinity) { return {}; }
+	const now = new Date();
+	if (['nowDay', 'nowWeek', 'nowMonth', 'nowYear'].includes(timeRange.timeKey)) {
+		switch (timeRange.timeKey) {
+			case 'nowDay': timeRange.timePeriod *= 1; break;
+			case 'nowWeek': timeRange.timePeriod *= now.getUTCDay() + 1; break;
+			case 'nowMonth': timeRange.timePeriod *= now.getUTCDate(); break;
+			case 'nowYear': {
+				timeRange.timePeriod *= (Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) - Date.UTC(now.getFullYear(), 0, 0)) / 24 / 60 / 60 / 1000;
+				break;
+			}
+		}
+		timeRange.timeKey = 'Days';
+
+	}
+	timeRange.fromDate = new Date(now);
+	now.setTime(now.getTime() - timeRange.timePeriod * 24 * 60 * 60 * 1000);
+	timeRange.toDate = now;
+	return timeRange;
+};
+const timePeriods = ['#DAY#', '#WEEK#', '#MONTH#', '#YEAR#'];
 
 // Info Popup
 if (!properties.firstPopup[1]) {
@@ -238,7 +265,7 @@ const background = new _background({
 				charts.forEach((chart) => chart.callbacks.config.artColors([main, sec]));
 			} else {
 				background.changeConfig({ config: { colorModeOptions: { color: JSON.parse(properties.background[1]).colorModeOptions.color } }, callbackArgs: { bSaveProperties: false } });
-				charts.forEach((chart) => chart.callbacks.config.artColors(JSON.parse(properties.chart[1]).chroma.scheme));
+				charts.forEach((chart) => chart.callbacks.config.artColors(JSON.parse(chart.properties.chart[1]).chroma.scheme));
 			}
 		}
 	}
@@ -280,13 +307,13 @@ const defaultConfig = deepAssign()(
 					if (callbackArgs && callbackArgs.bSaveProperties) {
 						['x', 'y', 'w', 'h'].forEach((key) => delete config[key]);
 						config.dataManipulation.sort = this.exportSortLabel();
-						properties.chart[1] = JSON.stringify(config);
-						properties.data[1] = JSON.stringify(this.exportDataLabels());
-						overwriteProperties(properties);
+						this.properties.chart[1] = JSON.stringify(config);
+						this.properties.data[1] = JSON.stringify(this.exportDataLabels());
+						overwriteProperties(this.properties);
 						if (changeArgs.configuration && (Object.hasOwn(changeArgs.configuration, 'bDynSerieColor') || Object.hasOwn(changeArgs.configuration, 'bDynBgColor'))) {
 							background.updateImageBg(true);
 							if (!config.configuration.bDynSerieColor || !(changeArgs.configuration.bDynBgColor || config.configuration.bDynBgColor)) {
-								background.changeConfig({ config: { colorModeOptions: { color: JSON.parse(properties.background[1]).colorModeOptions.color } }, callbackArgs: { bSaveProperties: false } });
+								background.changeConfig({ config: { colorModeOptions: { color: JSON.parse(this.properties.background[1]).colorModeOptions.color } }, callbackArgs: { bSaveProperties: false } });
 							}
 						}
 					}
@@ -296,7 +323,7 @@ const defaultConfig = deepAssign()(
 					if (scheme && this.configuration.bDynSerieColor) { // This flag has been added at script init
 						this.changeConfig({ colors: [], chroma: { scheme }, bPaint: true, callbackArgs: { bSaveProperties: false } });
 					} else {
-						this.changeConfig({ colors: [], chroma: { scheme: JSON.parse(properties.chart[1]).chroma.scheme }, bPaint: true, callbackArgs: { bSaveProperties: false } });
+						this.changeConfig({ colors: [], chroma: { scheme: JSON.parse(this.properties.chart[1]).chroma.scheme }, bPaint: true, callbackArgs: { bSaveProperties: false } });
 					}
 				}
 			},
@@ -317,12 +344,24 @@ const newConfig = [
 ];
 newConfig.forEach((row) => row.forEach((config) => {
 	const dataSource = JSON.parse(properties.dataSource[1]);
+	const timeRange = getTimeRange(properties);
 	const bHasX = Object.hasOwn(config.axis.x, 'tf') && config.axis.x.tf.length;
 	const bHasY = Object.hasOwn(config.axis.y, 'tf') && config.axis.y.tf.length;
 	const bHasZ = Object.hasOwn(config.axis.z, 'tf') && config.axis.z.tf.length;
+	const bListens = bHasY
+		? config.axis.y.tf === '#LISTENS#'
+		: false;
+	const bListensPerPeriod = bListens && bHasX && timePeriods.includes(config.axis.x.tf);
 	if (properties.bAsync[1]) {
 		config.dataAsync = () => getDataAsync({
-			option: bHasZ ? 'timeline' : 'tf',
+			option: bHasZ
+				? 'timeline'
+				: bListensPerPeriod
+					? 'playcount period'
+					: bListens
+						? 'playcount'
+						: 'tf',
+			optionArg: timeRange,
 			sourceType: dataSource.sourceType,
 			sourceArg: dataSource.sourceArg || null,
 			x: bHasX ? _qCond(config.axis.x.tf, true) : '',
@@ -330,16 +369,27 @@ newConfig.forEach((row) => row.forEach((config) => {
 			z: bHasZ ? _qCond(config.axis.z.tf, true) : '',
 			query: queryJoin([
 				properties.dataQuery[1],
-				bHasX ? config.axis.x.tf + ' PRESENT' : '',
-				bHasZ ? config.axis.z.tf + ' PRESENT' : ''
-			], 'AND'),
+				...(bListensPerPeriod
+					? []
+					: [
+						bHasX ? config.axis.x.tf + ' PRESENT' : '',
+						bHasZ ? config.axis.z.tf + ' PRESENT' : ''
+					])
+			], 'AND') || void(0),
 			queryHandle: getSel(),
 			bProportional: config.axis.y.bProportional,
 			bRemoveDuplicates: dataSource.bRemoveDuplicates
 		});
 	} else if (defaultConfig.configuration.bLoadAsyncData) {
 		config.data = getData({
-			option: bHasZ ? 'timeline' : 'tf',
+			option: bHasZ
+				? 'timeline'
+				: bListensPerPeriod
+					? 'playcount period'
+					: bListens
+						? 'playcount'
+						: 'tf',
+			optionArg: timeRange,
 			sourceType: dataSource.sourceType,
 			sourceArg: dataSource.sourceArg || null,
 			x: bHasX ? _qCond(config.axis.x.tf, true) : '',
@@ -347,9 +397,13 @@ newConfig.forEach((row) => row.forEach((config) => {
 			z: bHasZ ? _qCond(config.axis.z.tf, true) : '',
 			query: queryJoin([
 				properties.dataQuery[1],
-				bHasX ? config.axis.x.tf + ' PRESENT' : '',
-				bHasZ ? config.axis.z.tf + ' PRESENT' : ''
-			], 'AND'),
+				...(bListensPerPeriod
+					? []
+					: [
+						bHasX ? config.axis.x.tf + ' PRESENT' : '',
+						bHasZ ? config.axis.z.tf + ' PRESENT' : ''
+					])
+			], 'AND') || void(0),
 			queryHandle: getSel(),
 			bProportional: config.axis.y.bProportional,
 			bRemoveDuplicates: dataSource.bRemoveDuplicates
@@ -379,28 +433,49 @@ const charts = nCharts.flat(Infinity);
 	Helper to set data
 */
 charts.forEach((chart, i) => {
+	chart.properties = properties;
 	chart.setData = function (entry = {}) {
 		const bHasX = Object.hasOwn(entry, 'x') && entry.x.length;
 		const bHasY = Object.hasOwn(entry, 'y') && entry.y.length;
 		const bHasZ = Object.hasOwn(entry, 'z') && entry.z.length;
 		const bHasTfX = Object.hasOwn(this.axis.x, 'tf') && this.axis.x.tf.length;
+		const bHasTfY = Object.hasOwn(this.axis.y, 'tf') && this.axis.y.tf.length;
 		const bHasTfZ = Object.hasOwn(this.axis.z, 'tf') && this.axis.z.tf.length;
-		const dataSource = JSON.parse(properties.dataSource[1]);
-		const dataOpts = JSON.parse(properties.data[1]);
-		const chartConfig = JSON.parse(properties.chart[1]);
+		const bListens = bHasY
+			? entry.y === '#LISTENS#'
+			: bHasTfY
+				? this.axis.y.tf === '#LISTENS#'
+				: false;
+		const bListensPerPeriod = bListens && timePeriods.includes(bHasX ? entry.x : (bHasTfX ? this.axis.x.tf : ''));
+		const dataSource = JSON.parse(this.properties.dataSource[1]);
+		const dataOpts = JSON.parse(this.properties.data[1]);
+		const timeRange = getTimeRange(this.properties);
+		const chartConfig = JSON.parse(this.properties.chart[1]);
 		const newConfig = {
-			[properties.bAsync[1] ? 'dataAsync' : 'data']: (properties.bAsync[1] ? getDataAsync : getData)({
-				option: bHasTfZ || bHasZ ? 'timeline' : 'tf',
+			[this.properties.bAsync[1] ? 'dataAsync' : 'data']: (this.properties.bAsync[1] ? getDataAsync : getData)({
+				option: bHasTfZ || bHasZ
+					? 'timeline'
+					: bListensPerPeriod
+						? 'playcount period'
+						: bListens
+							? 'playcount'
+							: 'tf',
+				optionArg: Object.hasOwn(entry, 'optionArg') ? entry.optionArg : timeRange,
 				sourceType: Object.hasOwn(entry, 'sourceType') ? entry.sourceType : dataSource.sourceType,
 				sourceArg: (Object.hasOwn(entry, 'sourceArg') ? entry.sourceArg : dataSource.sourceArg) || null,
 				x: bHasX ? entry.x : _qCond(this.axis.x.tf || '', true),
 				y: bHasY ? entry.y : _qCond(this.axis.y.tf || '', true),
 				z: bHasZ ? entry.z : _qCond(this.axis.z.tf || '', true),
 				query: queryJoin([
-					Object.hasOwn(entry, 'query') ? entry.query : properties.dataQuery[1],
-					bHasTfX || bHasX ? (bHasX ? _qCond(entry.x) : this.axis.x.tf) + ' PRESENT' : '',
-					bHasTfZ || bHasZ ? (bHasZ ? _qCond(entry.z) : this.axis.z.tf) + ' PRESENT' : ''
-				], 'AND'),
+					Object.hasOwn(entry, 'query') ? entry.query : this.properties.dataQuery[1],
+					...(bListensPerPeriod
+						? []
+						: [
+							bHasTfX || bHasX ? (bHasX ? _qCond(entry.x) : this.axis.x.tf) + ' PRESENT' : '',
+							bHasTfZ || bHasZ ? (bHasZ ? _qCond(entry.z) : this.axis.z.tf) + ' PRESENT' : ''
+						])
+
+				], 'AND') || void(0),
 				queryHandle: getSel(),
 				bProportional: bHasY ? entry.bProportional : dataOpts.y.bProportional,
 				bRemoveDuplicates: Object.hasOwn(entry, 'bRemoveDuplicates') ? entry.bRemoveDuplicates : dataSource.bRemoveDuplicates
@@ -609,7 +684,7 @@ addEventListener('on_key_up', (vKey) => {
 addEventListener('on_playback_new_track', () => { // To show playing now playlist indicator...
 	if (background.coverMode.toLowerCase() !== 'none') { background.updateImageBg(); }
 	if (!window.ID) { return; }
-	if (properties.bAutoData[1]) { refreshData(plman.PlayingPlaylist, 'on_playback_new_track'); }
+	if (charts.some((chart) => chart.properties.bAutoData[1])) { refreshData(plman.PlayingPlaylist, 'on_playback_new_track'); }
 	if (dynQueryMode.onPlayback) { refreshData(plman.PlayingPlaylist, 'on_playback_new_track_dynQuery'); }
 });
 
@@ -632,7 +707,7 @@ addEventListener('on_playlist_switch', () => {
 		background.updateImageBg();
 	}
 	if (!window.ID) { return; }
-	if (properties.bAutoData[1]) { refreshData(-1, 'on_playlist_switch'); }
+	if (charts.some((chart) => chart.properties.bAutoData[1])) { refreshData(-1, 'on_playlist_switch'); }
 });
 
 addEventListener('on_playback_stop', (reason) => {
@@ -646,17 +721,17 @@ addEventListener('on_playlists_changed', () => { // To show/hide loaded playlist
 		background.updateImageBg();
 	}
 	if (!window.ID) { return; }
-	if (properties.bAutoData[1]) { refreshData(-1, 'on_playlists_changed'); }
+	if (charts.some((chart) => chart.properties.bAutoData[1])) { refreshData(-1, 'on_playlists_changed'); }
 });
 
 addEventListener('on_playlist_items_added', (idx) => { // eslint-disable-line no-unused-vars
 	if (!window.ID) { return; }
-	if (properties.bAutoData[1]) { refreshData(idx, 'on_playlist_items_added'); }
+	if (charts.some((chart) => chart.properties.bAutoData[1])) { refreshData(idx, 'on_playlist_items_added'); }
 });
 
 addEventListener('on_playlist_items_removed', (idx) => { // eslint-disable-line no-unused-vars
 	if (!window.ID) { return; }
-	if (properties.bAutoData[1]) { refreshData(idx, 'on_playlist_items_removed'); }
+	if (charts.some((chart) => chart.properties.bAutoData[1])) { refreshData(idx, 'on_playlist_items_removed'); }
 });
 
 globProfiler.Print('callbacks');

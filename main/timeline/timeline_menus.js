@@ -1,9 +1,9 @@
 'use strict';
-//27/01/25
+//02/04/25
 
 /* exported onLbtnUpPoint, onLbtnUpSettings*/
 
-/* global _p:readable, checkQuery:readable, globTags:readable, globQuery:readable, round:readable, capitalizeAll:readable, properties:readable, WshShell:readable, popup:readable, _qCond:readable, overwriteProperties:readable, checkUpdate:readable, globSettings:readable , isArrayEqual:readable, _b:readable, folders:readable, dynQueryMode:readable, refreshData:readable, isUUID:readable, queryJoin:readable, queryReplaceWithCurrent:readable, selectedHandle:readable, VK_SHIFT:readable, fallbackTagsQuery:readable */
+/* global _p:readable, checkQuery:readable, globTags:readable, globQuery:readable, round:readable, capitalizeAll:readable, properties:readable, WshShell:readable, popup:readable, _qCond:readable, overwriteProperties:readable, checkUpdate:readable, globSettings:readable , isArrayEqual:readable, _b:readable, folders:readable, dynQueryMode:readable, refreshData:readable, isUUID:readable, queryJoin:readable, queryReplaceWithCurrent:readable, selectedHandle:readable, VK_SHIFT:readable, fallbackTagsQuery:readable, getTimeRange:readable, timePeriods:readable */
 include('..\\..\\helpers\\helpers_xxx_file.js');
 /* global _open:readable, utf8:readable */
 include('..\\..\\helpers\\helpers_xxx_playlists.js');
@@ -39,17 +39,17 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 			menu.newSeparator(subMenu[1]);
 			const currPoints = this.dataDraw.map((serie) => serie.find((newPoint) => newPoint.x === point.x)).filter(Boolean);
 			[
-				{ name: 'By ' + this.axis.x.key, query: this.axis.x.tf + ' IS ' + subPoint.x, playlist: 'Timeline: ' + subPoint.x.replace(/\|.*/,'') },
+				{ name: 'By ' + this.axis.x.key, query: this.axis.x.tf + ' IS ' + subPoint.x, playlist: 'Timeline: ' + subPoint.x.replace(/\|.*/, '') },
 				...(this.graph.multi
 					? [
-						{ name: 'By ' + this.axis.z.key, query: fallbackTagsQuery(this.axis.z.tf, subPoint.z), playlist: 'Timeline: ' + subPoint.z.replace(/\|.*/,'') },
+						{ name: 'By ' + this.axis.z.key, query: fallbackTagsQuery(this.axis.z.tf, subPoint.z), playlist: 'Timeline: ' + subPoint.z.replace(/\|.*/, '') },
 						{
 							name: 'By ' + this.axis.x.key + ' and ' + this.axis.z.key, query: this.axis.x.tf + ' IS ' + subPoint.x + ' AND ' + _p(fallbackTagsQuery(this.axis.z.tf, subPoint.z)),
-							playlist: 'Timeline: ' + subPoint.x.replace(/\|.*/,'') + ' - ' + subPoint.z.replace(/\|.*/,'')
+							playlist: 'Timeline: ' + subPoint.x.replace(/\|.*/, '') + ' - ' + subPoint.z.replace(/\|.*/, '')
 						},
 						{
 							name: 'By ' + this.axis.x.key + ' and top ' + this.axis.z.key, query: this.axis.x.tf + ' IS ' + subPoint.x + ' AND ' + _p(currPoints.map((newPoint) => fallbackTagsQuery(this.axis.z.tf, newPoint.z)).join(' OR ')),
-							playlist: 'Timeline: ' + subPoint.x.replace(/\|.*/,'') + ' - Top ' + currPoints.length + ' ' + this.axis.z.key.replace(/\|.*/,'')
+							playlist: 'Timeline: ' + subPoint.x.replace(/\|.*/, '') + ' - Top ' + currPoints.length + ' ' + this.axis.z.key.replace(/\|.*/, '')
 						}
 					]
 					: [])
@@ -64,7 +64,7 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 							let handleList = fb.GetQueryItems(fb.GetLibraryItems(), query);
 							handleList = removeDuplicates({ handleList, sortOutput: '', checkKeys: globTags.remDupl, sortBias: globQuery.remDuplBias, bAdvTitle: true, bMultiple: true, bPreserveSort: false });
 							sendToPlaylist(handleList, entry.playlist);
-							console.log('Statistics: playlist created\n\t '+ query);
+							console.log('Statistics: playlist created\n\t ' + query);
 						} else { console.log('Statistics: query error\n\t ' + query); }
 					}
 				});
@@ -131,8 +131,16 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 
 function onLbtnUpSettings() {
 	// Constants
+	const properties = this.properties;
 	const menu = new _menu();
 	const dataSource = JSON.parse(properties.dataSource[1]);
+	const timeRange = JSON.parse(properties.timeRange[1], (key, val) => val === null ? Infinity : val);
+	const bHasX = Object.hasOwn(this.axis.x, 'tf') && this.axis.x.tf.length;
+	const bHasY = Object.hasOwn(this.axis.y, 'tf') && this.axis.y.tf.length;
+	const bListens = bHasY
+		? this.axis.y.tf === '#LISTENS#'
+		: false;
+	const bListensPerPeriod = bListens && bHasX && timePeriods.includes(this.axis.x.tf);
 	const inputTF = (axis = 'x', bCopyCurrent = false) => {
 		axis = axis.toLowerCase();
 		if (bCopyCurrent) {
@@ -163,10 +171,17 @@ function onLbtnUpSettings() {
 		menu.newEntry({ menuName: subMenu, entryText: 'X-axis:', flags: MF_GRAYED });
 		menu.newSeparator(subMenu);
 		const list = JSON.parse(properties.xEntries[1]);
+		list.push(...[
+			{ name: 'sep' },
+			{ x: '#DAY#', keyX: 'Day' + (bListens ? '' : ' (listens range)'), flags: bListens ? MF_STRING : MF_GRAYED },
+			{ x: '#WEEK#', keyX: 'Week' + (bListens ? '' : ' (listens range)'), flags: bListens ? MF_STRING : MF_GRAYED },
+			{ x: '#MONTH#', keyX: 'Month' + (bListens ? '' : ' (listens range)'), flags: bListens ? MF_STRING : MF_GRAYED },
+			{ x: '#YEAR#', keyX: 'Year' + (bListens ? '' : ' (listen range)'), flags: bListens ? MF_STRING : MF_GRAYED }
+		].map((v) => { return (Object.hasOwn(v, 'name') ? v : { ...v, name: 'By ' + v.keyX }); }));
 		list.forEach((entry) => {
 			if (menu.isSeparator(entry)) { menu.newSeparator(subMenu); }
 			else {
-				menu.newEntry({ menuName: subMenu, entryText: entry.name, func: () => this.setData(entry) });
+				menu.newEntry({ menuName: subMenu, entryText: entry.name, func: () => this.setData(entry), flags: entry.flags || MF_STRING });
 				menu.newCheckMenuLast(() => this.axis.x.tf === _qCond(entry.x));
 			}
 		});
@@ -199,7 +214,16 @@ function onLbtnUpSettings() {
 		list.forEach((entry) => {
 			if (menu.isSeparator(entry)) { menu.newSeparator(subMenu); }
 			else {
-				menu.newEntry({ menuName: subMenu, entryText: entry.name, func: () => this.setData(entry) });
+				menu.newEntry({
+					menuName: subMenu, entryText: entry.name, func: () => {
+						if (bListensPerPeriod && _qCond(entry.y, true) !== globTags.playCount && entry.y !== '#LISTENS#') {
+							const defaultX = JSON.parse(properties.xEntries[1])[0];
+							entry.x = defaultX.x;
+							entry.keyX = defaultX.keyX;
+						}
+						this.setData(entry);
+					}
+				});
 				menu.newCheckMenuLast(() => this.axis.y.tf === _qCond(entry.y) && this.axis.y.bProportional === entry.bProportional);
 			}
 		});
@@ -264,6 +288,50 @@ function onLbtnUpSettings() {
 				overwriteProperties(properties);
 			}
 		});
+	}
+	menu.newSeparator();
+	{	// Listens range
+		const subMenu = menu.newMenu('Time range', void (0), !bListens && !bListensPerPeriod ? MF_GRAYED : MF_STRING);
+		menu.newEntry({ menuName: subMenu, entryText: 'Select time range:', flags: MF_GRAYED });
+		menu.newSeparator(subMenu);
+		const options = [
+			{ entryText: 'All', timePeriod: Infinity, timeKey: 'Days' },
+			{ entryText: 'This year', timePeriod: 1, timeKey: 'nowYear' },
+			{ entryText: 'This month', timePeriod: 1, timeKey: 'nowMonth' },
+			{ entryText: 'This week', timePeriod: 1, timeKey: 'nowWeek' },
+			{ entryText: 'This day', timePeriod: 1, timeKey: 'nowDay' },
+		];
+		options.forEach((option) => {
+			menu.newEntry({
+				menuName: subMenu, entryText: option.entryText, func: () => {
+					timeRange.timePeriod = option.timePeriod;
+					timeRange.timeKey = option.timeKey;
+					properties.timeRange[1] = JSON.stringify(timeRange);
+					overwriteProperties(properties);
+					this.setData({ optionArg: getTimeRange(properties) });
+				}
+			});
+		});
+		menu.newSeparator(subMenu);
+		const days = getTimeRange(properties).timePeriod;
+		menu.newEntry({
+			menuName: subMenu, entryText: 'Last X days...\t' + _b(days || '\u221E'), func: () => {
+				const input = Input.number('int positive', timeRange.timePeriod, 'Set number of days: ', 'Time range: last X days', 4);
+				if (input === null) {
+					if (!Input.isLastEqual || timeRange.timeKey === 'Days') { return; }
+				} else {
+					timeRange.timePeriod = input;
+				}
+				timeRange.timeKey = 'Days';
+				properties.timeRange[1] = JSON.stringify(timeRange);
+				overwriteProperties(properties);
+				this.setData({ optionArg: getTimeRange(properties) });
+			}
+		});
+		menu.newCheckMenuLast(() => {
+			const idx = options.findIndex((opt) => opt.timePeriod === timeRange.timePeriod && opt.timeKey === timeRange.timeKey);
+			return (idx !== -1 ? idx : timeRange.timePeriod === Infinity ? 0 : options.length);
+		}, options.length + 2);
 	}
 	menu.newSeparator();
 	{	// Data source

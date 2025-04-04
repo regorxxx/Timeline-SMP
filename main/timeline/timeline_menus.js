@@ -1,5 +1,5 @@
 'use strict';
-//02/04/25
+//04/04/25
 
 /* exported onLbtnUpPoint, onLbtnUpSettings*/
 
@@ -129,7 +129,7 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 	return menu.btn_up(x, y);
 }
 
-function onLbtnUpSettings() {
+function onLbtnUpSettings({bShowZ = true, readmes} = {}) {
 	// Constants
 	const properties = this.properties;
 	const menu = new _menu();
@@ -248,7 +248,7 @@ function onLbtnUpSettings() {
 			}
 		});
 	}
-	{	// Z
+	if (bShowZ) {	// Z
 		const subMenu = menu.newMenu('Set Z-axis data');
 		menu.newEntry({ menuName: subMenu, entryText: 'Z-axis:', flags: MF_GRAYED });
 		menu.newSeparator(subMenu);
@@ -543,10 +543,10 @@ function onLbtnUpSettings() {
 	menu.newSeparator();
 	{	// Readmes
 		const subMenu = menu.newMenu('Readmes');
-		[
+		(readmes || [
 			{ path: folders.xxx + 'helpers\\readme\\timeline.txt', name: 'Timeline-SMP' },
 			{ path: folders.xxx + 'helpers\\readme\\timeline_dynamic_query.txt', name: 'Dynamic queries' }
-		].forEach((o) => {
+		]).forEach((o) => {
 			menu.newEntry({
 				menuName: subMenu, entryText: o.name, func: () => {
 					const readme = _open(o.path, utf8);

@@ -344,11 +344,12 @@ function getPlayCount(handleList, timePeriod, timeKey = null, fromDate = new Dat
 		for (let i = 0; i < dataLen; i++) {
 			const [dates, datesLastFM, dates2003, dateFirst, dateLast, playCount] = data[i].split(sep);
 			let count = 0;
+			const bHasDates = isEnhPlayCount && dates.length > 2;
 			const bHasLastFM = isEnhPlayCount && datesLastFM.length > 2;
 			const bHasDates2003 = isPlayCount2003 && dates2003.length > 2;
 			const listens = [];
 			const dateArray = [...new Set(
-				JSON.parse(dates)
+				(bHasDates ? JSON.parse(dates) : [])
 					.concat(bHasDates2003 ? JSON.parse(dates2003) : [])
 					.concat(bHasLastFM ? JSON.parse(datesLastFM) : [])
 			)];
@@ -406,11 +407,12 @@ function getPlayCount(handleList, timePeriod, timeKey = null, fromDate = new Dat
 		for (let i = 0; i < dataLen; i++) {
 			const [dates, datesLastFM, dates2003, dateFirst, dateLast, playCount] = data[i].split(sep);
 			let count = 0;
+			const bHasDates = isEnhPlayCount && dates.length > 2;
 			const bHasLastFM = isEnhPlayCount && datesLastFM.length > 2;
 			const bHasDates2003 = isPlayCount2003 && dates2003.length > 2;
 			const listens = [];
 			const dateArray = [...new Set(
-				JSON.parse(dates)
+				(bHasDates ? JSON.parse(dates) : [])
 					.concat(bHasDates2003 ? JSON.parse(dates2003) : [])
 					.concat(bHasLastFM ? JSON.parse(datesLastFM) : [])
 			)];
@@ -570,13 +572,14 @@ async function getPlayCountV2(handleList, timePeriod, timeKey = null, fromDate =
 	if (timePeriod && timeKey) { // During X time...
 		for (let i = 0; i < dataLen; i++) {
 			const [dates, datesLastFM, dates2003, dateFirst, dateLast, playCount] = data[i].split(sep);
+			const bHasDates = isEnhPlayCount && dates.length > 2;
 			const bHasLastFM = isEnhPlayCount && datesLastFM.length > 2;
 			const bHasDates2003 = isPlayCount2003 && dates2003.length > 2;
 			const bHasLb = lbData && lbData[i].length;
 			let count = 0;
 			const listens = [];
 			const dateArray = [...new Set(
-				JSON.parse(dates)
+				(bHasDates ? JSON.parse(dates) : [])
 					.concat(bHasDates2003 ? JSON.parse(dates2003) : [])
 					.concat(bHasLastFM ? JSON.parse(datesLastFM) : [])
 					.concat(bHasLb ? lbData[i] : [])
@@ -635,12 +638,13 @@ async function getPlayCountV2(handleList, timePeriod, timeKey = null, fromDate =
 		for (let i = 0; i < dataLen; i++) {
 			const [dates, datesLastFM, dates2003, dateFirst, dateLast, playCount] = data[i].split(sep);
 			let count = 0;
+			const bHasDates = isEnhPlayCount && dates.length > 2;
 			const bHasLastFM = isEnhPlayCount && datesLastFM.length > 2;
 			const bHasDates2003 = isPlayCount2003 && dates2003.length > 2;
 			const bHasLb = lbData && lbData[i].length;
 			const listens = [];
 			const dateArray = [...new Set(
-				JSON.parse(dates)
+				(bHasDates ? JSON.parse(dates) : [])
 					.concat(bHasDates2003 ? JSON.parse(dates2003) : [])
 					.concat(bHasLastFM ? JSON.parse(datesLastFM) : [])
 					.concat(bHasLb ? lbData[i] : [])

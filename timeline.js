@@ -1,5 +1,5 @@
 ﻿'use strict';
-//02/04/25
+//08/04/25
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '1.5.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
@@ -184,7 +184,7 @@ Object.keys(properties).forEach(p => {
 const dynQueryMode = JSON.parse(properties.dynQueryMode[1]);
 const getSel = () => {
 	let sel = dynQueryMode.multipleSelection ? fb.GetSelections(1) : fb.GetFocusItem(true);
-	if (dynQueryMode.multipleSelection && !sel.Count) { sel = fb.GetFocusItem(true); }
+	if (dynQueryMode.multipleSelection && (!sel || !sel.Count)) { sel = fb.GetFocusItem(true); }
 	if (dynQueryMode.onSelection) {
 		if (dynQueryMode.onPlayback) {
 			if (dynQueryMode.preferPlayback) { return fb.GetNowPlaying() || sel; }

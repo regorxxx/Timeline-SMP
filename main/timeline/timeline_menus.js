@@ -1,5 +1,5 @@
 'use strict';
-//04/04/25
+//09/05/25
 
 /* exported onLbtnUpPoint, onLbtnUpSettings*/
 
@@ -129,7 +129,7 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 	return menu.btn_up(x, y);
 }
 
-function onLbtnUpSettings({bShowZ = true, readmes} = {}) {
+function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 	// Constants
 	const properties = this.properties;
 	const menu = new _menu();
@@ -436,14 +436,14 @@ function onLbtnUpSettings({bShowZ = true, readmes} = {}) {
 			menuName: subMenu, entryText: 'Init data on startup', func: () => {
 				this.changeConfig({ configuration: { bLoadAsyncData: !this.configuration.bLoadAsyncData }, callbackArgs: { bSaveProperties: true } });
 				if (this.configuration.bLoadAsyncData) {
-					fb.ShowPopupMessage('Chart will not display any data upon panel reload/startup until it\'s manually forced to do so using \'Force data update\' menu entry.\n\nThis may be used to improve loading times if chart is only meant to be used on demand.', 'Timeline-SMP');
+					fb.ShowPopupMessage('Chart will not display any data upon panel reload/startup until it\'s manually forced to do so using \'Force data refresh\' menu entry.\n\nThis may be used to improve loading times if chart is only meant to be used on demand.', 'Timeline-SMP');
 				}
 			}
 		});
 		menu.newCheckMenuLast(() => this.configuration.bLoadAsyncData);
 		menu.newSeparator(subMenu);
 		menu.newEntry({
-			menuName: subMenu, entryText: 'Auto-update data sources', func: () => {
+			menuName: subMenu, entryText: 'Auto-refresh data sources', func: () => {
 				properties.bAutoData[1] = !properties.bAutoData[1];
 				overwriteProperties(properties);
 			}, flags: dataSource.sourceType === 'library' ? MF_GRAYED : MF_STRING
@@ -457,7 +457,7 @@ function onLbtnUpSettings({bShowZ = true, readmes} = {}) {
 			: playingTF.length ? 'Tags' : 'Never';
 		menu.newEntry({
 			menuName: subMenu, entryText: 'On playback only by TF...' + '\t' + _b(playingTFTip), func: () => {
-				const input = Input.json('array strings', playingTF, 'Enter tags:\n(Use ["*"] for all tags)', 'Auto-update sources by TitleFormat', '["PLAY_COUNT"]');
+				const input = Input.json('array strings', playingTF, 'Enter tags:\n(Use ["*"] for all tags)', 'Auto-refresh sources by TitleFormat', '["PLAY_COUNT"]');
 				if (input === null) { return; }
 				properties.playingTF[1] = JSON.stringify(input.map((tag) => tag.toUpperCase()));
 				overwriteProperties(properties);
@@ -465,7 +465,7 @@ function onLbtnUpSettings({bShowZ = true, readmes} = {}) {
 		});
 		menu.newCheckMenuLast(() => dataSource.sourceType !== 'library' && !!properties.playingTF[1].length);
 		menu.newSeparator(subMenu);
-		const subMenuTwo = menu.newMenu('Auto-update dynamic queries', subMenu, properties.dataQuery[1].count('#') >= 2 ? MF_STRING : MF_GRAYED);
+		const subMenuTwo = menu.newMenu('Auto-refresh dynamic queries', subMenu, properties.dataQuery[1].count('#') >= 2 ? MF_STRING : MF_GRAYED);
 		[
 			{ key: 'onSelection', entryText: 'Selecting tracks (playlist)' },
 			{ key: 'onPlayback', entryText: 'When playing a track' },
@@ -514,29 +514,32 @@ function onLbtnUpSettings({bShowZ = true, readmes} = {}) {
 			});
 			menu.newCheckMenuLast(() => this.configuration.bProfile);
 		}
-		menu.newSeparator(subMenu);
-		menu.newEntry({
-			menuName: subMenu, entryText: 'Automatically check for updates', func: () => {
-				properties.bAutoUpdateCheck[1] = !properties.bAutoUpdateCheck[1];
-				overwriteProperties(properties);
-				if (properties.bAutoUpdateCheck[1]) {
-					if (typeof checkUpdate === 'undefined') { include('helpers\\helpers_xxx_web_update.js'); }
-					setTimeout(checkUpdate, 1000, { bDownload: globSettings.bAutoUpdateDownload, bOpenWeb: globSettings.bAutoUpdateOpenWeb, bDisableWarning: false });
+		{
+			const subMenuTwo = menu.newMenu('Updates', subMenu);
+			menu.newEntry({
+				menuName: subMenuTwo, entryText: 'Automatically check for updates', func: () => {
+					properties.bAutoUpdateCheck[1] = !properties.bAutoUpdateCheck[1];
+					overwriteProperties(properties);
+					if (properties.bAutoUpdateCheck[1]) {
+						if (typeof checkUpdate === 'undefined') { include('helpers\\helpers_xxx_web_update.js'); }
+						setTimeout(checkUpdate, 1000, { bDownload: globSettings.bAutoUpdateDownload, bOpenWeb: globSettings.bAutoUpdateOpenWeb, bDisableWarning: false });
+					}
 				}
-			}
-		});
-		menu.newCheckMenuLast(() => properties.bAutoUpdateCheck[1]);
-		menu.newEntry({
-			menuName: subMenu, entryText: 'Check for updates...', func: () => {
-				if (typeof checkUpdate === 'undefined') { include('helpers\\helpers_xxx_web_update.js'); }
-				checkUpdate({ bDownload: globSettings.bAutoUpdateDownload, bOpenWeb: globSettings.bAutoUpdateOpenWeb, bDisableWarning: false })
-					.then((bFound) => !bFound && fb.ShowPopupMessage('No updates found.', window.Name));
-			}
-		});
+			});
+			menu.newCheckMenuLast(() => properties.bAutoUpdateCheck[1]);
+			menu.newSeparator(subMenuTwo);
+			menu.newEntry({
+				menuName: subMenuTwo, entryText: 'Check for updates...', func: () => {
+					if (typeof checkUpdate === 'undefined') { include('helpers\\helpers_xxx_web_update.js'); }
+					checkUpdate({ bDownload: globSettings.bAutoUpdateDownload, bOpenWeb: globSettings.bAutoUpdateOpenWeb, bDisableWarning: false })
+						.then((bFound) => !bFound && fb.ShowPopupMessage('No updates found.', window.Name));
+				}
+			});
+		}
 	}
 	menu.newSeparator();
 	menu.newEntry({
-		entryText: 'Force data update', func: () => {
+		entryText: 'Force data refresh', func: () => {
 			this.setData();
 		}
 	});

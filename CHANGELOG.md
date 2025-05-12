@@ -47,6 +47,7 @@
 - Data: source filters are now also applied to playlist creation when clicking on points.
 - Data: sorting routines have been changed and now multiple sorting is allowed (by every axis).
 - Data: added multi-value handling for ALBUM ARTIST tags on queries (for playlist creation and statistics).
+- UI: unified script updates settings across all my scripts, look for 'Updates' submenu.
 - UI: improved contrast between X-axis label backgrounds and text, using WCAG contrast ratio now. Previously it just inverted the label color to B&W.
 - UI: minor adjustments to X-axis title position.
 - UI: Y-axis title position will now be adjusted according to data labels position in pie and doughnut charts to avoid overlapping.

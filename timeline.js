@@ -1,7 +1,7 @@
 ﻿'use strict';
-//08/04/25
+//13/05/25
 
-if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '1.5.0', features: { drag_n_drop: false, grab_focus: true } }); }
+if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '2.0.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
 include('helpers\\helpers_xxx.js');
 /* global globTags:readable, globQuery:readable, globProfiler:readable, folders:readable */

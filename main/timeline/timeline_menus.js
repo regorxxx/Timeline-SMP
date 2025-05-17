@@ -1,5 +1,5 @@
 'use strict';
-//09/05/25
+//13/05/25
 
 /* exported onLbtnUpPoint, onLbtnUpSettings*/
 
@@ -532,7 +532,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 				menuName: subMenuTwo, entryText: 'Check for updates...', func: () => {
 					if (typeof checkUpdate === 'undefined') { include('helpers\\helpers_xxx_web_update.js'); }
 					checkUpdate({ bDownload: globSettings.bAutoUpdateDownload, bOpenWeb: globSettings.bAutoUpdateOpenWeb, bDisableWarning: false })
-						.then((bFound) => !bFound && fb.ShowPopupMessage('No updates found.', window.Name));
+						.then((bFound) => !bFound && fb.ShowPopupMessage('No updates found.', 'Timeline: Update check'));
 				}
 			});
 		}

@@ -1,22 +1,24 @@
 ﻿'use strict';
-//13/05/25
+//20/05/25
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '2.0.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
 include('helpers\\helpers_xxx.js');
-/* global globTags:readable, globQuery:readable, globProfiler:readable, folders:readable */
+/* global globTags:readable, globQuery:readable, globProfiler:readable, folders:readable, VK_CONTROL:readable, clone:readable */
 include('helpers\\helpers_xxx_file.js');
-/* global _open:readable, utf8:readable */
+/* global _open:readable, utf8:readable, _save:readable */
+include('helpers\\helpers_xxx_flags.js');
+/* global VK_LWIN:readable */
 include('helpers\\helpers_xxx_prototypes_smp.js');
-/* global extendGR:readable, isUUID */
+/* global extendGR:readable, isUUID:readable */
 include('main\\statistics\\statistics_xxx.js');
 /* global _chart:readable */
 include('main\\statistics\\statistics_xxx_menu.js');
-/* global createStatisticsMenu:readable */
+/* global createStatisticsMenu:readable, _menu:readable */
 include('main\\timeline\\timeline_helpers.js');
 /* global  _gdiFont:readable, MK_LBUTTON:readable, deepAssign:readable, RGB:readable, isJSON:readable, _scale:readable, isString:readable, isBoolean:readable, globSettings:readable, setProperties:readable, getPropertiesPairs:readable, checkUpdate:readable, overwriteProperties:readable, getDataAsync:readable, _qCond:readable, queryJoin:readable, getData:readable, getPlaylistIndexArray:readable, _t:readable, isArrayEqual:readable, queryReplaceWithCurrent:readable, toType:readable */
 include('main\\timeline\\timeline_menus.js');
-/* global onLbtnUpPoint:readable, onLbtnUpSettings:readable, createBackgroundMenu:readable, Chroma:readable */
+/* global onLbtnUpPoint:readable, onLbtnUpSettings:readable, createBackgroundMenu:readable, Chroma:readable, onRbtnUpImportSettings:readable, WshShell:readable, popup:readable, Input:readable */
 include('main\\window\\window_xxx_background.js');
 /* global _background:readable */
 include('main\\window\\window_xxx_dynamic_colors.js');
@@ -159,9 +161,7 @@ let properties = {
 		onPlayback: true,
 		preferPlayback: true,
 		multipleSelection: false
-	}), { func: isJSON }],
-	bDynamicColors: ['Adjust colors to artwork', true, { func: isBoolean }],
-	bDynamicColorsBg: ['Adjust colors to artwork (bg)', false, { func: isBoolean }]
+	}), { func: isJSON }]
 };
 Object.keys(properties).forEach(p => properties[p].push(properties[p][1]));
 setProperties(properties, '', 0);
@@ -238,10 +238,11 @@ if (properties.bAutoUpdateCheck[1]) {
 */
 const background = new _background({
 	...JSON.parse(properties.background[1]),
+	x: 0, y: 0, w: window.Width, h: window.Height,
 	callbacks: {
 		change: function (config, changeArgs, callbackArgs) {
 			if (callbackArgs && callbackArgs.bSaveProperties) {
-				['x', 'y', 'w', 'h'].forEach((key) => delete config[key]);
+				['x', 'y', 'w', 'h', 'callbacks'].forEach((key) => delete config[key]);
 				properties.background[1] = JSON.stringify(config);
 				overwriteProperties(properties);
 			}
@@ -300,12 +301,25 @@ const defaultConfig = deepAssign()(
 				tooltip: 'Main settings\n\nDouble L. Click to force data update\n(Shift + Win + R. Click\nfor SMP panel menu)'
 			},
 			display: {
-				onLbtnUp: function (x, y, mask) { createStatisticsMenu.call(this).btn_up(x, y, ['sep', createBackgroundMenu.call(background, { menuName: 'Background' }, void (0), { nameColors: true })]); } // eslint-disable-line no-unused-vars
+				onLbtnUp: function (x, y, mask) { // eslint-disable-line no-unused-vars
+					createStatisticsMenu.call(this)
+						.btn_up(x, y, [
+							'sep',
+							createBackgroundMenu.call(background, { menuName: 'Background' }, void (0), { nameColors: true }),
+							'sep',
+							new _menu().concatEntry({
+								entryText: 'Share UI settings...', func: () => {
+									charts.every((chart) => chart.shareUiSettings());
+								}
+							})
+						]);
+				}
 			},
 			config: {
 				change: function (config, changeArgs, callbackArgs) {
 					if (callbackArgs && callbackArgs.bSaveProperties) {
 						['x', 'y', 'w', 'h'].forEach((key) => delete config[key]);
+						['x', 'y', 'z'].forEach((c) => ['key', 'tf'].forEach((key) => delete config.axis[c][key]));
 						config.dataManipulation.sort = this.exportSortLabel();
 						this.properties.chart[1] = JSON.stringify(config);
 						this.properties.data[1] = JSON.stringify(this.exportDataLabels());
@@ -375,7 +389,7 @@ newConfig.forEach((row) => row.forEach((config) => {
 						bHasX ? config.axis.x.tf + ' PRESENT' : '',
 						bHasZ ? config.axis.z.tf + ' PRESENT' : ''
 					])
-			], 'AND') || void(0),
+			], 'AND') || void (0),
 			queryHandle: getSel(),
 			bProportional: config.axis.y.bProportional,
 			bRemoveDuplicates: dataSource.bRemoveDuplicates
@@ -403,7 +417,7 @@ newConfig.forEach((row) => row.forEach((config) => {
 						bHasX ? config.axis.x.tf + ' PRESENT' : '',
 						bHasZ ? config.axis.z.tf + ' PRESENT' : ''
 					])
-			], 'AND') || void(0),
+			], 'AND') || void (0),
 			queryHandle: getSel(),
 			bProportional: config.axis.y.bProportional,
 			bRemoveDuplicates: dataSource.bRemoveDuplicates
@@ -432,7 +446,7 @@ const charts = nCharts.flat(Infinity);
 /*
 	Helper to set data
 */
-charts.forEach((chart, i) => {
+charts.forEach((/** @type {_chart} */ chart, i) => {
 	chart.properties = properties;
 	chart.setData = function (entry = {}) {
 		const bHasX = Object.hasOwn(entry, 'x') && entry.x.length;
@@ -475,7 +489,7 @@ charts.forEach((chart, i) => {
 							bHasTfZ || bHasZ ? (bHasZ ? _qCond(entry.z) : this.axis.z.tf) + ' PRESENT' : ''
 						])
 
-				], 'AND') || void(0),
+				], 'AND') || void (0),
 				queryHandle: getSel(),
 				bProportional: bHasY ? entry.bProportional : dataOpts.y.bProportional,
 				bRemoveDuplicates: Object.hasOwn(entry, 'bRemoveDuplicates') ? entry.bRemoveDuplicates : dataSource.bRemoveDuplicates
@@ -491,6 +505,63 @@ charts.forEach((chart, i) => {
 		const title = (isUUID(window.Name.replace(/[{}]/g, '')) ? '' : window.Name + ' - ') + 'Graph ' + i + ' {' + this.axis.x.key + ' - ' + this.axis.y.key + '}';
 		this.changeConfig({ ...newConfig, bPaint: true, bForceLoadData: true });
 		this.changeConfig({ title, bPaint: false, callbackArgs: { bSaveProperties: true } });
+	};
+	chart.shareUiSettings = function (mode = 'popup') {
+		const settings = Object.fromEntries(
+			['chart', 'background']
+				.map((key) => [key, clone(this.properties[key].slice(0, 2))])
+		);
+		switch (mode.toLowerCase()) {
+			case 'popup': {
+				const keys = ['Layout (but not data)', 'Colors', 'Background'];
+				const answer = WshShell.Popup('Share current UI settings with other panels?\nSettings which will be copied:\n\n' + keys.join(', '), 0, 'Timeline: share UI settings', popup.question + popup.yes_no);
+				if (answer === popup.yes) {
+					window.NotifyOthers('Timeline: share UI settings', settings);
+					return true;
+				}
+				return false;
+			}
+			case 'path': {
+				const input = Input.string('file', folders.data + 'ui_settings_' + window.Name + '.json', 'File name name:', 'Timeline: export UI settings', folders.data + 'ui_settings.json', void (0), true) || (Input.isLastEqual ? Input.lastInput : null);
+				if (input === null) { return null; }
+				return _save(input, JSON.stringify(settings, null, '\t').replace(/\n/g, '\r\n'))
+					? input
+					: null;
+			}
+			default:
+				return settings;
+		}
+	};
+	chart.applyUiSettings = function (settings, bForce) {
+		window.highlight = true;
+		window.Repaint();
+		const answer = bForce
+			? popup.yes
+			: WshShell.Popup('Apply current settings to highlighted panel?\nCheck UI.', 0, window.Name + ': Timeline', popup.question + popup.yes_no);
+		if (answer === popup.yes) {
+			const newBg = JSON.parse(String(settings.background[1]));
+			['x', 'y', 'w', 'h', 'callbacks'].forEach((key) => delete newBg[key]);
+			const toApplyChart = { graph: {} };
+			const newChart = JSON.parse(String(settings.chart[1]));
+			['borderWidth', 'pointAlpha'].forEach((key) => {
+				toApplyChart.graph[key] = newChart.graph[key];
+			});
+			if (this.graph.multi === newChart.graph.multi) {
+				toApplyChart.graph.type = newChart.graph.type;
+			}
+			['margin', 'chroma', 'background', 'axis', 'configuration', 'buttons'].forEach((key) => {
+				toApplyChart[key] = newChart[key];
+			});
+			['x', 'y', 'w', 'h'].forEach((key) => delete toApplyChart[key]);
+			['x', 'y', 'z'].forEach((c) => ['key', 'tf'].forEach((key) => delete toApplyChart.axis[c][key]));
+			this.changeConfig({ ...toApplyChart, bRepaint: true, callbackArgs: { bSaveProperties: true } });
+			background.changeConfig({ config: newBg, bRepaint: false, callbackArgs: { bSaveProperties: true } });
+			window.highlight = false;
+			window.Repaint();
+		} else {
+			window.highlight = false;
+			window.Repaint();
+		}
 	};
 });
 globProfiler.Print('charts');
@@ -595,6 +666,7 @@ addEventListener('on_paint', (gr) => {
 	if (globSettings.bDebugPaint) { extendGR(gr, { Repaint: true }); }
 	background.paint(gr);
 	charts.forEach((chart) => { chart.paint(gr); });
+	if (window.highlight) { extendGR(gr, { Highlight: true }); }
 	if (window.debugPainting) { window.drawDebugRectAreas(gr); }
 });
 
@@ -635,6 +707,9 @@ addEventListener('on_mouse_leave', () => {
 });
 
 addEventListener('on_mouse_rbtn_up', (x, y, mask) => {
+	if (utils.IsKeyPressed(VK_CONTROL) && utils.IsKeyPressed(VK_LWIN)) {
+		return onRbtnUpImportSettings().btn_up(x, y);
+	}
 	charts.some((chart) => chart.rbtnUp(x, y, mask));
 	return true; // left shift + left windows key will bypass this callback and will open default context menu.
 });
@@ -732,6 +807,13 @@ addEventListener('on_playlist_items_added', (idx) => { // eslint-disable-line no
 addEventListener('on_playlist_items_removed', (idx) => { // eslint-disable-line no-unused-vars
 	if (!window.ID) { return; }
 	if (charts.some((chart) => chart.properties.bAutoData[1])) { refreshData(idx, 'on_playlist_items_removed'); }
+});
+
+addEventListener('on_notify_data', (name, info) => {
+	if (name === 'bio_imgChange' || name === 'bio_chkTrackRev' || name === 'xxx-scripts: panel name reply') { return; }
+	if (name === 'Timeline: share UI settings') {
+		if (info) { charts.every((chart) => chart.applyUiSettings(clone(info))); }
+	}
 });
 
 globProfiler.Print('callbacks');

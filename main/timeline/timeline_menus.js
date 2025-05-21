@@ -1,5 +1,5 @@
 'use strict';
-//13/05/25
+//20/05/25
 
 /* exported onLbtnUpPoint, onLbtnUpSettings*/
 
@@ -559,5 +559,95 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 			});
 		});
 	}
+	return menu;
+}
+
+function onRbtnUpImportSettings() {
+	const menu = new _menu();
+	menu.newEntry({ entryText: 'Panel menu: ' + window.Name, flags: MF_GRAYED });
+	menu.newSeparator();
+	// Generic code is left from other packages, but only JSON settings is used
+	menu.newEntry({
+		entryText: 'Export panel settings...', func: () => {
+			const bData = false; // Forced as json file
+			const input = Input.string('file', folders.data + 'settings_' + window.Name.replace(/\s/g, '_') + (bData ? '_' + new Date().toISOString().split('.')[0].replace(/[ :,]/g, '_') + '.zip' : '.json'), 'File name:', 'Timeline: Export panel settings', folders.data + 'settings' + (bData ? '.zip' : '.json'), void (0), true) || (Input.isLastEqual ? Input.lastInput : null);
+			if (input === null) { return null; }
+			const settings = JSON.stringify(
+				properties,
+				(key, val) => {
+					if (Array.isArray(val)) {
+						val.length = 2;
+					}
+					return val;
+				},
+				'\t'
+			).replace(/\n/g, '\r\n');
+			let bDone;
+			if (bData) {
+				bDone = _save(folders.temp + 'settings.json', settings);
+				if (bDone) {
+					_zip(
+						[folders.temp + 'settings.json'],
+						input,
+						false
+					);
+					bDone = _isFile(input);
+				}
+			} else if (_save(input, settings)) { bDone = true; }
+			if (bDone) {
+				console.log('Timeline: exported panel settings to\n\t ' + input);
+				_explorer(input);
+			} else {
+				console.popup('Timeline: failed exporting panel settings.', window.Name);
+			}
+		}
+	});
+	menu.newEntry({
+		entryText: 'Import panel settings...', func: () => {
+			const input = Input.string('file', '', 'File name:\n\nPanel settings must be provided in a .json file, if including also other data provide a .zip file instead.\n\nNote existing settings will be overwritten.', 'Timeline: import settings', 'C:\\foobar2000\\profile\\js_data\\settings_Timeline_2025-05-09T11_06_50.zip', void (0), true) || (Input.isLastEqual ? Input.lastInput : null);
+			if (input === null) { return null; }
+			let bDone;
+			if (/\.zip$/i.test(input)) {
+				_deleteFolder(folders.temp + 'import\\');
+				_unzip(input, folders.temp + 'import\\');
+				if (_isFile(folders.temp + 'import\\settings.json')) {
+					const settings = JSON.parse(
+						_open(folders.temp + 'import\\settings.json', utf8),
+						(key, val) => {
+							return val === null
+								? Infinity
+								: val;
+						}
+					);
+					overwriteProperties(settings);
+					_deleteFile(folders.temp + 'import\\settings.json');
+					console.log('Timeline: imported panel settings');
+				} else {
+					console.log('Timeline: no panel settings file found (settings.json)');
+				}
+				_deleteFolder(folders.temp + 'import\\');
+				if (bDone) { console.log('Timeline: imported panel settings from\n\t ' + input); }
+			} else {
+				const settings = JSON.parse(
+					_open(input, utf8),
+					(key, val) => {
+						return val === null
+							? Infinity
+							: val;
+					}
+				);
+				overwriteProperties(settings);
+				console.log('Timeline: imported panel settings from\n\t ' + input);
+			}
+			console.log('Timeline: reloading panel...');
+			window.Reload();
+		}
+	});
+	menu.newSeparator();
+	menu.newEntry({
+		entryText: 'Share UI settings...', func: () => {
+			charts.every((chart) => chart.shareUiSettings())
+		}
+	});
 	return menu;
 }

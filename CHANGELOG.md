@@ -40,6 +40,7 @@
 - UI: exposed background gradient focus setting, i.e. where the center color will be at its highest intensity.
 - Debug: added multiple debug logging settings to 'Other settings' menu.
 - Readme: readme is shown as popup on first installation and available at the settings menu.
+- Configuration: external files like world map database references are now exposed as a panel property.
 ### Changed
 - Installation: added popup warnings when scripts are installed outside foobar2000 profile folder. These checks can be tweaked at globSettings.json.
 - Installation: script may now be installed at any path within the foobar profile folder, no longer limited to '[FOOBAR PROFILE FOLDER]\scripts\SMP\xxx-scripts\' folder. Obviously it may still be installed at such place, which may be preferred if updating an older version.

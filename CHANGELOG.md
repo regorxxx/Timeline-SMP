@@ -38,6 +38,7 @@
 - UI: custom option for Z-Axis groups setting at display menu.
 - UI: exposed grid settings.
 - UI: exposed background gradient focus setting, i.e. where the center color will be at its highest intensity.
+- UI: cut value labels to 25 chars.
 - Debug: added multiple debug logging settings to 'Other settings' menu.
 - Readme: readme is shown as popup on first installation and available at the settings menu.
 - Configuration: external files like world map database references are now exposed as a panel property.

@@ -1,5 +1,5 @@
 ﻿'use strict';
-//22/06/25
+//25/06/25
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '2.0.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
@@ -295,7 +295,8 @@ const defaultConfig = deepAssign()(
 			return '\n' + '-'.repeat(60) + '\n(L. click to show point menu)' +
 				(this.getCurrentRange() < this.getMaxRange() ? '\n(L. click dragging to scroll)' : '') +
 				'\n(Use buttons to configure chart)' +
-				'\n(Shift + Win + R. Click for SMP panel menu)';
+				'\n(Shift + Win + R. Click for SMP panel menu)' +
+				'\n(Ctrl + Win + R. Click for script panel menu)';
 		},
 		configuration: { bSlicePerKey: true },
 		callbacks: {
@@ -305,7 +306,10 @@ const defaultConfig = deepAssign()(
 			settings: {
 				onLbtnUp: function (x, y, mask) { onLbtnUpSettings.call(this).btn_up(x, y); }, // eslint-disable-line no-unused-vars
 				onDblLbtn: function (x, y, mask) { this.setData(); }, // eslint-disable-line no-unused-vars
-				tooltip: 'Main settings\n\nDouble L. Click to force data update' + '\n' + '-'.repeat(50) + '\n(Shift + Win + R. Click for SMP panel menu)'
+				tooltip: 'Main settings\n\nDouble L. Click to force data update' +
+					'\n' + '-'.repeat(50) +
+					'\n(Shift + Win + R. Click for SMP panel menu)' +
+					'\n(Ctrl + Win + R. Click for script panel menu)'
 			},
 			display: {
 				onLbtnUp: function (x, y, mask) { // eslint-disable-line no-unused-vars

@@ -93,6 +93,7 @@
 - UI: fixed wrong highlighting for scatter charts. It was smaller by a few px in some cases on both axis.
 - UI: fixed X-axis first and last labels background not being properly adjusted in some cases for 'bars', 'lines' and 'scatter' charts.
 - UI: minor x-position fix on timeline and bars charts.
+- UI: fixed Y-axis title overlap in some cases.
 - UI: wrong position on second background gradient using bigradient mode.
 
 ## [1.5.0] - 2024-10-09

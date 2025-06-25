@@ -1,5 +1,5 @@
 ﻿'use strict';
-//20/05/25
+//22/06/25
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '2.0.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
@@ -161,6 +161,11 @@ let properties = {
 		onPlayback: true,
 		preferPlayback: true,
 		multipleSelection: false
+	}), { func: isJSON }],
+	filePaths: ['External database paths', JSON.stringify({
+		listenBrainzArtists: '.\\profile\\' + folders.dataName + 'listenbrainz_artists.json',
+		searchByDistanceArtists: '.\\profile\\' + folders.dataName + 'searchByDistance_artists.json',
+		worldMapArtists: '.\\profile\\' + folders.dataName + 'worldMap.json'
 	}), { func: isJSON }]
 };
 Object.keys(properties).forEach(p => properties[p].push(properties[p][1]));
@@ -286,9 +291,10 @@ const defaultConfig = deepAssign()(
 		data: [],
 		x: 0, y: 0, w: 0, h: 0,
 		tooltipText: function (point, serie, mask) { // eslint-disable-line no-unused-vars
-			return '\n\n(L. click to show point menu)' +
+			return '\n' + '-'.repeat(60) + '\n(L. click to show point menu)' +
 				(this.getCurrentRange() < this.getMaxRange() ? '\n(L. click dragging to scroll)' : '') +
-				'\n(Use buttons to configure chart)';
+				'\n(Use buttons to configure chart)' +
+				'\n(Shift + Win + R. Click for SMP panel menu)';
 		},
 		configuration: { bSlicePerKey: true },
 		callbacks: {
@@ -298,7 +304,7 @@ const defaultConfig = deepAssign()(
 			settings: {
 				onLbtnUp: function (x, y, mask) { onLbtnUpSettings.call(this).btn_up(x, y); }, // eslint-disable-line no-unused-vars
 				onDblLbtn: function (x, y, mask) { this.setData(); }, // eslint-disable-line no-unused-vars
-				tooltip: 'Main settings\n\nDouble L. Click to force data update\n(Shift + Win + R. Click\nfor SMP panel menu)'
+				tooltip: 'Main settings\n\nDouble L. Click to force data update' + '\n' + '-'.repeat(50) + '\n(Shift + Win + R. Click for SMP panel menu)'
 			},
 			display: {
 				onLbtnUp: function (x, y, mask) { // eslint-disable-line no-unused-vars
@@ -358,6 +364,7 @@ const newConfig = [
 ];
 newConfig.forEach((row) => row.forEach((config) => {
 	const dataSource = JSON.parse(properties.dataSource[1]);
+	const filePaths = JSON.parse(properties.filePaths[1]);
 	const timeRange = getTimeRange(properties);
 	const bHasX = Object.hasOwn(config.axis.x, 'tf') && config.axis.x.tf.length;
 	const bHasY = Object.hasOwn(config.axis.y, 'tf') && config.axis.y.tf.length;
@@ -366,8 +373,10 @@ newConfig.forEach((row) => row.forEach((config) => {
 		? config.axis.y.tf === '#LISTENS#'
 		: false;
 	const bListensPerPeriod = bListens && bHasX && timePeriods.includes(config.axis.x.tf);
-	if (properties.bAsync[1]) {
-		config.dataAsync = () => getDataAsync({
+	const bAsync = properties.bAsync[1];
+	if (bAsync || defaultConfig.configuration.bLoadAsyncData) {
+		const func = bAsync ? getDataAsync : getData;
+		config[bAsync ? 'dataAsync' : 'data'] = () => func({
 			option: bHasZ
 				? 'timeline'
 				: bListensPerPeriod
@@ -392,36 +401,10 @@ newConfig.forEach((row) => row.forEach((config) => {
 			], 'AND') || void (0),
 			queryHandle: getSel(),
 			bProportional: config.axis.y.bProportional,
-			bRemoveDuplicates: dataSource.bRemoveDuplicates
+			bRemoveDuplicates: dataSource.bRemoveDuplicates,
+			filePaths
 		});
-	} else if (defaultConfig.configuration.bLoadAsyncData) {
-		config.data = getData({
-			option: bHasZ
-				? 'timeline'
-				: bListensPerPeriod
-					? 'playcount period'
-					: bListens
-						? 'playcount'
-						: 'tf',
-			optionArg: timeRange,
-			sourceType: dataSource.sourceType,
-			sourceArg: dataSource.sourceArg || null,
-			x: bHasX ? _qCond(config.axis.x.tf, true) : '',
-			y: bHasY ? _qCond(config.axis.y.tf, true) : '',
-			z: bHasZ ? _qCond(config.axis.z.tf, true) : '',
-			query: queryJoin([
-				properties.dataQuery[1],
-				...(bListensPerPeriod
-					? []
-					: [
-						bHasX ? config.axis.x.tf + ' PRESENT' : '',
-						bHasZ ? config.axis.z.tf + ' PRESENT' : ''
-					])
-			], 'AND') || void (0),
-			queryHandle: getSel(),
-			bProportional: config.axis.y.bProportional,
-			bRemoveDuplicates: dataSource.bRemoveDuplicates
-		});
+		if (!bAsync) { config.data = config.data(); }
 	}
 	if (!bHasZ) { config.graph = { multi: false }; }
 }));
@@ -465,6 +448,7 @@ charts.forEach((/** @type {_chart} */ chart, i) => {
 		const dataOpts = JSON.parse(this.properties.data[1]);
 		const timeRange = getTimeRange(this.properties);
 		const chartConfig = JSON.parse(this.properties.chart[1]);
+		const filePaths = JSON.parse(this.properties.filePaths[1]);
 		const newConfig = {
 			[this.properties.bAsync[1] ? 'dataAsync' : 'data']: (this.properties.bAsync[1] ? getDataAsync : getData)({
 				option: bHasTfZ || bHasZ
@@ -492,7 +476,8 @@ charts.forEach((/** @type {_chart} */ chart, i) => {
 				], 'AND') || void (0),
 				queryHandle: getSel(),
 				bProportional: bHasY ? entry.bProportional : dataOpts.y.bProportional,
-				bRemoveDuplicates: Object.hasOwn(entry, 'bRemoveDuplicates') ? entry.bRemoveDuplicates : dataSource.bRemoveDuplicates
+				bRemoveDuplicates: Object.hasOwn(entry, 'bRemoveDuplicates') ? entry.bRemoveDuplicates : dataSource.bRemoveDuplicates,
+				filePaths
 			}),
 			axis: {},
 			dataManipulation: chartConfig.dataManipulation

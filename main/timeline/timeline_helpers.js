@@ -1,5 +1,5 @@
 ﻿'use strict';
-//30/03/25
+//20/06/25
 
 /* exported getData, getDataAsync */
 
@@ -63,7 +63,8 @@ include('..\\search_by_distance\\search_by_distance_culture.js');
  * @param {boolean} o.bProportional - [=false] Calculate Y count proportional to population
  * @param {boolean} o.bRemoveDuplicates - [=true] Remove duplicates from source
  * @param {boolean} o.bIncludeHandles - [=true] Include associated handle per point
- * @param {{filter:boolean, sort: function|null}} o.zGroups - [={ filter: false, sort: null } Settings to handle Z-data using 'timeline' option. If filter is true, then only non null z-values are output.
+ * @param {{filter:boolean, sort: function|null}} o.zGroups - [={ filter: false, sort: null } Settings to handle Z-data using 'timeline' option. If filter is true, then only non null z-values are output
+ * @param {{worldMapArtists:string}} o.filePaths - Paths to external database files
  * @returns {<Array.<Array,Array>>} Array of series with points [[{x, y, [z]},...], ...]
  */
 function getData({
@@ -74,7 +75,8 @@ function getData({
 	bProportional = false,
 	bRemoveDuplicates = true,
 	bIncludeHandles = false,
-	zGroups = { filter: false, sort: null /* (a, b) => b.count - a.count */ }
+	zGroups = { filter: false, sort: null /* (a, b) => b.count - a.count */ },
+	filePaths = { worldMapArtists: '.\\profile\\' + folders.dataName + 'worldMap.json' }
 } = {}) {
 	const noSplitTags = new Set(['ALBUM', 'TITLE']); noSplitTags.forEach((tag) => noSplitTags.add(_t(tag)));
 	const dedupByIdTags = new Set(['TITLE']); dedupByIdTags.forEach((tag) => dedupByIdTags.add(_t(tag)));
@@ -298,8 +300,8 @@ function getData({
 		}
 		case 'playcount worldmap':
 		case 'playcount worldmap region': {
-			const file = '.\\profile\\' + folders.dataName + 'worldMap.json';
-			const worldMapData = _jsonParseFileCheck(file, 'Library json', window.Name, utf8).map((point) => { return { id: point.artist, country: (point.val.slice(-1) || [''])[0] }; });
+			const worldMapData = _jsonParseFileCheck(filePaths.worldMapArtists, 'Library json', window.Name, utf8)
+				.map((point) => { return { id: point.artist, country: (point.val.slice(-1) || [''])[0] }; });
 			const xTags = noSplitTags.has(x.toUpperCase().replace(/\|.*/, ''))
 				? fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => [val])
 				: fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => val.split(splitter));
@@ -341,8 +343,8 @@ function getData({
 			break;
 		}
 		case 'playcount worldmap city': {
-			const file = '.\\profile\\' + folders.dataName + 'worldMap.json';
-			const worldMapData = _jsonParseFileCheck(file, 'Library json', window.Name, utf8).map((point) => { return { id: point.artist, city: point.val[0] || '', country: (point.val.slice(-1) || [''])[0] }; });
+			const worldMapData = _jsonParseFileCheck(filePaths.worldMapArtists, 'Library json', window.Name, utf8)
+				.map((point) => { return { id: point.artist, city: point.val[0] || '', country: (point.val.slice(-1) || [''])[0] }; });
 			const xTags = noSplitTags.has(x.toUpperCase().replace(/\|.*/, ''))
 				? fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => [val])
 				: fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => val.split(splitter));
@@ -417,6 +419,7 @@ function getData({
  * @param {boolean} o.bIncludeHandles - [=true] Include associated handle per point
  * @param {{filter:boolean, sort: function|null}} o.zGroups - [={ filter: false, sort: null } Settings to handle Z-data using 'timeline' option. If filter is true, then only non null z-values are output.
  * @param {{token:string, bOffline:boolean}} o.listenBrainz - [={token: '', bOffline: true}] ListenBrainz settings to retrieve playcounts. If no token provided, it's skipped
+ * @param {{worldMapArtists:string}} o.filePaths - Paths to external database files
  * @returns {promise.<Array.<Array,Array>>} Array of series with points [[{x, y, [z]},...], ...]
  */
 async function getDataAsync({
@@ -428,7 +431,8 @@ async function getDataAsync({
 	bRemoveDuplicates = true,
 	bIncludeHandles = false,
 	zGroups = { filter: false, sort: null /* (a, b) => b.count - a.count */ },
-	listenBrainz = { token: '', user: '', bOffline: true }
+	listenBrainz = { token: '', user: '', bOffline: true },
+	filePaths = { worldMapArtists: '.\\profile\\' + folders.dataName + 'worldMap.json' }
 } = {}) {
 	const noSplitTags = new Set(['ALBUM', 'TITLE']); noSplitTags.forEach((tag) => noSplitTags.add(_t(tag)));
 	const dedupByIdTags = new Set(['TITLE']); dedupByIdTags.forEach((tag) => dedupByIdTags.add(_t(tag)));
@@ -652,8 +656,8 @@ async function getDataAsync({
 		}
 		case 'playcount worldmap':
 		case 'playcount worldmap region': {
-			const file = '.\\profile\\' + folders.dataName + 'worldMap.json';
-			const worldMapData = _jsonParseFileCheck(file, 'Library json', window.Name, utf8).map((point) => { return { id: point.artist, country: (point.val.slice(-1) || [''])[0] }; });
+			const worldMapData = _jsonParseFileCheck(filePaths.worldMapArtists, 'Library json', window.Name, utf8)
+				.map((point) => { return { id: point.artist, country: (point.val.slice(-1) || [''])[0] }; });
 			const xTags = noSplitTags.has(x.toUpperCase().replace(/\|.*/, ''))
 				? (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => [val])
 				: (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => val.split(splitter));
@@ -695,8 +699,8 @@ async function getDataAsync({
 			break;
 		}
 		case 'playcount worldmap city': {
-			const file = '.\\profile\\' + folders.dataName + 'worldMap.json';
-			const worldMapData = _jsonParseFileCheck(file, 'Library json', window.Name, utf8).map((point) => { return { id: point.artist, city: point.val[0] || '', country: (point.val.slice(-1) || [''])[0] }; });
+			const worldMapData = _jsonParseFileCheck(filePaths.worldMapArtists, 'Library json', window.Name, utf8)
+				.map((point) => { return { id: point.artist, city: point.val[0] || '', country: (point.val.slice(-1) || [''])[0] }; });
 			const xTags = noSplitTags.has(x.toUpperCase().replace(/\|.*/, ''))
 				? (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => [val])
 				: (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => val.split(splitter));
@@ -832,10 +836,10 @@ function timeRange(tag, fromDate, toDate) {
 			).map((v) => v.toString().padStart(2, '0'));
 		case '#WEEK#':
 			return ['1st', '2nd', '3rd', '4th', '5th'];
-			// return range(1, 5);
+		// return range(1, 5);
 		case '#MONTH#':
 			return ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-			// return range(1, 12);
+		// return range(1, 12);
 		case '#YEAR#':
 			return range(toDate.getUTCFullYear(), fromDate.getUTCFullYear());
 	}

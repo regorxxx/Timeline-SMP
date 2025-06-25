@@ -55,6 +55,11 @@ let properties = {
 	}), { func: isJSON }],
 	dataQuery: ['Data query', 'ALL', { func: isString }],
 	dataSource: ['Data source', JSON.stringify({ sourceType: 'library', sourceArg: null, bRemoveDuplicates: true }), { func: isJSON }],
+	groupBy: ['Data aggregation', JSON.stringify({
+		x: null, xKey: null,
+		y: null, yKey: null,
+		z: null, zKey: null
+	}), { func: isJSON }],
 	timeRange: ['Time range', JSON.stringify({ timePeriod: null, timeKey: null }), { func: isJSON }],
 	xEntries: ['Axis X TF entries', JSON.stringify([
 		{ x: _t(globTags.date), keyX: 'Date' },
@@ -371,6 +376,7 @@ newConfig.forEach((row) => row.forEach((config) => {
 	const dataSource = JSON.parse(properties.dataSource[1]);
 	const filePaths = JSON.parse(properties.filePaths[1]);
 	const timeRange = getTimeRange(properties);
+	const groupBy = JSON.parse(properties.groupBy[1]);
 	const bHasX = Object.hasOwn(config.axis.x, 'tf') && config.axis.x.tf.length;
 	const bHasY = Object.hasOwn(config.axis.y, 'tf') && config.axis.y.tf.length;
 	const bHasZ = Object.hasOwn(config.axis.z, 'tf') && config.axis.z.tf.length;
@@ -389,6 +395,7 @@ newConfig.forEach((row) => row.forEach((config) => {
 					: bListens
 						? 'playcount'
 						: 'tf',
+			groupBy,
 			optionArg: timeRange,
 			sourceType: dataSource.sourceType,
 			sourceArg: dataSource.sourceArg || null,
@@ -452,17 +459,20 @@ charts.forEach((/** @type {_chart} */ chart, i) => {
 		const dataSource = JSON.parse(this.properties.dataSource[1]);
 		const dataOpts = JSON.parse(this.properties.data[1]);
 		const timeRange = getTimeRange(this.properties);
+		const groupBy = JSON.parse(this.properties.groupBy[1]);
 		const chartConfig = JSON.parse(this.properties.chart[1]);
 		const filePaths = JSON.parse(this.properties.filePaths[1]);
+		const option = bHasTfZ || bHasZ
+			? 'timeline'
+			: bListensPerPeriod
+				? 'playcount period'
+				: bListens
+					? 'playcount'
+					: 'tf';
 		const newConfig = {
 			[this.properties.bAsync[1] ? 'dataAsync' : 'data']: (this.properties.bAsync[1] ? getDataAsync : getData)({
-				option: bHasTfZ || bHasZ
-					? 'timeline'
-					: bListensPerPeriod
-						? 'playcount period'
-						: bListens
-							? 'playcount'
-							: 'tf',
+				option,
+				groupBy: Object.hasOwn(entry, 'groupBy') ? entry.groupBy : groupBy,
 				optionArg: Object.hasOwn(entry, 'optionArg') ? entry.optionArg : timeRange,
 				sourceType: Object.hasOwn(entry, 'sourceType') ? entry.sourceType : dataSource.sourceType,
 				sourceArg: (Object.hasOwn(entry, 'sourceArg') ? entry.sourceArg : dataSource.sourceArg) || null,

@@ -26,6 +26,7 @@
 - Data: added setting to change how the Z-groups are sorted within the group (independently from the global data).
 - Data: added setting to filter Z-groups points to either show all or non-zero values (on Y axis).
 - Data: added setting to switch duplicates removal. In general it will be desirable to have it enabled, but in case the X-Axis is set to track Albums, it may remove tracks present in multiple albums distorting the statistics. In such cases it's recommendable to disable it.
+- Data: added setting to aggregate Y-values per desired tag, so they are not counted multiple times. For ex. when displaying number of tracks at Y-axis, data may be aggregated by album so all tracks from same album only count as 1. This lets you display how many different items of any kind are present along X-axis values. i.e. artists per date, genres per decade, etc. Axis labels will be adjusted accordingly when using this setting or ask via input box for a proper label. Note this setting is only available when Y-axis is set to display a fixed number per track.
 - UI: added dynamic colors support based on track's artwork. It follows the background cover mode settings and must be enabled on 'Color palette' submenu. Note the axis and labels follow a different setting in their own submenu (option added on previous versions).
 - UI: 'fill' chart type.
 - UI: settings button tooltip now shows 'Shift + Win + R. Click' shortcut to open SMP/JSpliter panel menu (which works globally on any script and panel, at any position).

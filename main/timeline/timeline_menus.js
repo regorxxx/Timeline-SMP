@@ -1,5 +1,5 @@
 'use strict';
-//12/06/25
+//25/06/25
 
 /* exported onLbtnUpPoint, onLbtnUpSettings, onRbtnUpImportSettings */
 
@@ -13,13 +13,14 @@ include('..\\..\\helpers\\helpers_xxx_input.js');
 include('..\\..\\helpers\\helpers_xxx_export.js');
 /* global exportSettings:readable, importSettings:readable */
 include('..\\..\\helpers\\menu_xxx.js');
-/* global MF_GRAYED:readable, _menu:readable, MF_STRING:readable */
+/* global MF_GRAYED:readable, _menu:readable, MF_STRING:readable, MF_CHECKED:readable */
 include('..\\..\\helpers\\menu_xxx_extras.js');
 /* global _createSubMenuEditEntries:readable */
 include('..\\filter_and_query\\remove_duplicates.js');
 /* global removeDuplicates:readable */
 include('..\\window\\window_xxx_background_menu.js');
 
+/** @this _chart */
 function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-vars
 	// Constants
 	const menu = new _menu();
@@ -131,12 +132,14 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 	return menu.btn_up(x, y);
 }
 
+/** @this _chart */
 function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 	// Constants
 	const properties = this.properties;
 	const menu = new _menu();
 	const dataSource = JSON.parse(properties.dataSource[1]);
 	const timeRange = JSON.parse(properties.timeRange[1], (key, val) => val === null ? Infinity : val);
+	const groupBy = JSON.parse(properties.groupBy[1]);
 	const bHasX = Object.hasOwn(this.axis.x, 'tf') && this.axis.x.tf.length;
 	const bHasY = Object.hasOwn(this.axis.y, 'tf') && this.axis.y.tf.length;
 	const bListens = bHasY
@@ -153,9 +156,9 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 				bProportional: this.axis[axis].bProportional
 			};
 		} else {
-			const axisTF = Input.string('string', this.axis[axis].tf, 'Enter tag or TF expression:\n\n' + (axis === 'y' ? 'Expression should output a number per track (and TRUE value).\nFor example:\n\nListens: $max(%PLAY_COUNT%,%LASTFM_PLAY_COUNT%,0)\nRated 5 tracks: $ifequal(' + globTags.rating + ',5,1$not(0),0)' : 'For example:\n%GENRE%'), 'Axis ' + axis + ' TitleFormat', '%GENRE%');
+			const axisTF = Input.string('string', this.axis[axis].tf.replace(/"/g, ''), 'Enter tag or TF expression:\n\n' + (axis === 'y' ? 'Expression should output a number per track (and TRUE value).\nFor example:\n\nListens: $max(%PLAY_COUNT%,%LASTFM_PLAY_COUNT%,0)\nRated 5 tracks: $ifequal(' + globTags.rating + ',5,1$not(0),0)' : 'For example:\n%GENRE%'), 'Axis ' + axis + ' TitleFormat', '%GENRE%');
 			if (axisTF === null) { return; }
-			const axisKey = Input.string('string', capitalizeAll(axisTF.replace(/%/g, '')), 'Enter axis name:', 'Axis ' + axis + ' name', 'Date') || Input.lastInput;
+			const axisKey = Input.string('string', capitalizeAll(axisTF.replace(/[%"]/g, '')), 'Enter axis name:', 'Axis ' + axis + ' name', 'Date') || Input.lastInput;
 			if (axisKey === null) { return; }
 			return {
 				[axis]: axisTF,
@@ -169,7 +172,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 	menu.newSeparator();
 	// Menus
 	{	// X
-		const subMenu = menu.newMenu('Set X-axis data');
+		const subMenu = menu.newMenu('Set X-axis data', void (0), Object.hasOwn(this.axis.x, 'tf') ? MF_CHECKED : MF_STRING);
 		menu.newEntry({ menuName: subMenu, entryText: 'X-axis:', flags: MF_GRAYED });
 		menu.newSeparator(subMenu);
 		const list = JSON.parse(properties.xEntries[1]);
@@ -209,7 +212,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 		});
 	}
 	{	// Y
-		const subMenu = menu.newMenu('Set Y-axis data');
+		const subMenu = menu.newMenu('Set Y-axis data', void (0), Object.hasOwn(this.axis.y, 'tf') ? MF_CHECKED : MF_STRING);
 		menu.newEntry({ menuName: subMenu, entryText: 'Y-axis:', flags: MF_GRAYED });
 		menu.newSeparator(subMenu);
 		const list = JSON.parse(properties.yEntries[1]);
@@ -222,6 +225,13 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 							const defaultX = JSON.parse(properties.xEntries[1])[0];
 							entry.x = defaultX.x;
 							entry.keyX = defaultX.keyX;
+						}
+						const bListens = entry.y === '#LISTENS#';
+						const bProportional = entry.bProportional;
+						const bTfY = isNaN(entry.y);
+						if (!bHasY || bListens || bListensPerPeriod || bProportional || bTfY) {
+							for (let key in groupBy) { groupBy[key] = null; }
+							properties.groupBy[1] = JSON.stringify(groupBy);
 						}
 						this.setData(entry);
 					}
@@ -251,7 +261,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 		});
 	}
 	if (bShowZ) {	// Z
-		const subMenu = menu.newMenu('Set Z-axis data');
+		const subMenu = menu.newMenu('Set Z-axis data', void (0), Object.hasOwn(this.axis.z, 'tf') ? MF_CHECKED : MF_STRING);
 		menu.newEntry({ menuName: subMenu, entryText: 'Z-axis:', flags: MF_GRAYED });
 		menu.newSeparator(subMenu);
 		const list = JSON.parse(properties.zEntries[1]);
@@ -292,8 +302,56 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 		});
 	}
 	menu.newSeparator();
+	{	// Group by
+		const bProportional = bHasY ? this.axis.y.bProportional : false;
+		const bTfY = bHasY ? isNaN(this.axis.y.tf) : false;
+		const subMenu = menu.newMenu(
+			'Aggregate by', void (0),
+			!bHasY || bListens || bListensPerPeriod || bProportional || bTfY
+				? MF_GRAYED
+				: Object.keys(groupBy).some((key) => groupBy[key] !== null) ? MF_CHECKED : MF_STRING
+		);
+		menu.newEntry({ menuName: subMenu, entryText: 'Select tag for aggregation:', flags: MF_GRAYED });
+		menu.newSeparator(subMenu);
+		const options = [
+			{ entryText: 'Album', groupBy: { y: '%ALBUM%', yKey: 'Albums' } },
+			{ entryText: 'Artist', groupBy: { y: '%ARTIST%', yKey: 'Artists' } },
+			{ entryText: 'Genre', groupBy: { y: globTags.genre, yKey: 'Genres' } },
+			{ entryText: 'Style', groupBy: { y: globTags.style, yKey: 'Styles' } },
+			{ entryText: 'Folksonomy', groupBy: { y: globTags.folksonomy, yKey: 'Tags' } },
+		];
+		options.forEach((option) => {
+			menu.newEntry({
+				menuName: subMenu, entryText: option.entryText, func: () => {
+					for (let key in option.groupBy) {
+						groupBy[key] = option.groupBy[key];
+					}
+					properties.groupBy[1] = JSON.stringify(groupBy);
+					overwriteProperties(properties);
+					this.changeConfig({ axis: { y: { key: option.groupBy.yKey } }, callbackArgs: { bSaveProperties: true } });
+					this.setData();
+				}
+			});
+			menu.newCheckMenuLast(() => Object.keys(option.groupBy).every((key) => groupBy[key] === option.groupBy[key]));
+		});
+		menu.newSeparator(subMenu);
+		menu.newEntry({
+			menuName: subMenu, entryText: 'None (disable aggregation)', func: () => {
+				for (let key in groupBy) {
+					groupBy[key] = null;
+				}
+				properties.groupBy[1] = JSON.stringify(groupBy);
+				overwriteProperties(properties);
+				const input = Input.string('string', 'Tracks', 'Input the desired Y-Axis label:', 'Y-Axis label', 'Tracks') || Input.lastInput;
+				if (input === null) { return; };
+				this.changeConfig({ axis: { y: { key: input } }, callbackArgs: { bSaveProperties: true } });
+				this.setData();
+			}
+		});
+		menu.newCheckMenuLast(() => Object.keys(groupBy).every((key) => groupBy[key] === null));
+	}
 	{	// Listens range
-		const subMenu = menu.newMenu('Time range', void (0), !bListens && !bListensPerPeriod ? MF_GRAYED : MF_STRING);
+		const subMenu = menu.newMenu('Time range', void (0), !bListens && !bListensPerPeriod ? MF_GRAYED : (timeRange.timePeriod !== Infinity ? MF_CHECKED : MF_STRING));
 		menu.newEntry({ menuName: subMenu, entryText: 'Select time range:', flags: MF_GRAYED });
 		menu.newSeparator(subMenu);
 		const options = [
@@ -581,7 +639,7 @@ function onRbtnUpImportSettings() {
 	menu.newEntry({
 		entryText: 'Import panel settings...', func: () => {
 			importSettings(
-				void(0),
+				void (0),
 				properties,
 				'Timeline'
 			);

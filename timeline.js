@@ -64,7 +64,7 @@ let properties = {
 	xEntries: ['Axis X TF entries', JSON.stringify([
 		{ x: _t(globTags.date), keyX: 'Date' },
 		{ x: '$div(' + _t(globTags.date) + ',10)0s', keyX: 'Decade' },
-		{ x: _t(globTags.date), keyX: 'Added' },
+		{ x: '$if3(%ADDED_ENHANCED%,%ADDED%,%2003_ADDED%)', keyX: 'Added' },
 		{ x: _t(globTags.bpm), keyX: 'BPM' },
 		{ x: '$mul($div(' + _t(globTags.bpm) + ',10),10)s', keyX: 'BPM (tens)' },
 		{ x: _t(globTags.rating), keyX: 'Rating' },
@@ -103,6 +103,7 @@ let properties = {
 	].map((v) => { return (Object.hasOwn(v, 'name') ? v : { ...v, name: 'By ' + v.keyZ }); })), { func: isJSON }],
 	queryEntries: ['Query entries', JSON.stringify([
 		{ query: globQuery.recent, name: 'Played this month' },
+		{ query: '((%LAST_PLAYED_ENHANCED% PRESENT AND %LAST_PLAYED_ENHANCED% DURING #YEAR#) OR (%2003_LAST_PLAYED% PRESENT AND %2003_LAST_PLAYED% DURING #YEAR#) OR (%2003_LAST_PLAYED% MISSING AND %LAST_PLAYED% DURING #YEAR#))', name: 'Played this year' },
 		{ query: globQuery.ratingTop, name: 'Rated 5 tracks' },
 		{ query: globQuery.loved, name: 'Loved tracks' },
 		{ query: globQuery.hated, name: 'Hated tracks' },

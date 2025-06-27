@@ -85,6 +85,7 @@
 - Data: minor error on decades X-axis preset.
 - Data: workaround to some tag values having numbers with commas, they are no longer considered a multi-value tag to be split. For ex. 10,000 Maniacs is not split int o [10, 000 Maniacs].
 - Data: active playlist source not being updated when removing/adding tracks in some cases.
+- Data: applying a filter to Y-axis after zooming resulted in some cases on an invalid range after changing the setting due to current range no longer having any data to shown. Now the data range is reset in these cases.
 - UI: zoom button showing '-' instead of '+' if there was no data drawn.
 - UI: minor highlighting errors on 'lines' chart type.
 - UI: color palette 'colorblind safe' setting was not saved properly between sessions.

@@ -2330,6 +2330,15 @@ function _chart({
 			if (dataAsync) { this.initDataAsync(); }
 			else if (bCheckColors && this.dataAsync) { this.dataAsync.then(() => this.checkColors()); } // NOSONAR
 		} // May be managed by the chart or externally
+		if (dataManipulation && Object.hasOwn(dataManipulation, 'filter') && !Object.hasOwn(dataManipulation, 'slice')) {
+			const back = [...this.dataManipulation.slice];
+			const max = this.getMaxRange();
+			const range = Math.max(this.dataManipulation.slice[1] - Math.max(this.dataManipulation.slice[0], 0), 1);
+			if (this.dataManipulation.slice[0] >= max) { this.dataManipulation.slice[0] = 0; }
+			if (range >= max) { this.dataManipulation.slice[1] = Infinity; }
+			else { this.dataManipulation.slice[1] = this.dataManipulation.slice[0] + range; }
+			if (back[0] !== this.dataManipulation.slice[0] || back[1] !== this.dataManipulation.slice[1]) { this.initData(); }
+		}
 		if (callback && isFunction(callback)) { callback.call(this, this.exportConfig(), arguments[0], callbackArgs); }
 		if (bPaint) { this.repaint(); }
 		return this;
@@ -2512,10 +2521,10 @@ function _chart({
 							this.dataManipulation.sort[label] = function reverseNum(a, b) { return b[axis] - a[axis]; };
 							break;
 						case 'string natural':
-							this.dataManipulation.sort[label] = function naturalString(a, b) { return a[axis].localeCompare(b[axis], void(0), { sensitivity: 'base', numeric: true }); };
+							this.dataManipulation.sort[label] = function naturalString(a, b) { return a[axis].localeCompare(b[axis], void (0), { sensitivity: 'base', numeric: true }); };
 							break;
 						case 'string reverse':
-							this.dataManipulation.sort[label] = function reverseString(a, b) { return 0 - a[axis].localeCompare(b[axis], void(0), { sensitivity: 'base', numeric: true }); };
+							this.dataManipulation.sort[label] = function reverseString(a, b) { return 0 - a[axis].localeCompare(b[axis], void (0), { sensitivity: 'base', numeric: true }); };
 							break;
 						case 'random':
 							this.dataManipulation.sort[label] = Array.prototype.shuffle;

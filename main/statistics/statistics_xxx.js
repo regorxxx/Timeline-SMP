@@ -1628,15 +1628,8 @@ function _chart({
 	this.hasToolbar = false;
 	this.buttonsCoords = { x: () => this.x + this.w - _scale(26), y: () => this.y + _scale(12), size: _scale(24) };
 	this.resizeButtons = () => {
-		this.leftBtn.x = this.axis.y.show && !['doughnut', 'pie'].includes(this.graph.type)
-			? this.x + this.margin.leftAuto * 2
-			: this.x;
-		this.leftBtn.y = (this.y + this.h) / 2;
-		this.leftBtn.w = this.buttonsCoords.size / 2;
-		this.rightBtn.x = this.x + this.w - this.rightBtn.w;
-		this.rightBtn.y = (this.y + this.h) / 2;
-		this.rightBtn.w = this.buttonsCoords.size / 2;
 		// Toolbar
+		let maxY = 0;
 		let i = 0;
 		Object.keys(this.buttons).forEach((label) => {
 			const key = label + 'Btn';
@@ -1645,9 +1638,19 @@ function _chart({
 				this[key].y = this.buttonsCoords.y() + i * this.buttonsCoords.size;
 				this[key].w = this[key].h = this.buttonsCoords.size;
 				this.hasToolbar = true;
+				maxY = this[key].y + this[key].h;
 				i++;
 			}
 		});
+		// Left/Right
+		this.leftBtn.x = this.x;
+		this.leftBtn.y = (this.y + this.h) / 2;
+		this.leftBtn.w = this.buttonsCoords.size / 2;
+		this.rightBtn.y = (this.y + this.h) / 2;
+		this.rightBtn.x = this.x + this.w - this.rightBtn.w;
+		this.rightBtn.w = this.buttonsCoords.size / 2;
+		if (maxY > this.rightBtn.y) { this.rightBtn.x -= this.buttonsCoords.size; }
+		if (this.axis.y.show && !['doughnut', 'pie'].includes(this.graph.type)) { this.leftBtn.x += this.margin.leftAuto * 2; }
 	};
 
 	this.resize = (x, y, w, h, bRepaint = true) => {
@@ -2262,6 +2265,7 @@ function _chart({
 
 	this.changeConfig = function ({ data, dataAsync = null, colors, chroma, graph, dataManipulation, background, grid, axis, graphSpecs, margin, x, y, w, h, title, configuration, gFont, bPaint = true, bForceLoadData = false, callback = this.callbacks.config.change /* (config, arguments, callbackArgs) => void(0) */, callbackArgs = null }) {
 		let bCheckColors = false;
+		let bResizeButtons = false;
 		if (gFont) { this.gFont = gFont; }
 		if (this.data && this.data.length) {
 			if (data && data !== this.data || dataAsync) {
@@ -2291,8 +2295,11 @@ function _chart({
 			}
 		}
 		if (graph) {
-			if (graph.type && graph.type !== this.graph.type && ['timeline', 'doughnut', 'pie'].some((t) => this.graph.type === t || graph.type === t)) {
-				this.colors = [];
+			if (graph.type && graph.type !== this.graph.type) {
+				bResizeButtons = true;
+				if (['timeline', 'doughnut', 'pie'].some((t) => this.graph.type === t || graph.type === t)) {
+					this.colors = [];
+				}
 			}
 			this.graph = { ...this.graph, ...graph };
 		}
@@ -2305,7 +2312,7 @@ function _chart({
 			if (axis.x) { this.axis.x = { ...this.axis.x, ...axis.x }; }
 			if (axis.y) { this.axis.y = { ...this.axis.y, ...axis.y }; }
 			if (axis.z) { this.axis.z = { ...this.axis.z, ...axis.z }; }
-			if (Object.hasOwn(axis.y, 'show')) { this.resizeButtons(); }
+			if (Object.hasOwn(axis.y, 'show')) { bResizeButtons = true; }
 		}
 		if (graphSpecs) {
 			if (graphSpecs.timeline) { this.graphSpecs.timeline = { ...this.graphSpecs.timeline, ...graphSpecs.timeline }; }
@@ -2315,6 +2322,7 @@ function _chart({
 			if (grid.y) { this.grid.y = { ...this.grid.y, ...grid.y }; }
 		}
 		if (margin) { this.margin = { ...this.margin, ...margin }; }
+		if (bResizeButtons) { this.resizeButtons(); }
 		if ([x, y, w, h].some((n) => typeof n !== 'undefined')) {
 			this.resize(typeof x !== 'undefined' ? x : this.x, typeof y !== 'undefined' ? y : this.y, typeof w !== 'undefined' ? w : this.w, typeof h !== 'undefined' ? h : this.h, false);
 		}

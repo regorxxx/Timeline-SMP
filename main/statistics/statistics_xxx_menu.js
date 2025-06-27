@@ -93,7 +93,7 @@ function createStatisticsMenu({ bClear = true, menuKey = 'menu', onBtnUp = null,
 	const filtGreat = (num) => ((a) => a.y > num);
 	const filtLow = (num) => ((a) => a.y < num);
 	const filtBetween = (lim) => ((a) => a.y > lim[0] && a.y < lim[1]);
-	const fineGraphs = new Set(['bars', 'fill', 'doughnut', 'pie', 'timeline']).difference(hideCharts || new Set());
+	const fineGraphs = new Set(['bars', 'fill', 'doughnut', 'pie', 'timeline', 'horizontal-bars']).difference(hideCharts || new Set());
 	const sizeGraphs = new Set(['scatter', 'lines']).difference(hideCharts || new Set());
 	// Header
 	menu.newEntry({ entryText: this.title, flags: MF_GRAYED });
@@ -105,6 +105,7 @@ function createStatisticsMenu({ bClear = true, menuKey = 'menu', onBtnUp = null,
 			{ isEq: null, key: this.graph.type, value: null, newValue: 'timeline', entryText: 'Timeline' },
 			{ isEq: null, key: this.graph.type, value: null, newValue: 'scatter', entryText: 'Scatter' },
 			{ isEq: null, key: this.graph.type, value: null, newValue: 'bars', entryText: 'Bars' },
+			{ isEq: null, key: this.graph.type, value: null, newValue: 'horizontal-bars', entryText: 'Bars (horizontal)' },
 			{ isEq: null, key: this.graph.type, value: null, newValue: 'lines', entryText: 'Lines' },
 			{ isEq: null, key: this.graph.type, value: null, newValue: 'lines-hq', entryText: 'Lines (high quality)' },
 			{ isEq: null, key: this.graph.type, value: null, newValue: 'fill', entryText: 'Fill' },

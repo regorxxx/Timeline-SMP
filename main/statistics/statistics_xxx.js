@@ -278,8 +278,7 @@ function _chart({
 			const xPoint = x + idx * tickW;
 			const yPoint = y - valH;
 			const bFocused = this.currPoint[0] === i && this.currPoint[1] === j;
-			this.dataCoords[i][j] = { x: j > 0 ? xPoint - selBar / 2 : xPoint, y: yPoint, w: (j > 0 && j !== last ? selBar : selBar / 2), h: valH };
-			const point = this.dataCoords[i][j];
+			const point = this.dataCoords[i][j] = { x: j > 0 ? xPoint - selBar / 2 : xPoint, y: yPoint, w: (j > 0 && j !== last ? selBar : selBar / 2), h: valH };
 			if (bFocused) {
 				gr.FillSolidRect(point.x, point.y, point.w, point.h, borderColor);
 			}
@@ -388,8 +387,7 @@ function _chart({
 			const xPoint = xValues + xAxisValues.indexOf(value.x) * tickW;
 			const yPoint = y - valH;
 			const bFocused = this.currPoint[0] === i && this.currPoint[1] === j;
-			this.dataCoords[i][j] = { x: xPoint, y: yPoint, w: barW, h: valH };
-			const point = this.dataCoords[i][j];
+			const point = this.dataCoords[i][j] = { x: xPoint, y: yPoint, w: barW, h: valH };
 			gr.FillSolidRect(point.x, point.y, point.w, point.h, color);
 			if (bFocused) { gr.FillSolidRect(point.x, point.y, point.w, point.h, borderColor); }
 			// Borders
@@ -411,8 +409,7 @@ function _chart({
 			const xPoint = xValues + xAxisValues.indexOf(value.x) * tickW;
 			const yPoint = (y - h) / 2 - valH + this.margin.top;
 			const bFocused = this.currPoint[0] === i && this.currPoint[1] === j;
-			this.dataCoords[i][j] = { x: xPoint, y: yPoint, w: barW, h: valH + this.axis.x.width };
-			const point = this.dataCoords[i][j];
+			const point = this.dataCoords[i][j] = { x: xPoint, y: yPoint, w: barW, h: valH + this.axis.x.width };
 			gr.FillSolidRect(point.x, point.y, point.w, point.h - this.axis.x.width / 2, color);
 			gr.FillSolidRect(point.x, point.y + point.h + this.axis.x.width / 2 - this.axis.x.width  * (this.axis.x.show ? 0 : 1), point.w, point.h - this.axis.x.width * (this.axis.x.show ? 0.5 : 0), color);
 			if (bFocused) { gr.FillSolidRect(point.x, point.y, point.w, point.h * 2 + this.axis.x.width, borderColor); }

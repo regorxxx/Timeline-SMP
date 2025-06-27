@@ -411,14 +411,14 @@ function _chart({
 			const xPoint = xValues + xAxisValues.indexOf(value.x) * tickW;
 			const yPoint = (y - h) / 2 - valH + this.margin.top;
 			const bFocused = this.currPoint[0] === i && this.currPoint[1] === j;
-			this.dataCoords[i][j] = { x: xPoint, y: yPoint, w: barW, h: valH };
+			this.dataCoords[i][j] = { x: xPoint, y: yPoint, w: barW, h: valH + this.axis.x.width };
 			const point = this.dataCoords[i][j];
-			gr.FillSolidRect(point.x, point.y, point.w, point.h + (this.axis.x.show ? this.axis.x.width / 2 : 0), color);
-			gr.FillSolidRect(point.x, point.y + point.h + (this.axis.x.show ? this.axis.x.width * 3 / 2 : 0), point.w, point.h, color);
-			if (bFocused) { gr.FillSolidRect(point.x, point.y, point.w, point.h * 2 + (this.axis.x.show ? this.axis.x.width * 3 / 2 : 0), borderColor); }
+			gr.FillSolidRect(point.x, point.y, point.w, point.h - this.axis.x.width / 2, color);
+			gr.FillSolidRect(point.x, point.y + point.h + this.axis.x.width / 2 - this.axis.x.width  * (this.axis.x.show ? 0 : 1), point.w, point.h - this.axis.x.width * (this.axis.x.show ? 0.5 : 0), color);
+			if (bFocused) { gr.FillSolidRect(point.x, point.y, point.w, point.h * 2 + this.axis.x.width, borderColor); }
 			// Borders
 			if (this.graph.borderWidth) {
-				gr.DrawRect(point.x, point.y, point.w, point.h * 2 + (this.axis.x.show ? this.axis.x.width * 3 / 2 : 0), this.graph.borderWidth, borderColor);
+				gr.DrawRect(point.x, point.y, point.w, point.h * 2 - this.axis.x.width * (this.axis.x.show ? 0 : 0.5), this.graph.borderWidth, borderColor);
 			}
 		});
 	};
@@ -613,13 +613,13 @@ function _chart({
 				// XY Axis
 				if (this.axis.x.show) {
 					if (graphType === 'timeline') {
-						gr.DrawLine(x, (y - h) / 2 + this.margin.top + this.axis.x.width / 2, x + w - this.margin.leftAuto, (y - h) / 2 + this.margin.top + this.axis.x.width / 2, this.axis.x.width, xAxisColor);
+						gr.DrawLine(x, (y - h) / 2 + this.margin.top + this.axis.x.width / 2, x + w - this.margin.leftAuto - this.axis.x.width / 2, (y - h) / 2 + this.margin.top + this.axis.x.width / 2, this.axis.x.width, xAxisColor);
 					} else {
 						gr.DrawLine(x, y - this.axis.x.width / 2, x + w - this.margin.leftAuto, y - this.axis.x.width / 2, this.axis.x.width, xAxisColor);
 					}
 				}
 				if (this.axis.y.show) {
-					gr.DrawLine(x, y, x, h, this.axis.y.width, yAxisColor);
+					gr.DrawLine(x, y + (graphType === 'timeline' ? this.axis.x.width / 2 : 0), x, h, this.axis.y.width, yAxisColor);
 				}
 		}
 		x += this.axis.x.width / 2;
@@ -721,7 +721,6 @@ function _chart({
 			}
 			case 'bars':
 			default: {
-				x -= this.axis.x.width * 1 / 2;
 				tickW = (w - this.margin.leftAuto) / xAxisValuesLen;
 				barW = tickW / this.series;
 				// Values
@@ -847,16 +846,16 @@ function _chart({
 						const yTickText = yTick - tickH / 2;
 						if (yTickText < 0) { return; }
 						if (i !== 0) {
-							gr.DrawLine(x - this.axis.x.width * 2, yTick + this.axis.x.width, x + this.axis.x.width, yTick + this.axis.x.width, this.axis.y.width / 2, yAxisColor);
+							gr.DrawLine(x - this.axis.x.width * 2, yTick + this.axis.x.width * 1.5, x + this.axis.x.width, yTick + this.axis.x.width * 1.5, this.axis.y.width / 2, yAxisColor);
 							gr.DrawLine(x - this.axis.x.width * 2, y + this.margin.top - yTick, x + this.axis.x.width, y + this.margin.top - yTick, this.axis.y.width / 2, yAxisColor);
 						} else {
-							gr.DrawLine(x - this.axis.x.width * 2, yTick, x + this.axis.x.width, yTick, this.axis.y.width / 2, yAxisColor);
+							gr.DrawLine(x - this.axis.x.width * 2, yTick + this.axis.x.width, x + this.axis.x.width, yTick + this.axis.x.width, this.axis.y.width / 2, yAxisColor);
 						}
 						if (this.axis.y.labels) {
 							const flags = DT_RIGHT | DT_END_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX;
 							if (i !== 0) {
-								gr.GdiDrawText(tickText[i], this.gFont, yAxisColor, this.x - this.axis.y.width / 2 - _scale(4) + xOffsetKey, yTickText + (this.axis.x.show ? this.axis.x.width : 0), this.margin.leftAuto, tickH, flags);
-								gr.GdiDrawText(tickText[i], this.gFont, yAxisColor, this.x - this.axis.y.width / 2 - _scale(4) + xOffsetKey, y - h + this.margin.top - yTick - this.axis.y.width / 2 + (this.axis.x.show ? this.axis.x.width : 0), this.margin.leftAuto, tickH, flags);
+								gr.GdiDrawText(tickText[i], this.gFont, yAxisColor, this.x - this.axis.y.width / 2 - _scale(4) + xOffsetKey, yTickText + this.axis.x.width, this.margin.leftAuto, tickH, flags);
+								gr.GdiDrawText(tickText[i], this.gFont, yAxisColor, this.x - this.axis.y.width / 2 - _scale(4) + xOffsetKey, y - h + this.margin.top - yTick - this.axis.y.width / 2 + this.axis.x.width, this.margin.leftAuto, tickH, flags);
 							} else {
 								gr.GdiDrawText(tickText[i], this.gFont, yAxisColor, this.x - this.axis.y.width / 2 - _scale(4) + xOffsetKey, yTickText, this.margin.leftAuto, tickH, flags);
 							}
@@ -1060,7 +1059,7 @@ function _chart({
 								if (i !== 0 && (xLabel - lastLabel) < minTickW) { return; }
 								lastLabel = xLabel;
 							}
-							if (this.axis.x.labels && (graphType !== 'bars' || !this.axis.x.bAltLabels)) {
+							if (this.axis.x.labels && (!['bars'].includes(graphType) || !this.axis.x.bAltLabels)) {
 								if (i === 0 && offsetTickText) { // Fix for first label position
 									const zeroW = xLabel + offsetTickText - this.x - this.margin.leftAuto / 2 + (bFitTicks ? tickW : drawLabelW);
 									const zeroX = this.x + this.margin.leftAuto / 2 + xOffsetKey + (bFitTicks ? 0 : tickW * 2 / 3);
@@ -1095,15 +1094,24 @@ function _chart({
 				// Grid
 				if (this.grid.y.show) {
 					ticks.forEach((tick) => {
-						const yTick = y - tick / (maxY || 1) * (y - h);
-						const lineW = w + (this.axis.y.show ? this.margin.leftAuto / 2 + this.axis.y.width : 0);
+						if (tick > maxY) { return; }
+						const coeff = tick / (maxY || 1);
+						const yTick = y - coeff * (y - h) + this.axis.y.width * (graphType === 'timeline'
+							? coeff <= 0.5
+								? coeff === 0.5
+									? 1
+									: 1.5
+								: 0
+							: 0
+						);
+						const lineW = Math.min(w + (this.axis.y.show ? this.margin.leftAuto - this.axis.y.width : 0), this.w - this.margin.right);
 						gr.DrawLine(x, yTick, lineW, yTick, this.grid.y.width, this.callbacks.config.backgroundColor ? invert(this.callbacks.config.backgroundColor()[0], true) : yGridColor);
 					});
 				}
 				if (this.grid.x.show) {
 					xAxisValues.forEach((tick, i) => {
 						const xLine = x + barW + i * tickW;
-						gr.DrawLine(xLine, y - this.grid.y.width, xLine, h, this.grid.x.width, xGridColor);
+						gr.DrawLine(xLine, y + this.grid.x.width / 2 + (graphType === 'timeline' ? + this.grid.x.width * 2 : 0), xLine, h, this.grid.x.width, xGridColor);
 					});
 				}
 		}

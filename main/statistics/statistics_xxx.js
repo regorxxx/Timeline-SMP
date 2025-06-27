@@ -832,7 +832,7 @@ function _chart({
 						// Check if labels are drawn in the region to the left overlapping the axis title
 						const offsetLabels = labelOver.coord.reduce((prev, serie) => {
 							return Math.max(prev, serie.slice(1).reduce((prev, point) => {
-								return (point.xAxis.y >= yTitle && point.xAxis.y <= yTitle + keyW || point.xAxis.y + point.xAxis.h >= yTitle && point.xAxis.y + point.xAxis.h <= yTitle + keyW) && (initXTitle >= point.xAxis.x && initXTitle <= point.xAxis.x + point.xAxis.w || initXTitle + keyH >= point.xAxis.x && (initXTitle + keyH) <= point.xAxis.x + point.xAxis.w)
+								return point.xAxis && (point.xAxis.y >= yTitle && point.xAxis.y <= yTitle + keyW || point.xAxis.y + point.xAxis.h >= yTitle && point.xAxis.y + point.xAxis.h <= yTitle + keyW) && (initXTitle >= point.xAxis.x && initXTitle <= point.xAxis.x + point.xAxis.w || initXTitle + keyH >= point.xAxis.x && (initXTitle + keyH) <= point.xAxis.x + point.xAxis.w)
 									? prev !== 0 ? Math.min(point.xAxis.x, point.xAxis.x, prev) : Math.min(point.xAxis.x, point.xAxis.x)
 									: prev;
 							}, 0));
@@ -2001,10 +2001,14 @@ function _chart({
 	};
 
 	this.normalApply = (series, bInverse = false) => { // Sort as normal distribution
-		const sort = bInverse
+		const sortX = (a, b) => a.x.localeCompare(b.x, void (0), { numeric: true });
+		const sortY = bInverse
 			? (a, b) => b.y - a.y
 			: (a, b) => a.y - b.y;
-		series = series.map((serie) => { return serie.sort(sort).reduceRight((acc, val, i) => { return i % 2 === 0 ? [...acc, val] : [val, ...acc]; }, []); });
+		series = series.map((serie) =>
+			serie.sort(sortX).sort(sortY)
+				.reduceRight((acc, val, i) => i % 2 === 0 ? [...acc, val] : [val, ...acc], [])
+		);
 		const slice = this.dataManipulation.slice;
 		if (!slice || !slice.length === 2 || (slice[0] === 0 && slice[1] === Infinity)) { return series; } // NOSONAR
 		return series.map((serie) => {

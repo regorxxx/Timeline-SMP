@@ -570,10 +570,6 @@ function _chart({
 		const xAxisValues = getUniqueListBy(points.flat(Infinity), 'x').map((value) => value.x);
 		const xAxisValuesLen = xAxisValues.length;
 		const labelOver = { coord: [] }; // For pie Graphs
-		// Fallback graphs
-		// if (this.series === 1 && this.dataDraw[0].length === 1) {
-		// 	// if (['fill', 'lines', 'lines-hq'].includes(graphType)) { graphType = 'scatter';}
-		// }
 		/*
 			Draw for all graphs
 		*/
@@ -894,7 +890,7 @@ function _chart({
 							let xLine = xLabel;
 							let hLine = yPos - this.axis.x.width - (this.axis.x.bAltLabels ? (y - h) / 2 : 0);
 							// Center line and ajust height if data is evenly grouped
-							if (this.graphSpecs.timeline.bAxisCenteredX) {
+							if (this.graphSpecs.timeline.bAxisCenteredX && this.graph.multi) {
 								xLine += tickW / 2;
 								if (this.dataManipulation.group % 2 !== 0) {
 									const [serie, idx] = this.tracePoint(xLine, yPos - this.axis.x.width - (y - h) / 2);

@@ -1,5 +1,5 @@
 ﻿'use strict';
-//26/05/25
+//27/05/25
 
 /* exported createStatisticsMenu */
 
@@ -392,7 +392,7 @@ function createStatisticsMenu({ bClear = true, menuKey = 'menu', onBtnUp = null,
 			[
 				{ isEq: null, key: this.axis.x.bAltLabels, value: null, newValue: !this.axis.x.bAltLabels, entryText: 'Alt. X labels' },
 			].forEach(createMenuOption('axis', ['x', 'bAltLabels'], subMenuTwo, true));
-			if (this.graph.type === 'timeline') {
+			if (this.graph.type === 'timeline' && this.graph.multi) {
 				[
 					{ isEq: null, key: this.graphSpecs.timeline.bAxisCenteredX, value: null, newValue: !this.graphSpecs.timeline.bAxisCenteredX, entryText: 'Center X tick' },
 				].forEach(createMenuOption('graphSpecs', ['timeline', 'bAxisCenteredX'], subMenuTwo, true));

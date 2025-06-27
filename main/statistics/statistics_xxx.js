@@ -1,5 +1,5 @@
 ﻿'use strict';
-//25/06/25
+//27/06/25
 
 /* exported _chart */
 
@@ -461,11 +461,12 @@ function _chart({
 				iX = r * Math.cos(alpha + iAlpha / sliceTicks * h);
 				circleArr.push(c.x + iX, c.y + iY);
 			}
-			if (circleArr.length) {
+			const polygonPoints = circleArr.length;
+			if (polygonPoints) {
 				gr.FillPolygon(color, 0, circleArr);
 				if (bFocused) { gr.FillPolygon(borderColor, 0, circleArr); }
 				// Borders
-				if (this.graph.borderWidth) {
+				if (this.graph.borderWidth && polygonPoints > 2) {
 					gr.DrawPolygon(borderColor, this.graph.borderWidth, circleArr);
 				}
 			}
@@ -507,11 +508,12 @@ function _chart({
 				iX = r * Math.cos(alpha + iAlpha / sliceTicks * h);
 				circleArr.push(c.x + iX, c.y + iY);
 			}
-			if (circleArr.length) {
+			const polygonPoints = circleArr.length;
+			if (polygonPoints) {
 				gr.FillPolygon(color, 0, circleArr);
 				if (bFocused) { gr.FillPolygon(borderColor, 0, circleArr); }
 				// Borders
-				if (this.graph.borderWidth) {
+				if (this.graph.borderWidth && polygonPoints > 2) {
 					gr.DrawPolygon(borderColor, this.graph.borderWidth, circleArr);
 				}
 			}

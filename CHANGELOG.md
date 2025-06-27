@@ -95,6 +95,7 @@
 - UI: minor x-position fix on timeline and bars charts.
 - UI: fixed Y-axis title overlap in some cases.
 - UI: wrong position on second background gradient using bigradient mode.
+- UI: fixed possible crash on pie and doughnut charts when polygons tend to a line or point.
 
 ## [1.5.0] - 2024-10-09
 ### Added

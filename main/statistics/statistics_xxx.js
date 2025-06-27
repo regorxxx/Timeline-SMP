@@ -971,13 +971,13 @@ function _chart({
 										const _gr = img.GetGraphics();
 										let topMax = xTickW;
 										if (this.currPoint[0] !== i || this.currPoint[1] !== j) {
-											topMax = Math.min(xTickW, value.y / (maxY || 1) * (y - h));
+											topMax = value.y / (maxY || 1) * (y - h);
 											if (valueZ.length > 3 && topMax > 30) {
 												if (xTickW > (topMax - this.axis.x.width - _scale(2))) {
 													const wPerChar = (xTickW / valueZ.length);
 													valueZ = valueZ.cut(Math.floor((topMax - this.axis.x.width) / (wPerChar) - 3));
 												}
-											} else { valueZ = valueZ.cut(1); }
+											} else if (valueZ.length > 3) { valueZ = valueZ.cut(1); }
 										} else if (this.hasToolbar && (zLabel + keyH) >= this.buttonsCoords.x()) { bHideToolbar = true; }
 										_gr.SetTextRenderingHint(TextRenderingHint.SingleBitPerPixelGridFit);
 										_gr.DrawString(valueZ, this.gFont, RGBA(...toRGB(xAxisColor), 255), 0, 0, topMax, keyH, StringFormatFlags.NoWrap);

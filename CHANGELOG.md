@@ -100,6 +100,7 @@
 - UI: fixed possible crash on pie and doughnut charts when polygons tend to a line or point.
 - UI: fixed left/right scrolling buttons position not being adjusted when changing the chart type (and only refreshed on panel restart).
 - UI: adjusted right scrolling button position to not overlap with other buttons.
+- UI: adjusted Z-labels in 3D timeline charts.
 
 ## [1.5.0] - 2024-10-09
 ### Added

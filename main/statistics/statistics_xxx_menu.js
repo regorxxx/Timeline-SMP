@@ -121,6 +121,7 @@ function createStatisticsMenu({ bClear = true, menuKey = 'menu', onBtnUp = null,
 			{ isEq: null, key: this.dataManipulation.distribution, value: null, newValue: null, entryText: 'Standard graph' },
 			{ isEq: null, key: this.dataManipulation.distribution, value: null, newValue: 'normal', entryText: 'Normal distrib.' },
 		].forEach(createMenuOption('dataManipulation', 'distribution', subMenu));
+		menu.newCheckMenuLast(() => ['normal inverse', 'normal'].includes(this.dataManipulation.distribution));
 		menu.newSeparator();
 	}
 	{

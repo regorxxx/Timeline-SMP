@@ -588,8 +588,8 @@ const getDataHelpers = {
 					if (id) {
 						if (!idMap.has(id)) { idMap.set(id, this.idChars.shuffle().join('')); }
 						id = idMap.get(id);
-					} else { id = ''; }
-					tag += id;
+						tag += id;
+					}
 				}
 				const entry = tagCount.get(tag);
 				if (!entry) {

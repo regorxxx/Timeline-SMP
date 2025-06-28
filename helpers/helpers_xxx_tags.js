@@ -1,5 +1,5 @@
 ﻿'use strict';
-//25/06/25
+//28/06/25
 
 /* exported dynamicTags, numericTags, cyclicTags, keyTags, sanitizeTagIds, sanitizeTagValIds, queryCombinations, queryReplaceWithCurrent, checkQuery, getHandleTags, getHandleListTags ,getHandleListTagsV2, getHandleListTagsTyped, cyclicTagsDescriptor, isQuery, fallbackTagsQuery, isSubsong, isSubsongPath, fileRegex */
 
@@ -289,17 +289,21 @@ function queryReplaceWithStatic(query, options = { bDebug: false, bBooleanForce:
 	if (options.bDebug) { console.log('Initial query:', query); }
 	if (!query.length) { console.log('queryReplaceWithStatic(): query is empty'); return ''; }
 	// Dates
-	if (/#(MONTH|YEAR|DAY|NOW|NOW_TS|TODAY|TODAY_TS|YESTERDAY)#/i.test(query)) {
+	if (/#((PREV)?(DECADE|YEAR|MONTH|DAY)|NOW(_TS)?|TODAY(_TS)?|(YESTER|PREV)DAY(_TS)?)#/i.test(query)) {
 		const date = new Date();
 		const yesterday = new Date(date);
 		yesterday.setDate(yesterday.getDate() - 1);
+		query = query.replace(/#DECADE#/gi, Math.floor(date.getFullYear() / 10).toString() + '0s');
+		query = query.replace(/#PREVDECADE#/gi, (Math.floor(date.getFullYear() / 10) - 1).toString() + '0s');
 		query = query.replace(/#YEAR#/gi, date.getFullYear().toString());
+		query = query.replace(/#PREVYEAR#/gi, (date.getFullYear() - 1).toString());
 		query = query.replace(/#MONTH#/gi, (date.getMonth() + 1).toString());
+		query = query.replace(/#PREVMONTH#/gi, (date.getMonth() - 1).toString());
 		query = query.replace(/#DAY#/gi, date.getDate().toString());
 		query = query.replace(/#(NOW|TODAY)#/gi, date.toISOString().split('T')[0]);
-		query = query.replace(/#(NOW_TS|TODAY_TS)#/gi, Math.round(date.getTime() / 1000));
-		query = query.replace(/#YESTERDAY#/gi, yesterday.toISOString().split('T')[0]);
-		query = query.replace(/#YESTERDAY_TS#/gi, Math.round(date.getTime() / 1000));
+		query = query.replace(/#(NOW|TODAY)_TS#/gi, Math.round(date.getTime() / 1000));
+		query = query.replace(/#(YESTER|PREV)DAY#/gi, yesterday.toISOString().split('T')[0]);
+		query = query.replace(/#(YESTER|PREV)DAY_TS#/gi, Math.round(date.getTime() / 1000));
 	}
 	// System
 	if (/#(VOLUME|VOLUMEDB|VERSION|ISPLAYING|ISPAUSED|PLAYSTATE|SAC|PLSCOUNT)#/i.test(query)) {

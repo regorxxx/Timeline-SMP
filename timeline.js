@@ -1,5 +1,5 @@
 ﻿'use strict';
-//25/06/25
+//28/06/25
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '2.0.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
@@ -64,7 +64,7 @@ let properties = {
 	xEntries: ['Axis X TF entries', JSON.stringify([
 		{ x: _t(globTags.date), keyX: 'Date' },
 		{ x: '$div(' + _t(globTags.date) + ',10)0s', keyX: 'Decade' },
-		{ x: '$if3(%ADDED_ENHANCED%,%ADDED%,%2003_ADDED%)', keyX: 'Added' },
+		{ x: '$year($if3(%ADDED_ENHANCED%,%ADDED%,%2003_ADDED%))', keyX: 'Added' },
 		{ x: _t(globTags.bpm), keyX: 'BPM' },
 		{ x: '$mul($div(' + _t(globTags.bpm) + ',10),10)s', keyX: 'BPM (tens)' },
 		{ x: _t(globTags.rating), keyX: 'Rating' },

@@ -197,6 +197,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 				if (entry) { this.setData(entry); }
 			}
 		});
+		menu.newCheckMenuLast(() => list.filter(menu.isNotSeparator).findIndex((entry) => _qCond(entry.x) ===  this.axis.x.tf) === -1);
 		menu.newSeparator(subMenu);
 		_createSubMenuEditEntries(menu, subMenu, {
 			name: 'Axis X TF entries',
@@ -246,6 +247,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 				if (entry) { this.setData(entry); }
 			}
 		});
+		menu.newCheckMenuLast(() => list.filter(menu.isNotSeparator).findIndex((entry) => this.axis.y.tf === _qCond(entry.y) && this.axis.y.bProportional === entry.bProportional) === -1);
 		menu.newSeparator(subMenu);
 		_createSubMenuEditEntries(menu, subMenu, {
 			name: 'Axis Y TF entries',
@@ -287,6 +289,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 				if (entry) { this.setData(entry); }
 			}
 		});
+		menu.newCheckMenuLast(() => Object.hasOwn(this.axis.z, 'tf') && list.filter(menu.isNotSeparator).findIndex((entry) => this.axis.z.tf === _qCond(entry.z)) === -1);
 		menu.newSeparator(subMenu);
 		_createSubMenuEditEntries(menu, subMenu, {
 			name: 'Axis Z TF entries',
@@ -469,6 +472,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 				this.setData({ query: input });
 			}
 		});
+		menu.newCheckMenuLast(() => list.filter(menu.isNotSeparator).findIndex((entry) => entry.query === properties.dataQuery[1]) === -1);
 		menu.newSeparator(subMenu);
 		_createSubMenuEditEntries(menu, subMenu, {
 			name: 'Query entries',

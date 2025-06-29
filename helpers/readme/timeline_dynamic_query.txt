@@ -38,7 +38,6 @@ Don't require a track to be evaluated (i.e. they always work):
 	- #DDAY# 	  -> 08 (current day DD)
 	- #WEEK# 	  -> 5 (first day of week)
 	- #DWEEK# 	  -> 05 (first day of week DD)
-	- #DDAY# 	  -> 08 (current day DD)
 	- #MONTH#	  -> 3 (current month)
 	- #MMONTH#	  -> 03 (current month MM)
 	- #YEAR#	  -> 2025 (current year)

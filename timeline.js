@@ -1,5 +1,5 @@
 ﻿'use strict';
-//28/06/25
+//29/06/25
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '2.0.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
@@ -102,8 +102,15 @@ let properties = {
 		{ z: _t(globTags.rating), keyZ: 'Rating' },
 	].map((v) => { return (Object.hasOwn(v, 'name') ? v : { ...v, name: 'By ' + v.keyZ }); })), { func: isJSON }],
 	queryEntries: ['Query entries', JSON.stringify([
-		{ query: globQuery.recent, name: 'Played this month' },
-		{ query: '((%LAST_PLAYED_ENHANCED% PRESENT AND %LAST_PLAYED_ENHANCED% DURING #YEAR#) OR (%2003_LAST_PLAYED% PRESENT AND %2003_LAST_PLAYED% DURING #YEAR#) OR (%2003_LAST_PLAYED% MISSING AND %LAST_PLAYED% DURING #YEAR#))', name: 'Played this year' },
+		{ query: globQuery.lastPlayedFunc.replaceAll('#QUERYEXPRESSION#', 'DURING #NOW#'), name: 'Played today' },
+		{ query: globQuery.lastPlayedFunc.replaceAll('#QUERYEXPRESSION#', 'DURING #YESTERDAY#'), name: 'Played yesterday' },
+		{ query: globQuery.lastPlayedFunc.replaceAll('#QUERYEXPRESSION#', 'SINCE #YEAR#-#MMONTH#-#DWEEK#'), name: 'Played this week' },
+		{ query: globQuery.lastPlayedFunc.replaceAll('#QUERYEXPRESSION#', 'DURING #YEAR#-#MMONTH#'), name: 'Played this month' },
+		{ query: globQuery.lastPlayedFunc.replaceAll('#QUERYEXPRESSION#', 'DURING #YEAR#'), name: 'Played this year' },
+		{ query: globQuery.lastPlayedFunc.replaceAll('#QUERYEXPRESSION#', 'DURING #PREVYEAR#'), name: 'Played last year' },
+		{ query: globQuery.addedFunc.replaceAll('#QUERYEXPRESSION#', 'DURING #YEAR#-#MMONTH#'), name: 'Added this month' },
+		{ name: 'sep' },
+		{ query: globQuery.ratingGr2, name: 'Rated ≥3 tracks' },
 		{ query: globQuery.ratingTop, name: 'Rated 5 tracks' },
 		{ query: globQuery.loved, name: 'Loved tracks' },
 		{ query: globQuery.hated, name: 'Hated tracks' },
@@ -111,35 +118,88 @@ let properties = {
 		{ query: '"$stricmp($directory(%path%,2),\'Various\')" MISSING AND NOT (%ALBUM ARTIST% IS various artists OR %ALBUM ARTIST% IS va) AND COMPILATION MISSING', name: 'No compilations' },
 		{ query: 'NOT DESCRIPTION IS single', name: 'No singles' },
 		{ query: 'NOT DESCRIPTION IS ep', name: 'No EPs' },
-		{ query: '"$stricmp($directory(%path%,2),\'Various\')" MISSING AND NOT (%ALBUM ARTIST% IS various artists OR %ALBUM ARTIST% IS va) AND COMPILATION MISSING AND NOT DESCRIPTION IS single AND NOT DESCRIPTION IS ep', name: 'Only albums' },
-		{ name: 'sep' },
 		{
-			query: globTags.artist + ' IS #' + globTags.artistRaw + '#', name: 'Selected artist(s)',
-			dynQueryMode: {
-				onSelection: true,
-				onPlayback: true,
-				preferPlayback: true
-			}
-		},
-		{
-			query: globTags.genre + ' IS #' + globTags.genre + '#', name: 'Selected genre(s)',
-			dynQueryMode: {
-				onSelection: true,
-				onPlayback: true,
-				preferPlayback: true
-			}
-		},
-		{
-			query: globTags.style + ' IS #' + globTags.style + '#', name: 'Selected style(s)',
-			dynQueryMode: {
-				onSelection: true,
-				onPlayback: true,
-				preferPlayback: true
-			}
+			query: queryJoin([
+				'"$stricmp($directory(%path%,2),\'Various\')" MISSING AND NOT (%ALBUM ARTIST% IS various artists OR %ALBUM ARTIST% IS va) AND COMPILATION MISSING',
+				'NOT DESCRIPTION IS single',
+				'NOT DESCRIPTION IS ep'
+			]),
+			name: 'Only albums'
 		},
 		{ name: 'sep' },
 		{
-			query: '"$stricmp($directory(%path%,2),\'Various\')" MISSING AND NOT (%ALBUM ARTIST% IS various artists OR %ALBUM ARTIST% IS va) AND COMPILATION MISSING AND NOT DESCRIPTION IS single AND NOT DESCRIPTION IS ep AND (' + globTags.artist + ' IS #' + globTags.artistRaw + '#)', name: 'Albums by Selected artist(s)',
+			query: globTags.artist + ' IS #' + globTags.artistRaw + '#',
+			name: 'Selected artist(s)',
+			dynQueryMode: {
+				onSelection: true,
+				onPlayback: true,
+				preferPlayback: true
+			}
+		},
+		{
+			query: globTags.genre + ' IS #' + globTags.genre + '#',
+			name: 'Selected genre(s)',
+			dynQueryMode: {
+				onSelection: true,
+				onPlayback: true,
+				preferPlayback: true
+			}
+		},
+		{
+			query: globTags.style + ' IS #' + globTags.style + '#',
+			name: 'Selected style(s)',
+			dynQueryMode: {
+				onSelection: true,
+				onPlayback: true,
+				preferPlayback: true
+			}
+		},
+		{ name: 'sep' },
+		{
+			query: queryJoin([
+				'"$stricmp($directory(%path%,2),\'Various\')" MISSING AND NOT (%ALBUM ARTIST% IS various artists OR %ALBUM ARTIST% IS va) AND COMPILATION MISSING',
+				'NOT DESCRIPTION IS single',
+				'NOT DESCRIPTION IS ep'
+				+ globTags.artist + ' IS #' + globTags.artistRaw + '#'
+
+			]),
+			name: 'Albums by Selected artist(s)',
+			dynQueryMode: {
+				onSelection: true,
+				onPlayback: true,
+				preferPlayback: true
+			}
+		},
+		{
+			query: queryJoin([
+				globQuery.fav,
+				globTags.artist + ' IS #' + globTags.artistRaw + '#'
+			]),
+			name: 'Fav tracks by Selected artist(s)',
+			dynQueryMode: {
+				onSelection: true,
+				onPlayback: true,
+				preferPlayback: true
+			}
+		},
+		{
+			query: queryJoin([
+				globQuery.fav,
+				globTags.genre + ' IS #' + globTags.genre + '#'
+			]),
+			name: 'Fav tracks by Selected genre(s)',
+			dynQueryMode: {
+				onSelection: true,
+				onPlayback: true,
+				preferPlayback: true
+			}
+		},
+		{
+			query: queryJoin([
+				globQuery.fav,
+				globTags.style + ' IS #' + globTags.style + '#'
+			]),
+			name: 'Fav tracks by Selected style(s)',
 			dynQueryMode: {
 				onSelection: true,
 				onPlayback: true,

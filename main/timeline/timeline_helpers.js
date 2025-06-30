@@ -1,5 +1,5 @@
 ﻿'use strict';
-//27/06/25
+//30/06/25
 
 /* exported getData, getDataAsync */
 
@@ -82,8 +82,8 @@ function getData({
 } = {}) {
 	const noSplitTags = new Set(['ALBUM', 'TITLE']); noSplitTags.forEach((tag) => noSplitTags.add(_t(tag)));
 	const dedupByIdTags = new Set(['TITLE']); dedupByIdTags.forEach((tag) => dedupByIdTags.add(_t(tag)));
-	const source = filterSource(query, getSource(sourceType, sourceArg), queryHandle);
-	const handleList = bRemoveDuplicates ? deduplicateSource(source) : source;
+	const source = getDataHelpers.filterSource(query, getSource(sourceType, sourceArg), queryHandle);
+	const handleList = bRemoveDuplicates ? getDataHelpers.deduplicateSource(source) : source;
 	let splitter;
 	try { splitter = new RegExp('(?<!\\d), ?(?!\\d)'); } // NOSONAR
 	catch (e) { // eslint-disable-line no-unused-vars
@@ -257,8 +257,8 @@ async function getDataAsync({
 } = {}) {
 	const noSplitTags = new Set(['ALBUM', 'TITLE']); noSplitTags.forEach((tag) => noSplitTags.add(_t(tag)));
 	const dedupByIdTags = new Set(['TITLE']); dedupByIdTags.forEach((tag) => dedupByIdTags.add(_t(tag)));
-	const source = filterSource(query, getSource(sourceType, sourceArg), queryHandle);
-	const handleList = bRemoveDuplicates ? deduplicateSource(source) : source;
+	const source = getDataHelpers.filterSource(query, getSource(sourceType, sourceArg), queryHandle);
+	const handleList = bRemoveDuplicates ? getDataHelpers.deduplicateSource(source) : source;
 	let splitter;
 	try { splitter = new RegExp('(?<!\\d), ?(?!\\d)'); } // NOSONAR
 	catch (e) { // eslint-disable-line no-unused-vars
@@ -396,7 +396,7 @@ async function getDataAsync({
 const getDataHelpers = {
 	idChars: ['\u200b', '\u200c', '\u200d', '\u200e', '\u200f', '\u2060'],
 	idCharsRegExp: new RegExp(['\u200b', '\u200c', '\u200d', '\u200e', '\u200f', '\u2060'].join('|'), 'gi'),
-	timeline: (xTags, serieCounters, zGroups, serieTags, handleList, optionArg, bIncludeHandles, bProportional, bSingleY) => {
+	timeline: function (xTags, serieCounters, zGroups, serieTags, handleList, optionArg, bIncludeHandles, bProportional, bSingleY) {
 		const dic = new Map();
 		const handlesMap = new Map();
 		if (!zGroups.filter) {
@@ -450,7 +450,7 @@ const getDataHelpers = {
 			)
 		];
 	},
-	timelineGroups: (xTags, serieCounters, zGroups, serieTags, groupTags, handleList, optionArg, bIncludeHandles, bProportional, bSingleY) => {
+	timelineGroups: function (xTags, serieCounters, zGroups, serieTags, groupTags, handleList, optionArg, bIncludeHandles, bProportional, bSingleY) {
 		const dic = new Map();
 		const handlesMap = new Map();
 		if (!zGroups.filter) {
@@ -512,7 +512,7 @@ const getDataHelpers = {
 			)
 		];
 	},
-	tf: (xTags, serieCounters, handleList, optionArg, bIncludeHandles, bProportional, bSingleY) => {
+	tf: function (xTags, serieCounters, handleList, optionArg, bIncludeHandles, bProportional, bSingleY) {
 		const dic = new Map();
 		const handlesMap = new Map();
 		xTags.forEach((arr, i) => {
@@ -539,7 +539,7 @@ const getDataHelpers = {
 			};
 		})];
 	},
-	tfGroups: (xTags, serieCounters, groupTags, handleList, optionArg, bIncludeHandles, bProportional, bSingleY) => {
+	tfGroups: function (xTags, serieCounters, groupTags, handleList, optionArg, bIncludeHandles, bProportional, bSingleY) {
 		const dic = new Map();
 		const handlesMap = new Map();
 		const dicGroup = new Map();
@@ -576,7 +576,7 @@ const getDataHelpers = {
 			};
 		})];
 	},
-	playcount: (xTags, playCount, skipCount, handleList, optionArg, bUseId, bIncludeHandles) => {
+	playcount: function (xTags, playCount, skipCount, handleList, optionArg, bUseId, bIncludeHandles) {
 		const bIncludeSkip = optionArg && optionArg.bSkipCount;
 		const tagCount = new Map();
 		const idMap = new Map();
@@ -614,7 +614,7 @@ const getDataHelpers = {
 			};
 		})];
 	},
-	playcountProportional: (xTags, playCount, handleList, bUseId, bIncludeHandles) => {
+	playcountProportional: function (xTags, playCount, handleList, bUseId, bIncludeHandles) {
 		const tagCount = new Map();
 		const keyCount = new Map();
 		const handlesMap = new Map();
@@ -652,7 +652,7 @@ const getDataHelpers = {
 			};
 		})];
 	},
-	playcountWorldMap: (xTags, playCount, handleList, worldMapData, bIncludeHandles) => {
+	playcountWorldMap: function (xTags, playCount, handleList, worldMapData, bIncludeHandles) {
 		const tagCount = new Map();
 		const handlesMap = new Map();
 		xTags.forEach((arr, i) => {
@@ -684,7 +684,7 @@ const getDataHelpers = {
 			};
 		})];
 	},
-	playcountWorldMapRegion: (xTags, playCount, handleList, worldMapData, bIncludeHandles) => {
+	playcountWorldMapRegion: function (xTags, playCount, handleList, worldMapData, bIncludeHandles) {
 		const tagCount = new Map();
 		const handlesMap = new Map();
 		xTags.forEach((arr, i) => {
@@ -714,7 +714,7 @@ const getDataHelpers = {
 			};
 		})];
 	},
-	playcountWorldMapCity: (xTags, playCount, handleList, worldMapData, bIncludeHandles) => {
+	playcountWorldMapCity: function (xTags, playCount, handleList, worldMapData, bIncludeHandles) {
 		const tagCount = new Map();
 		const cityMap = new Map();
 		const handlesMap = new Map();
@@ -755,10 +755,10 @@ const getDataHelpers = {
 			};
 		})];
 	},
-	playcountPeriod: (x, listens, handleList, skipCount, optionArg, bIncludeHandles) => {
+	playcountPeriod: function (x, listens, handleList, skipCount, optionArg, bIncludeHandles) {
 		const bIncludeSkip = optionArg && optionArg.bSkipCount;
 		const tagCount = new Map();
-		timeRange(x, optionArg.fromDate, optionArg.toDate).forEach((key) => tagCount.set(key.toString(), {
+		this.timeRange(x, optionArg.fromDate, optionArg.toDate).forEach((key) => tagCount.set(key.toString(), {
 			playCount: 0,
 			handles: bIncludeHandles ? [] : null,
 			skipCount: bIncludeSkip ? 0 : null,
@@ -801,36 +801,33 @@ const getDataHelpers = {
 				time: point[1].time
 			};
 		})];
+	},
+	filterSource: function (query, source, handle = null) {
+		query = queryReplaceWithCurrent(query, handle, { bToLowerCase: true });
+		if (!checkQuery(query)) { return new FbMetadbHandleList(); }
+		return (query.length && query !== 'ALL' ? fb.GetQueryItems(source, query) : source);
+	},
+	deduplicateSource: function (source) {
+		return removeDuplicates({ handleList: source, checkKeys: globTags.remDupl, sortBias: globQuery.remDuplBias, bPreserveSort: true, bAdvTitle: true });
+	},
+	timeRange: function (tag, fromDate, toDate) {
+		switch (tag.toUpperCase()) {
+			case '#DAY#':
+				return range(
+					1,
+					new Date(
+						fromDate.getUTCFullYear(),
+						fromDate.getUTCMonth() + 1,
+						0
+					).getDate()
+				).map((v) => v.toString().padStart(2, '0'));
+			case '#WEEK#':
+				return ['1st', '2nd', '3rd', '4th', '5th'];
+			case '#MONTH#':
+				return ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+			case '#YEAR#':
+				return range((toDate || new Date()).getUTCFullYear(), fromDate ? fromDate.getUTCFullYear() : 0);
+			default:
+		}
 	}
 };
-
-function filterSource(query, source, handle = null) {
-	query = queryReplaceWithCurrent(query, handle, { bToLowerCase: true });
-	if (!checkQuery(query)) { return new FbMetadbHandleList(); }
-	return (query.length && query !== 'ALL' ? fb.GetQueryItems(source, query) : source);
-}
-
-function deduplicateSource(source) {
-	return removeDuplicates({ handleList: source, checkKeys: globTags.remDupl, sortBias: globQuery.remDuplBias, bPreserveSort: true, bAdvTitle: true });
-}
-
-function timeRange(tag, fromDate, toDate) {
-	switch (tag.toUpperCase()) {
-		case '#DAY#':
-			return range(
-				1,
-				new Date(
-					fromDate.getUTCFullYear(),
-					fromDate.getUTCMonth() + 1,
-					0
-				).getDate()
-			).map((v) => v.toString().padStart(2, '0'));
-		case '#WEEK#':
-			return ['1st', '2nd', '3rd', '4th', '5th'];
-		case '#MONTH#':
-			return ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-		case '#YEAR#':
-			return range((toDate || new Date()).getUTCFullYear(), fromDate ? fromDate.getUTCFullYear() : 0);
-		default:
-	}
-}

@@ -54,9 +54,9 @@ include('..\\search_by_distance\\search_by_distance_culture.js');
  * @param {object} [o] - arguments
  * @param {string} o.option - [='tf'] timeline|tf|playcount|playcount proportional
  * @param {?*} o.optionArg - Optional arg for 'playcount' options', see getPlayCount()
- * @param {string} o.x - [='genre'] X asis TF
- * @param {string|number} o.y - [=1] Y asis TF. Not used on 'playcount options
- * @param {string} o.z - [='artist'] Z asis TF. Only used on 'timeline' option (3D)
+ * @param {string} o.x - [='genre'] X axis TF
+ * @param {string|number} o.y - [=1] Y axis TF. Not used on 'playcount options
+ * @param {string} o.z - [='artist'] Z axis TF. Only used on 'timeline' option (3D)
  * @param {string} o.query - [='ALL'] Query to filter the source
  * @param {string} o.sourceType - [='library'] playlist|playingPlaylist|activePlaylist|handleList|library
  * @param {?*} o.sourceArg - Optional arg for source, see getSource()
@@ -101,11 +101,11 @@ function getData({
 			const xTags = noSplitTags.has(x.toUpperCase().replace(/\|.*/, ''))
 				? fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => [val])
 				: fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => val.split(splitter)); // X
-			const serieTags = noSplitTags.has(z.toUpperCase())
+			const seriesTags = noSplitTags.has(z.toUpperCase())
 				? fb.TitleFormat(_bt(z)).EvalWithMetadbs(handleList).map((val) => [val])
 				: fb.TitleFormat(_bt(z)).EvalWithMetadbs(handleList).map((val) => val.split(splitter)); // Z
 			const bSingleY = !isNaN(y);
-			const serieCounters = bSingleY
+			const seriesCounters = bSingleY
 				? Number(y)
 				: fb.TitleFormat(_bt(queryReplaceWithCurrent(y))).EvalWithMetadbs(handleList)
 					.map((val) => val ? Number(val) : 0); // Y
@@ -115,8 +115,8 @@ function getData({
 					: fb.TitleFormat(_bt(groupBy.y)).EvalWithMetadbs(handleList).map((val) => val.split(splitter))
 				: null;
 			data = groupBy.y && bSingleY
-				? getDataHelpers.timelineGroups(xTags, serieCounters, zGroups, serieTags, groupTags, handleList, optionArg, bIncludeHandles, bProportional, bSingleY)
-				: getDataHelpers.timeline(xTags, serieCounters, zGroups, serieTags, handleList, optionArg, bIncludeHandles, bProportional, bSingleY);
+				? getDataHelpers.timelineGroups(xTags, seriesCounters, zGroups, seriesTags, groupTags, handleList, optionArg, bIncludeHandles, bProportional, bSingleY)
+				: getDataHelpers.timeline(xTags, seriesCounters, zGroups, seriesTags, handleList, optionArg, bIncludeHandles, bProportional, bSingleY);
 			break;
 		}
 		case 'tf': {
@@ -124,7 +124,7 @@ function getData({
 				? fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => [val])
 				: fb.TitleFormat(_bt(x)).EvalWithMetadbs(handleList).map((val) => val.split(splitter));
 			const bSingleY = !isNaN(y);
-			const serieCounters = bSingleY
+			const seriesCounters = bSingleY
 				? Number(y)
 				: fb.TitleFormat(_bt(queryReplaceWithCurrent(y))).EvalWithMetadbs(handleList)
 					.map((val) => val ? Number(val) : 0); // Y
@@ -134,8 +134,8 @@ function getData({
 					: fb.TitleFormat(_bt(groupBy.y)).EvalWithMetadbs(handleList).map((val) => val.split(splitter))
 				: null;
 			data = groupBy.y && bSingleY
-				? getDataHelpers.tf(xTags, serieCounters, handleList, optionArg, bIncludeHandles, bProportional, bSingleY)
-				: getDataHelpers.tfGroups(xTags, serieCounters, groupTags, handleList, optionArg, bIncludeHandles, bProportional, bSingleY);
+				? getDataHelpers.tf(xTags, seriesCounters, handleList, optionArg, bIncludeHandles, bProportional, bSingleY)
+				: getDataHelpers.tfGroups(xTags, seriesCounters, groupTags, handleList, optionArg, bIncludeHandles, bProportional, bSingleY);
 			break;
 		}
 		case 'playcount': {
@@ -227,9 +227,9 @@ function getData({
  * @param {object} [o] - arguments
  * @param {string} o.option - [='tf'] timeline|tf|playcount|playcount proportional
  * @param {?*} o.optionArg - Optional arg for 'playcount' options', see getPlayCount()
- * @param {string} o.x - [='genre'] X asis TF
- * @param {string|number} o.y - [=1] Y asis TF. Not used on 'playcount options
- * @param {string} o.z - [='artist'] Z asis TF. Only used on 'timeline' option (3D)
+ * @param {string} o.x - [='genre'] X axis TF
+ * @param {string|number} o.y - [=1] Y axis TF. Not used on 'playcount options
+ * @param {string} o.z - [='artist'] Z axis TF. Only used on 'timeline' option (3D)
  * @param {string} o.query - [='ALL'] Query to filter the source
  * @param {string} o.sourceType - [='library'] playlist|playingPlaylist|activePlaylist|handleList|library
  * @param {?*} o.sourceArg - Optional arg for source, see getSource()
@@ -276,11 +276,11 @@ async function getDataAsync({
 			const xTags = noSplitTags.has(x.toUpperCase().replace(/\|.*/, ''))
 				? (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => [val])
 				: (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => val.split(splitter)); // X
-			const serieTags = noSplitTags.has(z.toUpperCase().replace(/\|.*/, ''))
+			const seriesTags = noSplitTags.has(z.toUpperCase().replace(/\|.*/, ''))
 				? (await fb.TitleFormat(_bt(z)).EvalWithMetadbsAsync(handleList)).map((val) => [val])
 				: (await fb.TitleFormat(_bt(z)).EvalWithMetadbsAsync(handleList)).map((val) => val.split(splitter)); //Z
 			const bSingleY = !isNaN(y);
-			const serieCounters = bSingleY
+			const seriesCounters = bSingleY
 				? Number(y)
 				: (await fb.TitleFormat(_bt(queryReplaceWithCurrent(y))).EvalWithMetadbsAsync(handleList))
 					.map((val) => val ? Number(val) : 0); // Y
@@ -290,8 +290,8 @@ async function getDataAsync({
 					: (await fb.TitleFormat(_bt(groupBy.y)).EvalWithMetadbsAsync(handleList)).map((val) => val.split(splitter))
 				: null;
 			data = groupBy.y
-				? getDataHelpers.timelineGroups(xTags, serieCounters, zGroups, serieTags, groupTags, handleList, optionArg, bIncludeHandles, bProportional, bSingleY)
-				: getDataHelpers.timeline(xTags, serieCounters, zGroups, serieTags, handleList, optionArg, bIncludeHandles, bProportional, bSingleY);
+				? getDataHelpers.timelineGroups(xTags, seriesCounters, zGroups, seriesTags, groupTags, handleList, optionArg, bIncludeHandles, bProportional, bSingleY)
+				: getDataHelpers.timeline(xTags, seriesCounters, zGroups, seriesTags, handleList, optionArg, bIncludeHandles, bProportional, bSingleY);
 			break;
 		}
 		case 'tf': {
@@ -299,7 +299,7 @@ async function getDataAsync({
 				? (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => [val])
 				: (await fb.TitleFormat(_bt(x)).EvalWithMetadbsAsync(handleList)).map((val) => val.split(splitter));
 			const bSingleY = !isNaN(y);
-			const serieCounters = bSingleY
+			const seriesCounters = bSingleY
 				? Number(y)
 				: (await fb.TitleFormat(_bt(queryReplaceWithCurrent(y))).EvalWithMetadbsAsync(handleList))
 					.map((val) => val ? Number(val) : 0); // Y
@@ -309,8 +309,8 @@ async function getDataAsync({
 					: (await fb.TitleFormat(_bt(groupBy.y)).EvalWithMetadbsAsync(handleList)).map((val) => val.split(splitter))
 				: null;
 			data = groupBy.y
-				? getDataHelpers.tfGroups(xTags, serieCounters, groupTags, handleList, optionArg, bIncludeHandles, bProportional, bSingleY)
-				: getDataHelpers.tf(xTags, serieCounters, handleList, optionArg, bIncludeHandles, bProportional, bSingleY);
+				? getDataHelpers.tfGroups(xTags, seriesCounters, groupTags, handleList, optionArg, bIncludeHandles, bProportional, bSingleY)
+				: getDataHelpers.tf(xTags, seriesCounters, handleList, optionArg, bIncludeHandles, bProportional, bSingleY);
 			break;
 		}
 		case 'playcount': {
@@ -396,16 +396,16 @@ async function getDataAsync({
 const getDataHelpers = {
 	idChars: ['\u200b', '\u200c', '\u200d', '\u200e', '\u200f', '\u2060'],
 	idCharsRegExp: new RegExp(['\u200b', '\u200c', '\u200d', '\u200e', '\u200f', '\u2060'].join('|'), 'gi'),
-	timeline: function (xTags, serieCounters, zGroups, serieTags, handleList, optionArg, bIncludeHandles, bProportional, bSingleY) {
+	timeline: function (xTags, seriesCounters, zGroups, seriesTags, handleList, optionArg, bIncludeHandles, bProportional, bSingleY) {
 		const dic = new Map();
 		const handlesMap = new Map();
 		if (!zGroups.filter) {
 			const xLabels = new Set(xTags.flat(Infinity));
-			const zLabels = new Set(serieTags.flat(Infinity));
+			const zLabels = new Set(seriesTags.flat(Infinity));
 			xLabels.forEach((x) => {
 				const val = {};
 				dic.set(x, val);
-				zLabels.forEach((serie) => val[serie] = { count: 0, total: 0 });
+				zLabels.forEach((series) => val[series] = { count: 0, total: 0 });
 			});
 		}
 
@@ -413,13 +413,13 @@ const getDataHelpers = {
 			arr.forEach((x) => {
 				let val = dic.get(x);
 				if (!val) { val = {}; dic.set(x, val); }
-				serieTags[i].forEach((serie) => {
-					const count = bSingleY ? serieCounters : serieCounters[i];
-					if (Object.hasOwn(val, serie)) {
-						if (count) { val[serie].count += count; }
-						val[serie].total++;
+				seriesTags[i].forEach((series) => {
+					const count = bSingleY ? seriesCounters : seriesCounters[i];
+					if (Object.hasOwn(val, series)) {
+						if (count) { val[series].count += count; }
+						val[series].total++;
 					} else {
-						val[serie] = { count, total: 1 };
+						val[series] = { count, total: 1 };
 					}
 				});
 				if (bIncludeHandles) {
@@ -450,16 +450,16 @@ const getDataHelpers = {
 			)
 		];
 	},
-	timelineGroups: function (xTags, serieCounters, zGroups, serieTags, groupTags, handleList, optionArg, bIncludeHandles, bProportional, bSingleY) {
+	timelineGroups: function (xTags, seriesCounters, zGroups, seriesTags, groupTags, handleList, optionArg, bIncludeHandles, bProportional, bSingleY) {
 		const dic = new Map();
 		const handlesMap = new Map();
 		if (!zGroups.filter) {
 			const xLabels = new Set(xTags.flat(Infinity));
-			const zLabels = new Set(serieTags.flat(Infinity));
+			const zLabels = new Set(seriesTags.flat(Infinity));
 			xLabels.forEach((x) => {
 				const val = {};
 				dic.set(x, val);
-				zLabels.forEach((serie) => val[serie] = { count: 0, total: 0 });
+				zLabels.forEach((series) => val[series] = { count: 0, total: 0 });
 			});
 		}
 		const dicGroup = new Map();
@@ -467,21 +467,21 @@ const getDataHelpers = {
 			arr.forEach((x) => {
 				let val = dic.get(x);
 				if (!val) { val = {}; dic.set(x, val); }
-				serieTags[i].forEach((serie) => {
-					let groupFound = dicGroup.get(serie + '-' + x);
-					if (!groupFound) { groupFound = new Set(); dicGroup.set(serie + '-' + x, groupFound); }
+				seriesTags[i].forEach((series) => {
+					let groupFound = dicGroup.get(series + '-' + x);
+					if (!groupFound) { groupFound = new Set(); dicGroup.set(series + '-' + x, groupFound); }
 					let count;
 					if (groupTags[i].some((group) => groupFound.has(group))) {
 						count = 0;
 					} else {
-						count = bSingleY ? serieCounters : serieCounters[i];
+						count = bSingleY ? seriesCounters : seriesCounters[i];
 						groupTags[i].forEach((group) => groupFound.add(group));
 					}
-					if (Object.hasOwn(val, serie)) {
-						if (count) { val[serie].count += count; }
-						val[serie].total++;
+					if (Object.hasOwn(val, series)) {
+						if (count) { val[series].count += count; }
+						val[series].total++;
 					} else {
-						val[serie] = { count, total: 1 };
+						val[series] = { count, total: 1 };
 					}
 				});
 				if (bIncludeHandles) {
@@ -512,12 +512,12 @@ const getDataHelpers = {
 			)
 		];
 	},
-	tf: function (xTags, serieCounters, handleList, optionArg, bIncludeHandles, bProportional, bSingleY) {
+	tf: function (xTags, seriesCounters, handleList, optionArg, bIncludeHandles, bProportional, bSingleY) {
 		const dic = new Map();
 		const handlesMap = new Map();
 		xTags.forEach((arr, i) => {
 			arr.forEach((tag) => {
-				const count = bSingleY ? serieCounters : serieCounters[i];
+				const count = bSingleY ? seriesCounters : seriesCounters[i];
 				const val = dic.get(tag);
 				if (!val) { dic.set(tag, { count, total: 1 }); }
 				else {
@@ -539,7 +539,7 @@ const getDataHelpers = {
 			};
 		})];
 	},
-	tfGroups: function (xTags, serieCounters, groupTags, handleList, optionArg, bIncludeHandles, bProportional, bSingleY) {
+	tfGroups: function (xTags, seriesCounters, groupTags, handleList, optionArg, bIncludeHandles, bProportional, bSingleY) {
 		const dic = new Map();
 		const handlesMap = new Map();
 		const dicGroup = new Map();
@@ -551,7 +551,7 @@ const getDataHelpers = {
 				if (groupTags[i].some((group) => groupFound.has(group))) {
 					count = 0;
 				} else {
-					count = bSingleY ? serieCounters : serieCounters[i];
+					count = bSingleY ? seriesCounters : seriesCounters[i];
 					groupTags[i].forEach((group) => groupFound.add(group));
 				}
 				const val = dic.get(tag);

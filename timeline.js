@@ -1,5 +1,5 @@
 ﻿'use strict';
-//29/06/25
+//06/08/25
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '2.0.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
@@ -44,7 +44,7 @@ let properties = {
 				x: { show: true, color: RGB(50, 50, 50), width: _scale(2), ticks: 'auto', labels: true, bAltLabels: true },
 				y: { show: false, color: RGB(50, 50, 50), width: _scale(2), ticks: 5, labels: true }
 			},
-			configuration: { bDynLabelColor: true, bDynLabelColorBW: true, bDynSerieColor: false, bDynBgColor: false, bLoadAsyncData: true },
+			configuration: { bDynLabelColor: true, bDynLabelColorBW: true, bDynSeriesColor: false, bDynBgColor: false, bLoadAsyncData: true },
 			buttons: { alpha: 25, timer: 1500 },
 		}
 	)), { func: isJSON }],
@@ -85,7 +85,7 @@ let properties = {
 		{ y: '#LISTENS#', keyY: 'Listens (range)', bProportional: false },
 		{ name: 'sep' },
 		{ y: globTags.playCount, keyY: 'Avg. Listens', bProportional: true },
-		{ y: globTags.isLoved, keyY: 'Avg. Loves', bProportional: true }, // requires not to ouput true value
+		{ y: globTags.isLoved, keyY: 'Avg. Loves', bProportional: true }, // requires not to output true value
 		{ y: globTags.isHated, keyY: 'Avg. Hates', bProportional: true },
 		{ y: globTags.rating, keyY: 'Avg. Rating', bProportional: true },
 		{ name: 'sep' },
@@ -320,7 +320,7 @@ const background = new _background({
 			}
 		},
 		artColors: (colArray) => {
-			if (!charts.some((chart) => chart.configuration.bDynSerieColor)) { return; }
+			if (!charts.some((chart) => chart.configuration.bDynSeriesColor)) { return; }
 			if (colArray) {
 				const bChangeBg = charts.some((chart) => chart.configuration.bDynBgColor);
 				const { main, sec, note } = dynamicColors(
@@ -357,7 +357,7 @@ const defaultConfig = deepAssign()(
 	{
 		data: [],
 		x: 0, y: 0, w: 0, h: 0,
-		tooltipText: function (point, serie, mask) { // eslint-disable-line no-unused-vars
+		tooltipText: function (point, series, mask) { // eslint-disable-line no-unused-vars
 			return '\n' + '-'.repeat(60) + '\n(L. click to show point menu)' +
 				(this.getCurrentRange() < this.getMaxRange() ? '\n(L. click dragging to scroll)' : '') +
 				'\n(Use buttons to configure chart)' +
@@ -401,9 +401,9 @@ const defaultConfig = deepAssign()(
 						this.properties.chart[1] = JSON.stringify(config);
 						this.properties.data[1] = JSON.stringify(this.exportDataLabels());
 						overwriteProperties(this.properties);
-						if (changeArgs.configuration && (Object.hasOwn(changeArgs.configuration, 'bDynSerieColor') || Object.hasOwn(changeArgs.configuration, 'bDynBgColor'))) {
+						if (changeArgs.configuration && (Object.hasOwn(changeArgs.configuration, 'bDynSeriesColor') || Object.hasOwn(changeArgs.configuration, 'bDynBgColor'))) {
 							background.updateImageBg(true);
-							if (!config.configuration.bDynSerieColor || !(changeArgs.configuration.bDynBgColor || config.configuration.bDynBgColor)) {
+							if (!config.configuration.bDynSeriesColor || !(changeArgs.configuration.bDynBgColor || config.configuration.bDynBgColor)) {
 								background.changeConfig({ config: { colorModeOptions: { color: JSON.parse(this.properties.background[1]).colorModeOptions.color } }, callbackArgs: { bSaveProperties: false } });
 							}
 						}
@@ -411,7 +411,7 @@ const defaultConfig = deepAssign()(
 				},
 				backgroundColor: background.getColors,
 				artColors: function (scheme) {
-					if (scheme && this.configuration.bDynSerieColor) { // This flag has been added at script init
+					if (scheme && this.configuration.bDynSeriesColor) { // This flag has been added at script init
 						this.changeConfig({ colors: [], chroma: { scheme }, bPaint: true, callbackArgs: { bSaveProperties: false } });
 					} else {
 						this.changeConfig({ colors: [], chroma: { scheme: JSON.parse(this.properties.chart[1]).chroma.scheme }, bPaint: true, callbackArgs: { bSaveProperties: false } });

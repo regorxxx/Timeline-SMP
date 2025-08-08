@@ -1,5 +1,5 @@
 ﻿Filters any source by a query built according to the reference track(s).
-The track(s) can be configured to prefer either the selected/forcused or
+The track(s) can be configured to prefer either the selected/focused or
 now playing track(s) and also if only the first (focused) or entire
 selection should be used. Chart is then updated whenever the reference
 track(s) changes, thus allowing to create dynamic charts.
@@ -19,12 +19,12 @@ Rules:
 a track but globally. For ex: #YEAR# -> 2023
 - These placeholders will be replaced with focused item\'s TF result on
 execution.
-- Using tags alone, translates into multivalue tags/queries by default.
+- Using tags alone, translates into multi-value tags/queries by default.
 - When using TF expressions ($...), tags are not converted and the
 expression is executed 'as is'.
 - Standard queries may be added -only- to the end of a dynamic query
 expression.
-- Multiple dynamic multivalued variables are allowed, but they must be
+- Multiple dynamic multi-valued variables are allowed, but they must be
 enclosed on parenthesis to work.
 - In any case queries are tested before using it, so errors will be
 shown as a popup.

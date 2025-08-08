@@ -43,7 +43,7 @@ L. Click mouse dragging.
 
 Other UI usage:
 ---------------
-Press Shift + Win + R. Click to open SMP/JSpliter panel menu
+Press Shift + Win + R. Click to open SMP/JSplitter panel menu
 (which works globally on any script and panel, at any position).
 
 FAQ:
@@ -51,7 +51,7 @@ FAQ:
 - Z-Data grouping is only available on 3D charts. This setting
 is found at the Display menu 'Z-Axis groups' submenu.
 - When 3D charts are used, the Z-groups shown are those with the
-higher Y values. The total number can be tweaked as explayed above.
+higher Y values. The total number can be tweaked as explained above.
 i.e. A chart displaying the Tracks (Y) per Artists (Z) per Date (X)
 will only show 3 artists per date by default, and those 3 artists
 will be the ones with most tracks (Y) from that date (X).
@@ -60,7 +60,7 @@ different ways drawing multiple series instead.
 - To use 2D charts, disable the Z-Axis.
 - Panel data may be loaded on demand-only by changing
 'Other settings\Init data on startup' to false. In such cases
-the data will be (re)lodaded by double clicking on the settings
-buttton or using 'Force data update' at such menu.
+the data will be (re)loaded by double clicking on the settings
+button or using 'Force data update' at such menu.
 - Clicking multiple times into a color palette will randomly apply
 a scheme from that same palette.

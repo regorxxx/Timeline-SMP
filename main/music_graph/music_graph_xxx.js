@@ -1,5 +1,5 @@
 ﻿'use strict';
-//06/08/25
+//12/08/25
 
 /* exported musicGraphForDrawing, graphDebug, graphStatistics */
 
@@ -38,7 +38,7 @@ if (typeof include !== 'undefined') { // On foobar2000
 
 
 /*
-	Creates Music Map links for foobar2000
+	Creates Music Graph links for foobar2000
 */
 function musicGraph(descriptor = music_graph_descriptors, bHtml = false) {
 	// Maps
@@ -227,7 +227,7 @@ function musicGraph(descriptor = music_graph_descriptors, bHtml = false) {
 }
 
 /*
-	Creates Music Map. This one skips absoluteWeight related links and substitutions! Used along VivaGraph on browsers
+	Creates Music Graph. This one skips absoluteWeight related links and substitutions! Used along VivaGraph on browsers
 */
 function musicGraphForDrawing(descriptor = music_graph_descriptors) {
 	// Maps
@@ -733,7 +733,7 @@ function graphDebug(graph = musicGraph(), bShowPopupOnPass = false, bHtml = fals
 			if (i + 1 === superGenreNumbers) { nextIndex = 0; } // NOSONAR [intended]
 			keyOne = descr.style_supergenre[i][0];
 			keyTwo = descr.style_supergenre[nextIndex][0];
-			({ distance, path } = calcGraphDistance(myGraph, keyOne, keyTwo, true));
+			({ distance, path } = calcGraphDistance(myGraph, keyOne, keyTwo));
 			if (!Number.isFinite(distance) || !distance) {
 				console.log('music_graph_descriptors_xxx Warning: Path from ' + keyOne + ' to ' + keyTwo + ' has a zero or infinite distance. Check \'Weighting, for Foobar2000\' section');
 				console.log('Path: ' + getNodesFromPath(path));
@@ -750,7 +750,7 @@ function graphDebug(graph = musicGraph(), bShowPopupOnPass = false, bHtml = fals
 			if (descr.style_supergenre_cluster[i][0] !== 'SKIP' && descr.style_supergenre_cluster[nextIndex][0] !== 'SKIP') {
 				keyOne = descr.style_supergenre_cluster[i][0];
 				keyTwo = descr.style_supergenre_cluster[nextIndex][0];
-				({ distance, path } = calcGraphDistance(myGraph, keyOne, keyTwo, true));
+				({ distance, path } = calcGraphDistance(myGraph, keyOne, keyTwo));
 				if (!Number.isFinite(distance) || !distance) {
 					console.log('music_graph_descriptors_xxx Warning: Path from ' + keyOne + ' to ' + keyTwo + ' has a zero or infinite distance. Check \'Weighting, for Foobar2000\' section');
 					console.log('Path: ' + getNodesFromPath(path));
@@ -767,7 +767,7 @@ function graphDebug(graph = musicGraph(), bShowPopupOnPass = false, bHtml = fals
 			if (i + 1 === style_supergenre_superclusterNumbers) { nextIndex = 0; } // NOSONAR [intended]
 			keyOne = descr.style_supergenre_supercluster[i][0];
 			keyTwo = descr.style_supergenre_supercluster[nextIndex][0];
-			({ distance, path } = calcGraphDistance(myGraph, keyOne, keyTwo, true));
+			({ distance, path } = calcGraphDistance(myGraph, keyOne, keyTwo));
 			if (!Number.isFinite(distance) || !distance) {
 				console.log('music_graph_descriptors_xxx Warning: Path from ' + keyOne + ' to ' + keyTwo + ' has a zero or infinite distance. Check \'Weighting, for Foobar2000\' section');
 				console.log('Path: ' + getNodesFromPath(path));
@@ -876,7 +876,7 @@ async function graphStatistics({
 	histogram(distances, binSize).forEach((val, i) => { hist[(i * binSize).toString()] = val; });
 	const maxFreq = Math.max(...Object.values(hist));
 	const histEntries = Object.entries(hist);
-	statistics.mode = Math.round(histEntries.find((pair) => { return pair[1] === maxFreq; })[0]);
+	statistics.mode = Math.round(histEntries.find((pair) => pair[1] === maxFreq)[0]);
 	let i = 0, acumFreq = total / 2;
 	while (true) {
 		acumFreq -= histEntries[i][1];

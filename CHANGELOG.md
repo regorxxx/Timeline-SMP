@@ -103,6 +103,7 @@
 - UI: adjusted right scrolling button position to not overlap with other buttons.
 - UI: adjusted Z-labels in 3D timeline charts.
 - UI: multiple fixes to axis, ticks and grids positions.
+- UI: workaround for DPI checking under multiple OSes, specially for Wine (Unix).
 - Fixed some misspelled terms on UI and variables (which also lead to some minor bugs).
 
 ## [1.5.0] - 2024-10-09

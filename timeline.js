@@ -1,5 +1,5 @@
 ﻿'use strict';
-//06/08/25
+//07/09/25
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '2.0.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
@@ -210,7 +210,7 @@ let properties = {
 		{ query: 'ALL', name: 'All' },
 	]), { func: isJSON }],
 	bAsync: ['Data asynchronous calculation', true, { func: isBoolean }],
-	bAutoUpdateCheck: ['Automatically check updates?', globSettings.bAutoUpdateCheck, { func: isBoolean }],
+	bAutoUpdateCheck: ['Automatically check updates', globSettings.bAutoUpdateCheck, { func: isBoolean }],
 	bAutoData: ['Automatically update data sources', true, { func: isBoolean }],
 	playingTF: ['Update data on playback by TF', JSON.stringify([
 		'PLAY_COUNT',

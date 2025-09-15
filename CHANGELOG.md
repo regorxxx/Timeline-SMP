@@ -41,6 +41,7 @@
 - UI: exposed grid settings.
 - UI: exposed background gradient focus setting, i.e. where the center color will be at its highest intensity.
 - UI: cut X-labels to 25 chars for non timeline charts.
+- UI: exposed color settings via window.NotifyOthers() method for themes/multi-panel support. You may pass a color scheme -size 6 recommended- (output from GetColourScheme()) at 'Colors: set color scheme' (applies to all compatible panels) or 'Timeline: set color scheme' (applies only to this script), which will set appropriate colors following panel's color logic; alternatively you may set direct color settings at 'Timeline: set colors' which needs an array of 3 colors or an object {background, left, right}. [See](https://github.com/regorxxx/Not-A-Waveform-Seekbar-SMP/issues/4).
 - Debug: added multiple debug logging settings to 'Other settings' menu.
 - Readme: readme is shown as popup on first installation and available at the settings menu.
 - Configuration: external files like world map database references are now exposed as a panel property.

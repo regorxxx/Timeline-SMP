@@ -1,5 +1,5 @@
 ﻿'use strict';
-//07/09/25
+//16/09/25
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '2.0.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
@@ -319,8 +319,8 @@ const background = new _background({
 				overwriteProperties(properties);
 			}
 		},
-		artColors: (colArray) => {
-			if (!charts.some((chart) => chart.configuration.bDynSeriesColor)) { return; }
+		artColors: (colArray, bForced) => {
+			if (!bForced && !charts.some((chart) => chart.configuration.bDynSeriesColor)) { return; }
 			if (colArray) {
 				const bChangeBg = charts.some((chart) => chart.configuration.bDynBgColor);
 				const { main, sec, note } = dynamicColors(
@@ -872,8 +872,28 @@ addEventListener('on_playlist_items_removed', (idx) => { // eslint-disable-line 
 
 addEventListener('on_notify_data', (name, info) => {
 	if (name === 'bio_imgChange' || name === 'bio_chkTrackRev' || name === 'xxx-scripts: panel name reply') { return; }
-	if (name === 'Timeline: share UI settings') {
-		if (info) { charts.every((chart) => chart.applyUiSettings(clone(info))); }
+	switch (name) { // NOSONAR
+		case 'Timeline: share UI settings': {
+			if (info) { charts.every((chart) => chart.applyUiSettings(clone(info))); }
+			break;
+		}
+		case 'Timeline: set colors': { // Needs an array of 3 colors or an object {background, left, right}
+			if (info) {
+				const colors = clone(info);
+				const getColor = (key) => Object.hasOwn(colors, key) ? colors.background : colors[['background', 'left', 'right'].indexOf(key)];
+				const hasColor = (key) => typeof getColor(key) !== 'undefined';
+				if (background.colorMode !== 'none' && hasColor('bakground')) {
+					background.changeConfig({ config: { colorModeOptions: { color: getColor('bakground') } }, callbackArgs: { bSaveProperties: false } });
+				}
+				if (hasColor('left') && hasColor('right')) { charts.forEach((chart) => chart.callbacks.config.artColors([getColor('left'), getColor('right')])); }
+			}
+			break;
+		}
+		case 'Colors: set color scheme':
+		case 'Timeline: set color scheme': { // Needs an array of at least 6 colors to automatically adjust dynamic colors
+			if (info) { background.artColors(clone(info), true); }
+			break;
+		}
 	}
 });
 

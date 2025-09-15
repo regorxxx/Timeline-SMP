@@ -1,5 +1,5 @@
 'use strict';
-//06/08/25
+//15/09/25
 
 /* exported onLbtnUpPoint, onLbtnUpSettings, onRbtnUpImportSettings */
 
@@ -654,6 +654,17 @@ function onRbtnUpImportSettings() {
 		entryText: 'Share UI settings...', func: () => {
 			charts.every((chart) => chart.shareUiSettings());
 		}
+	});
+	menu.newSeparator();
+	menu.newEntry({
+		entryText: 'Configure panel...', func: () => window.ShowConfigureV2()
+	});
+	menu.newEntry({
+		entryText: 'Panel properties...', func: () => window.ShowProperties()
+	});
+	menu.newSeparator();
+	menu.newEntry({
+		entryText: 'Reload panel', func: () => window.Reload()
 	});
 	return menu;
 }

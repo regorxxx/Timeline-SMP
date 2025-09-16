@@ -44,7 +44,7 @@ let properties = {
 				x: { show: true, color: RGB(50, 50, 50), width: _scale(2), ticks: 'auto', labels: true, bAltLabels: true },
 				y: { show: false, color: RGB(50, 50, 50), width: _scale(2), ticks: 5, labels: true }
 			},
-			configuration: { bDynLabelColor: true, bDynLabelColorBW: true, bDynSeriesColor: false, bDynBgColor: false, bLoadAsyncData: true },
+			configuration: { bDynLabelColor: true, bDynLabelColorBW: true, bDynSeriesColor: true, bDynBgColor: false, bLoadAsyncData: true },
 			buttons: { alpha: 25, timer: 1500 },
 		}
 	)), { func: isJSON }],
@@ -233,7 +233,9 @@ let properties = {
 		listenBrainzArtists: '.\\profile\\' + folders.dataName + 'listenbrainz_artists.json',
 		searchByDistanceArtists: '.\\profile\\' + folders.dataName + 'searchByDistance_artists.json',
 		worldMapArtists: '.\\profile\\' + folders.dataName + 'worldMap.json'
-	}), { func: isJSON }]
+	}), { func: isJSON }],
+	bOnNotifyColors: ['Adjust colors on panel notify', true, { func: isBoolean }],
+	bNotifyColors: ['Notify colors to other panels', false, { func: isBoolean }]
 };
 Object.keys(properties).forEach(p => properties[p].push(properties[p][1]));
 setProperties(properties, '', 0);
@@ -321,7 +323,7 @@ const background = new _background({
 		},
 		artColors: (colArray, bForced) => {
 			if (!bForced && !charts.some((chart) => chart.configuration.bDynSeriesColor)) { return; }
-			if (colArray) {
+			else if (colArray) {
 				const bChangeBg = charts.some((chart) => chart.configuration.bDynBgColor);
 				const { main, sec, note } = dynamicColors(
 					colArray,
@@ -335,10 +337,17 @@ const background = new _background({
 						.reverse();
 					background.changeConfig({ config: { colorModeOptions: { color: bgColor } }, callbackArgs: { bSaveProperties: false } });
 				}
-				charts.forEach((chart) => chart.callbacks.config.artColors([main, sec]));
+				charts.forEach((chart) => chart.callbacks.config.artColors([main, sec], bForced));
 			} else {
 				background.changeConfig({ config: { colorModeOptions: { color: JSON.parse(properties.background[1]).colorModeOptions.color } }, callbackArgs: { bSaveProperties: false } });
-				charts.forEach((chart) => chart.callbacks.config.artColors(JSON.parse(chart.properties.chart[1]).chroma.scheme));
+				charts.forEach((chart) => chart.callbacks.config.artColors(JSON.parse(chart.properties.chart[1]).chroma.scheme, bForced));
+			}
+			window.Repaint();
+		},
+		artColorsNotify: (colArray, bForced) => {
+			if (!bForced && !charts.some((chart) => chart.properties.bNotifyColors[1])) { return; }
+			else if (colArray) {
+				window.NotifyOthers('Colors: set color scheme', colArray);
 			}
 		}
 	}
@@ -410,8 +419,8 @@ const defaultConfig = deepAssign()(
 					}
 				},
 				backgroundColor: background.getColors,
-				artColors: function (scheme) {
-					if (scheme && this.configuration.bDynSeriesColor) { // This flag has been added at script init
+				artColors: function (scheme, bForced) {
+					if (scheme && (this.configuration.bDynSeriesColor || bForced)) { // This flag has been added at script init
 						this.changeConfig({ colors: [], chroma: { scheme }, bPaint: true, callbackArgs: { bSaveProperties: false } });
 					} else {
 						this.changeConfig({ colors: [], chroma: { scheme: JSON.parse(this.properties.chart[1]).chroma.scheme }, bPaint: true, callbackArgs: { bSaveProperties: false } });
@@ -878,7 +887,7 @@ addEventListener('on_notify_data', (name, info) => {
 			break;
 		}
 		case 'Timeline: set colors': { // Needs an array of 3 colors or an object {background, left, right}
-			if (info) {
+			if (info && charts.some((chart) => chart.properties.bOnNotifyColors[1])) {
 				const colors = clone(info);
 				const getColor = (key) => Object.hasOwn(colors, key) ? colors.background : colors[['background', 'left', 'right'].indexOf(key)];
 				const hasColor = (key) => typeof getColor(key) !== 'undefined';
@@ -886,12 +895,13 @@ addEventListener('on_notify_data', (name, info) => {
 					background.changeConfig({ config: { colorModeOptions: { color: getColor('bakground') } }, callbackArgs: { bSaveProperties: false } });
 				}
 				if (hasColor('left') && hasColor('right')) { charts.forEach((chart) => chart.callbacks.config.artColors([getColor('left'), getColor('right')])); }
+				window.Repaint();
 			}
 			break;
 		}
 		case 'Colors: set color scheme':
 		case 'Timeline: set color scheme': { // Needs an array of at least 6 colors to automatically adjust dynamic colors
-			if (info) { background.artColors(clone(info), true); }
+			if (info && charts.some((chart) => chart.properties.bOnNotifyColors[1])) { background.callbacks.artColors(clone(info), true); }
 			break;
 		}
 	}

@@ -1,5 +1,5 @@
 ﻿'use strict';
-//16/09/25
+//17/09/25
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '2.0.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
@@ -347,6 +347,7 @@ const background = new _background({
 		artColorsNotify: (colArray, bForced) => {
 			if (!bForced && !charts.some((chart) => chart.properties.bNotifyColors[1])) { return; }
 			else if (colArray) {
+				background.scheme = colArray;
 				window.NotifyOthers('Colors: set color scheme', colArray);
 			}
 		}
@@ -409,7 +410,11 @@ const defaultConfig = deepAssign()(
 						config.dataManipulation.sort = this.exportSortLabel();
 						this.properties.chart[1] = JSON.stringify(config);
 						this.properties.data[1] = JSON.stringify(this.exportDataLabels());
-						overwriteProperties(this.properties);
+						if (changeArgs.configuration && changeArgs.configuration.bDynSeriesColor) {
+							background.changeConfig({ config: { coverModeOptions: { bProcessColors: true } }, callbackArgs: { bSaveProperties: true } });
+						} else {
+							overwriteProperties(this.properties);
+						}
 						if (changeArgs.configuration && (Object.hasOwn(changeArgs.configuration, 'bDynSeriesColor') || Object.hasOwn(changeArgs.configuration, 'bDynBgColor'))) {
 							background.updateImageBg(true);
 							if (!config.configuration.bDynSeriesColor || !(changeArgs.configuration.bDynBgColor || config.configuration.bDynBgColor)) {
@@ -904,7 +909,20 @@ addEventListener('on_notify_data', (name, info) => {
 			if (info && charts.some((chart) => chart.properties.bOnNotifyColors[1])) { background.callbacks.artColors(clone(info), true); }
 			break;
 		}
+		case 'Colors: ask color scheme': {
+			if (info && charts.some((chart) => chart.properties.bOnNotifyColors[1]) && background.scheme) {
+				window.NotifyOthers(String(info), background.scheme);
+			}
+			break;
+		}
 	}
 });
+
+if (charts.some((chart) => chart.properties.bOnNotifyColors[1])) { // Ask color-servers at init
+	setTimeout(() => {
+		window.NotifyOthers('Colors: ask color scheme', 'Timeline: set color scheme');
+		window.NotifyOthers('Colors: ask colors', 'Timeline: set colors');
+	}, 1000);
+}
 
 globProfiler.Print('callbacks');

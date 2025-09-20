@@ -1,5 +1,5 @@
 ﻿'use strict';
-//17/09/25
+//20/09/25
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '2.0.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
@@ -344,7 +344,7 @@ const background = new _background({
 			}
 			window.Repaint();
 		},
-		artColorsNotify: (colArray, bForced) => {
+		artColorsNotify: (colArray, bForced = false) => {
 			if (!bForced && !charts.some((chart) => chart.properties.bNotifyColors[1])) { return; }
 			else if (colArray) {
 				background.scheme = colArray;
@@ -389,17 +389,50 @@ const defaultConfig = deepAssign()(
 			},
 			display: {
 				onLbtnUp: function (x, y, mask) { // eslint-disable-line no-unused-vars
-					createStatisticsMenu.call(this)
-						.btn_up(x, y, [
-							'sep',
-							createBackgroundMenu.call(background, { menuName: 'Background' }, void (0), { nameColors: true }),
-							'sep',
-							new _menu().concatEntry({
-								entryText: 'Share UI settings...', func: () => {
-									charts.every((chart) => chart.shareUiSettings());
-								}
-							})
+					/** @type {_menu} */
+					const menu = createStatisticsMenu.call(this);
+					[menu.getMenuNameFrom('Dynamic colors', 'Axis && labels'), menu.getMenuNameFrom('Dynamic colors', 'Color palette')].forEach((menuName) => {
+						menu.concatEntry([
+							{
+								menuName,
+								entryText: 'sep',
+							},
+							{
+								menuName,
+								entryText: 'Listen to color-servers',
+								func: () => {
+									this.properties.bOnNotifyColors[1] = !this.properties.bOnNotifyColors[1];
+									overwriteProperties(this.properties);
+									if (this.properties.bOnNotifyColors[1]) {
+										window.NotifyOthers('Colors: ask color scheme', 'Timeline: set color scheme');
+										window.NotifyOthers('Colors: ask color', 'Timeline: set colors');
+									}
+								},
+								checkFunc: () => this.properties.bOnNotifyColors[1]
+							}, {
+								menuName,
+								entryText: 'Act as color-server',
+								func: () => {
+									this.properties.bNotifyColors[1] = !this.properties.bNotifyColors[1];
+									overwriteProperties(this.properties);
+									if (this.properties.bNotifyColors[1] && background.scheme) {
+										window.NotifyOthers('Colors: set color scheme', background.scheme);
+									}
+								},
+								checkFunc: () => this.properties.bNotifyColors[1]
+							},
 						]);
+					});
+					menu.btn_up(x, y, [
+						'sep',
+						createBackgroundMenu.call(background, { menuName: 'Background' }, void (0), { nameColors: true }),
+						'sep',
+						new _menu().concatEntry({
+							entryText: 'Share UI settings...', func: () => {
+								charts.every((chart) => chart.shareUiSettings());
+							}
+						})
+					]);
 				}
 			},
 			config: {

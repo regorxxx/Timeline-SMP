@@ -49,7 +49,7 @@ Not properly following the installation instructions will result in scripts not 
  3. [Wiki](https://github.com/regorxxx/Timeline-SMP/wiki).
 
 ## Nightly releases
-Automatic package [built from GitHub](https://nightly.link/regorxxx/Timeline-SMP/workflows/build/main/file.zip) (using the latest commit).
+Automatic package [built from GitHub](https://nightly.link/regorxxx/Timeline-SMP/workflows/build/main/file.zip) (using the latest commit). Unzip 'file.zip' downloaded and load the '*-package.zip' inside as package within your JS host component.
 
 [changelog]: CHANGELOG.md
 [version_badge]: https://img.shields.io/github/release/regorxxx/Timeline-SMP.svg

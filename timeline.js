@@ -1,7 +1,7 @@
 ﻿'use strict';
-//20/09/25
+//25/09/25
 
-if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline', { author: 'regorxxx', version: '2.0.0', features: { drag_n_drop: false, grab_focus: true } }); }
+if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '2.1.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
 include('helpers\\helpers_xxx.js');
 /* global globTags:readable, globQuery:readable, globProfiler:readable, folders:readable, VK_CONTROL:readable, clone:readable */
@@ -16,7 +16,7 @@ include('main\\statistics\\statistics_xxx.js');
 include('main\\statistics\\statistics_xxx_menu.js');
 /* global createStatisticsMenu:readable, _menu:readable */
 include('main\\timeline\\timeline_helpers.js');
-/* global  _gdiFont:readable, MK_LBUTTON:readable, deepAssign:readable, RGB:readable, isJSON:readable, _scale:readable, isString:readable, isBoolean:readable, globSettings:readable, setProperties:readable, getPropertiesPairs:readable, checkUpdate:readable, overwriteProperties:readable, getDataAsync:readable, _qCond:readable, queryJoin:readable, getData:readable, getPlaylistIndexArray:readable, _t:readable, isArrayEqual:readable, queryReplaceWithCurrent:readable, toType:readable */
+/* global  _gdiFont:readable, MK_LBUTTON:readable, deepAssign:readable, RGB:readable, isJSON:readable, _scale:readable, isString:readable, isBoolean:readable, globSettings:readable, setProperties:readable, getPropertiesPairs:readable, checkUpdate:readable, overwriteProperties:readable, getDataAsync:readable, _qCond:readable, queryJoin:readable, getData:readable, getPlaylistIndexArray:readable, _t:readable, isArrayEqual:readable, queryReplaceWithCurrent:readable, toType:readable, _ps:readable */
 include('main\\timeline\\timeline_menus.js');
 /* global onLbtnUpPoint:readable, onLbtnUpSettings:readable, createBackgroundMenu:readable, Chroma:readable, onRbtnUpImportSettings:readable, WshShell:readable, popup:readable, Input:readable */
 include('main\\window\\window_xxx_background.js');
@@ -645,7 +645,7 @@ charts.forEach((/** @type {_chart} */ chart, i) => {
 		window.Repaint();
 		const answer = bForce
 			? popup.yes
-			: WshShell.Popup('Apply current settings to highlighted panel?\nCheck UI.', 0, window.Name + ': Timeline', popup.question + popup.yes_no);
+			: WshShell.Popup('Apply current settings to highlighted panel?\nCheck UI.', 0, window.Name + _ps(window.ScriptInfo.Name), popup.question + popup.yes_no);
 		if (answer === popup.yes) {
 			const newBg = JSON.parse(String(settings.background[1]));
 			['x', 'y', 'w', 'h', 'callbacks'].forEach((key) => delete newBg[key]);

@@ -1,9 +1,9 @@
 'use strict';
-//15/09/25
+//26/09/25
 
 /* exported onLbtnUpPoint, onLbtnUpSettings, onRbtnUpImportSettings */
 
-/* global _p:readable, checkQuery:readable, globTags:readable, globQuery:readable, round:readable, capitalizeAll:readable, properties:readable, WshShell:readable, popup:readable, _qCond:readable, overwriteProperties:readable, checkUpdate:readable, globSettings:readable , isArrayEqual:readable, _b:readable, folders:readable, dynQueryMode:readable, refreshData:readable, isUUID:readable, queryJoin:readable, queryReplaceWithCurrent:readable, selectedHandle:readable, VK_SHIFT:readable, fallbackTagsQuery:readable, getTimeRange:readable, timePeriods:readable, charts:readable */
+/* global _p:readable, checkQuery:readable, globTags:readable, globQuery:readable, round:readable, capitalizeAll:readable, properties:readable, WshShell:readable, popup:readable, _qCond:readable, overwriteProperties:readable, checkUpdate:readable, globSettings:readable , isArrayEqual:readable, _b:readable, folders:readable, dynQueryMode:readable, refreshData:readable, isUUID:readable, queryJoin:readable, queryReplaceWithCurrent:readable, selectedHandle:readable, VK_SHIFT:readable, fallbackTagsQuery:readable, getTimeRange:readable, timePeriods:readable, charts:readable, _ps:readable */
 include('..\\..\\helpers\\helpers_xxx_file.js');
 /* global _open:readable, utf8:readable */
 include('..\\..\\helpers\\helpers_xxx_playlists.js');
@@ -596,7 +596,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 				menuName: subMenuTwo, entryText: 'Check for updates...', func: () => {
 					if (typeof checkUpdate === 'undefined') { include('..\\..\\helpers\\helpers_xxx_web_update.js'); }
 					checkUpdate({ bDownload: globSettings.bAutoUpdateDownload, bOpenWeb: globSettings.bAutoUpdateOpenWeb, bDisableWarning: false })
-						.then((bFound) => !bFound && fb.ShowPopupMessage('No updates found.', 'Timeline: Update check'));
+						.then((bFound) => !bFound && fb.ShowPopupMessage('No updates found.', window.Name + _ps(window.ScriptInfo.Name) + ': Update check'));
 				}
 			});
 		}
@@ -611,7 +611,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 	{	// Readmes
 		const subMenu = menu.newMenu('Readmes');
 		(readmes || [
-			{ path: folders.xxx + 'helpers\\readme\\timeline.txt', name: 'Timeline-SMP' },
+			{ path: folders.xxx + 'helpers\\readme\\timeline.txt', name: window.ScriptInfo.Name },
 			{ path: folders.xxx + 'helpers\\readme\\timeline_dynamic_query.txt', name: 'Dynamic queries' }
 		]).forEach((o) => {
 			menu.newEntry({
@@ -636,7 +636,7 @@ function onRbtnUpImportSettings() {
 			exportSettings(
 				properties,
 				[],
-				'Timeline'
+				window.ScriptInfo.Name
 			);
 		}
 	});
@@ -645,7 +645,7 @@ function onRbtnUpImportSettings() {
 			importSettings(
 				void (0),
 				properties,
-				'Timeline'
+				window.ScriptInfo.Name
 			);
 		}
 	});

@@ -1,5 +1,5 @@
 ﻿'use strict';
-//25/09/25
+//26/09/25
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '2.1.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
@@ -298,7 +298,7 @@ if (!properties.firstPopup[1]) {
 	overwriteProperties(properties); // Updates panel
 	const readmePath = folders.xxx + 'helpers\\readme\\timeline.txt';
 	const readme = _open(readmePath, utf8);
-	if (readme.length) { fb.ShowPopupMessage(readme, 'Timeline-SMP'); }
+	if (readme.length) { fb.ShowPopupMessage(readme, window.ScriptInfo.Name); }
 }
 
 // Update check
@@ -404,8 +404,8 @@ const defaultConfig = deepAssign()(
 									this.properties.bOnNotifyColors[1] = !this.properties.bOnNotifyColors[1];
 									overwriteProperties(this.properties);
 									if (this.properties.bOnNotifyColors[1]) {
-										window.NotifyOthers('Colors: ask color scheme', 'Timeline: set color scheme');
-										window.NotifyOthers('Colors: ask color', 'Timeline: set colors');
+										window.NotifyOthers('Colors: ask color scheme', window.ScriptInfo.Name + ': set color scheme');
+										window.NotifyOthers('Colors: ask color', window.ScriptInfo.Name + ': set colors');
 									}
 								},
 								checkFunc: () => this.properties.bOnNotifyColors[1]
@@ -622,15 +622,15 @@ charts.forEach((/** @type {_chart} */ chart, i) => {
 		switch (mode.toLowerCase()) {
 			case 'popup': {
 				const keys = ['Layout (but not data)', 'Colors', 'Background'];
-				const answer = WshShell.Popup('Share current UI settings with other panels?\nSettings which will be copied:\n\n' + keys.join(', '), 0, 'Timeline: share UI settings', popup.question + popup.yes_no);
+				const answer = WshShell.Popup('Share current UI settings with other panels?\nSettings which will be copied:\n\n' + keys.join(', '), 0, window.ScriptInfo.Name + ': share UI settings', popup.question + popup.yes_no);
 				if (answer === popup.yes) {
-					window.NotifyOthers('Timeline: share UI settings', settings);
+					window.NotifyOthers(window.ScriptInfo.Name + ': share UI settings', settings);
 					return true;
 				}
 				return false;
 			}
 			case 'path': {
-				const input = Input.string('file', folders.data + 'ui_settings_' + window.Name + '.json', 'File name name:', 'Timeline: export UI settings', folders.data + 'ui_settings.json', void (0), true) || (Input.isLastEqual ? Input.lastInput : null);
+				const input = Input.string('file', folders.data + 'ui_settings_' + window.Name + '.json', 'File name name:', window.ScriptInfo.Name + ': export UI settings', folders.data + 'ui_settings.json', void (0), true) || (Input.isLastEqual ? Input.lastInput : null);
 				if (input === null) { return null; }
 				return _save(input, JSON.stringify(settings, null, '\t').replace(/\n/g, '\r\n'))
 					? input
@@ -920,11 +920,11 @@ addEventListener('on_playlist_items_removed', (idx) => { // eslint-disable-line 
 addEventListener('on_notify_data', (name, info) => {
 	if (name === 'bio_imgChange' || name === 'bio_chkTrackRev' || name === 'xxx-scripts: panel name reply') { return; }
 	switch (name) { // NOSONAR
-		case 'Timeline: share UI settings': {
+		case window.ScriptInfo.Name + ': share UI settings': {
 			if (info) { charts.every((chart) => chart.applyUiSettings(clone(info))); }
 			break;
 		}
-		case 'Timeline: set colors': { // Needs an array of 3 colors or an object {background, left, right}
+		case window.ScriptInfo.Name +': set colors': { // Needs an array of 3 colors or an object {background, left, right}
 			if (info && charts.some((chart) => chart.properties.bOnNotifyColors[1])) {
 				const colors = clone(info);
 				const getColor = (key) => Object.hasOwn(colors, key) ? colors.background : colors[['background', 'left', 'right'].indexOf(key)];
@@ -938,7 +938,7 @@ addEventListener('on_notify_data', (name, info) => {
 			break;
 		}
 		case 'Colors: set color scheme':
-		case 'Timeline: set color scheme': { // Needs an array of at least 6 colors to automatically adjust dynamic colors
+		case window.ScriptInfo.Name + ': set color scheme': { // Needs an array of at least 6 colors to automatically adjust dynamic colors
 			if (info && charts.some((chart) => chart.properties.bOnNotifyColors[1])) { background.callbacks.artColors(clone(info), true); }
 			break;
 		}
@@ -953,8 +953,8 @@ addEventListener('on_notify_data', (name, info) => {
 
 if (charts.some((chart) => chart.properties.bOnNotifyColors[1])) { // Ask color-servers at init
 	setTimeout(() => {
-		window.NotifyOthers('Colors: ask color scheme', 'Timeline: set color scheme');
-		window.NotifyOthers('Colors: ask colors', 'Timeline: set colors');
+		window.NotifyOthers('Colors: ask color scheme', window.ScriptInfo.Name + ': set color scheme');
+		window.NotifyOthers('Colors: ask colors', window.ScriptInfo.Name + ': set colors');
 	}, 1000);
 }
 

@@ -2,6 +2,7 @@
 
 ## [Table of Contents]
 - [Unreleased](#unreleased)
+- [2.0.1](#201---2025-09-29)
 - [2.0.0](#200---2025-09-20)
 - [1.5.0](#150---2024-10-09)
 - [1.4.1](#141---2024-08-13)
@@ -17,6 +18,12 @@
 - [0.6.0](#060---2023-11-15)
 
 ## [Unreleased][]
+### Added
+### Changed
+### Removed
+### Fixed
+
+## [2.0.1] - 2025-09-29
 ### Added
 ### Changed
 - UI: color extraction from background art is now done before blur is applied. Done after blur returned gray tones in so many unintended cases.
@@ -256,7 +263,8 @@
 ### Removed
 ### Fixed
 
-[Unreleased]: https://github.com/regorxxx/World-Map-SMP/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/regorxxx/World-Map-SMP/compare/v2.0.1...HEAD
+[2.0.1]: https://github.com/regorxxx/World-Map-SMP/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/regorxxx/World-Map-SMP/compare/v1.5.0...v2.0.0
 [1.5.0]: https://github.com/regorxxx/World-Map-SMP/compare/v1.4.1...v1.5.0
 [1.4.1]: https://github.com/regorxxx/World-Map-SMP/compare/v1.4.0...v1.4.1

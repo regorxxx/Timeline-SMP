@@ -1,12 +1,12 @@
 ﻿'use strict';
-//29/09/25
+//07/10/25
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '2.1.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
 include('helpers\\helpers_xxx.js');
 /* global globTags:readable, globQuery:readable, globProfiler:readable, folders:readable, VK_CONTROL:readable, clone:readable */
 include('helpers\\helpers_xxx_file.js');
-/* global _open:readable, utf8:readable, _save:readable */
+/* global _open:readable, utf8:readable, _save:readable, _foldPath:readable */
 include('helpers\\helpers_xxx_flags.js');
 /* global VK_LWIN:readable */
 include('helpers\\helpers_xxx_prototypes_smp.js');
@@ -230,9 +230,9 @@ let properties = {
 		multipleSelection: false
 	}), { func: isJSON }],
 	filePaths: ['External database paths', JSON.stringify({
-		listenBrainzArtists: '.\\profile\\' + folders.dataName + 'listenbrainz_artists.json',
-		searchByDistanceArtists: '.\\profile\\' + folders.dataName + 'searchByDistance_artists.json',
-		worldMapArtists: '.\\profile\\' + folders.dataName + 'worldMap.json'
+		listenBrainzArtists: _foldPath(folders.data + 'listenbrainz_artists.json'),
+		searchByDistanceArtists: _foldPath(folders.data + 'searchByDistance_artists.json'),
+		worldMapArtists: _foldPath(folders.data + 'worldMap.json')
 	}), { func: isJSON }],
 	bOnNotifyColors: ['Adjust colors on panel notify', true, { func: isBoolean }],
 	bNotifyColors: ['Notify colors to other panels', false, { func: isBoolean }]
@@ -630,7 +630,7 @@ charts.forEach((/** @type {_chart} */ chart, i) => {
 				return false;
 			}
 			case 'path': {
-				const input = Input.string('file', folders.data + 'ui_settings_' + window.Name + '.json', 'File name name:', window.ScriptInfo.Name + ': export UI settings', folders.data + 'ui_settings.json', void (0), true) || (Input.isLastEqual ? Input.lastInput : null);
+				const input = Input.string('file', folders.export + 'ui_settings_' + window.Name + '.json', 'File name name:', window.ScriptInfo.Name + ': export UI settings', folders.export + 'ui_settings.json', void (0), true) || (Input.isLastEqual ? Input.lastInput : null);
 				if (input === null) { return null; }
 				return _save(input, JSON.stringify(settings, null, '\t').replace(/\n/g, '\r\n'))
 					? input

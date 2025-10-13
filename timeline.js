@@ -1,5 +1,5 @@
 ﻿'use strict';
-//07/10/25
+//13/10/25
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '2.1.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
@@ -16,7 +16,7 @@ include('main\\statistics\\statistics_xxx.js');
 include('main\\statistics\\statistics_xxx_menu.js');
 /* global createStatisticsMenu:readable, _menu:readable */
 include('main\\timeline\\timeline_helpers.js');
-/* global  _gdiFont:readable, MK_LBUTTON:readable, deepAssign:readable, RGB:readable, isJSON:readable, _scale:readable, isString:readable, isBoolean:readable, globSettings:readable, setProperties:readable, getPropertiesPairs:readable, checkUpdate:readable, overwriteProperties:readable, getDataAsync:readable, _qCond:readable, queryJoin:readable, getData:readable, getPlaylistIndexArray:readable, _t:readable, isArrayEqual:readable, queryReplaceWithCurrent:readable, toType:readable, _ps:readable */
+/* global  _gdiFont:readable, MK_LBUTTON:readable, deepAssign:readable, RGB:readable, isJSON:readable, _scale:readable, isString:readable, isBoolean:readable, globSettings:readable, checkUpdate:readable, getDataAsync:readable, _qCond:readable, queryJoin:readable, getData:readable, getPlaylistIndexArray:readable, _t:readable, isArrayEqual:readable, queryReplaceWithCurrent:readable, toType:readable, _ps:readable */
 include('main\\timeline\\timeline_menus.js');
 /* global onLbtnUpPoint:readable, onLbtnUpSettings:readable, createBackgroundMenu:readable, Chroma:readable, onRbtnUpImportSettings:readable, WshShell:readable, popup:readable, Input:readable */
 include('main\\window\\window_xxx_background.js');
@@ -24,6 +24,7 @@ include('main\\window\\window_xxx_background.js');
 include('main\\window\\window_xxx_dynamic_colors.js');
 /* global dynamicColors:readable */
 include('helpers\\helpers_xxx_properties.js');
+/* global setProperties:readable, getPropertiesPairs:readable, overwriteProperties:readable, checkJsonProperties:readable */
 
 globProfiler.Print('helpers');
 
@@ -31,7 +32,7 @@ let properties = {
 	background: ['Background options', JSON.stringify(deepAssign()(
 		(new _background).defaults(),
 		{ colorMode: 'gradient', colorModeOptions: { color: [RGB(270, 270, 270), RGB(300, 300, 300)] }, coverMode: 'front' }
-	)), { func: isJSON }],
+	)), { func: isJSON, forceDefaults: true }],
 	chart: ['Chart options', JSON.stringify(deepAssign()(
 		(new _chart).exportConfig(),
 		{
@@ -47,20 +48,20 @@ let properties = {
 			configuration: { bDynLabelColor: true, bDynLabelColorBW: true, bDynSeriesColor: true, bDynBgColor: false, bLoadAsyncData: true },
 			buttons: { alpha: 25, timer: 1500 },
 		}
-	)), { func: isJSON }],
+	)), { func: isJSON, forceDefaults: true }],
 	data: ['Data options', JSON.stringify({
 		x: { key: 'Date', tf: _qCond(_t(globTags.date)) },
 		y: { key: 'Tracks', tf: '1' },
 		z: { key: 'Artist', tf: _qCond(globTags.artist) }
-	}), { func: isJSON }],
+	}), { func: isJSON, forceDefaults: true }],
 	dataQuery: ['Data query', 'ALL', { func: isString }],
-	dataSource: ['Data source', JSON.stringify({ sourceType: 'library', sourceArg: null, bRemoveDuplicates: true }), { func: isJSON }],
+	dataSource: ['Data source', JSON.stringify({ sourceType: 'library', sourceArg: null, bRemoveDuplicates: true }), { func: isJSON, forceDefaults: true }],
 	groupBy: ['Data aggregation', JSON.stringify({
 		x: null, xKey: null,
 		y: null, yKey: null,
 		z: null, zKey: null
-	}), { func: isJSON }],
-	timeRange: ['Time range', JSON.stringify({ timePeriod: null, timeKey: null }), { func: isJSON }],
+	}), { func: isJSON, forceDefaults: true }],
+	timeRange: ['Time range', JSON.stringify({ timePeriod: null, timeKey: null }), { func: isJSON, forceDefaults: true }],
 	xEntries: ['Axis X TF entries', JSON.stringify([
 		{ x: _t(globTags.date), keyX: 'Date' },
 		{ x: '$div(' + _t(globTags.date) + ',10)0s', keyX: 'Decade' },
@@ -228,31 +229,20 @@ let properties = {
 		onPlayback: true,
 		preferPlayback: true,
 		multipleSelection: false
-	}), { func: isJSON }],
+	}), { func: isJSON, forceDefaults: true }],
 	filePaths: ['External database paths', JSON.stringify({
 		listenBrainzArtists: _foldPath(folders.data + 'listenbrainz_artists.json'),
 		searchByDistanceArtists: _foldPath(folders.data + 'searchByDistance_artists.json'),
-		worldMapArtists: _foldPath(folders.data + 'worldMap.json')
-	}), { func: isJSON }],
+		worldMapArtists: _foldPath(folders.data + 'worldMap.json'),
+		lastfmArtists: _foldPath(folders.data + 'lastfm_artists.json')
+	}), { func: isJSON, forceDefaults: true }],
 	bOnNotifyColors: ['Adjust colors on panel notify', true, { func: isBoolean }],
 	bNotifyColors: ['Notify colors to other panels', false, { func: isBoolean }]
 };
 Object.keys(properties).forEach(p => properties[p].push(properties[p][1]));
 setProperties(properties, '', 0);
 properties = getPropertiesPairs(properties, '', 0);
-Object.keys(properties).forEach(p => {
-	if (properties[p][2].func === isJSON) {
-		const obj = JSON.parse(properties[p][1]);
-		const def = JSON.parse(properties[p][3]);
-		if (!Array.isArray(obj) && !isArrayEqual(Object.keys(obj), Object.keys(def))) {
-			for (let key in def) {
-				if (!Object.hasOwn(obj, key)) { obj[key] = def[key]; }
-			}
-			properties[p][1] = JSON.stringify(obj);
-			overwriteProperties(properties);
-		}
-	}
-});
+checkJsonProperties(properties);
 
 // Helpers
 const dynQueryMode = JSON.parse(properties.dynQueryMode[1]);

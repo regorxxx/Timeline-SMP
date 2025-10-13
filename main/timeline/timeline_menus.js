@@ -1,5 +1,5 @@
 'use strict';
-//26/09/25
+//13/10/25
 
 /* exported onLbtnUpPoint, onLbtnUpSettings, onRbtnUpImportSettings */
 
@@ -42,16 +42,16 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 			menu.newSeparator(subMenu[1]);
 			const currPoints = this.dataDraw.map((series) => series.find((newPoint) => newPoint.x === point.x)).filter(Boolean);
 			[
-				{ name: 'By ' + this.axis.x.key, query: this.axis.x.tf + ' IS ' + subPoint.x, playlist: 'Timeline: ' + subPoint.x.replace(/\|.*/, '') },
+				{ name: 'By ' + this.axis.x.key, query: this.axis.x.tf + ' IS ' + subPoint.x.toString().toLowerCase(), playlist: 'Timeline: ' + subPoint.x.replace(/\|.*/, '') },
 				...(this.graph.multi
 					? [
-						{ name: 'By ' + this.axis.z.key, query: fallbackTagsQuery(this.axis.z.tf, subPoint.z), playlist: 'Timeline: ' + subPoint.z.replace(/\|.*/, '') },
+						{ name: 'By ' + this.axis.z.key, query: fallbackTagsQuery(this.axis.z.tf, subPoint.z.toString().toLowerCase()), playlist: 'Timeline: ' + subPoint.z.replace(/\|.*/, '') },
 						{
-							name: 'By ' + this.axis.x.key + ' and ' + this.axis.z.key, query: this.axis.x.tf + ' IS ' + subPoint.x + ' AND ' + _p(fallbackTagsQuery(this.axis.z.tf, subPoint.z)),
+							name: 'By ' + this.axis.x.key + ' and ' + this.axis.z.key, query: this.axis.x.tf + ' IS ' + subPoint.x.toString().toLowerCase() + ' AND ' + _p(fallbackTagsQuery(this.axis.z.tf, subPoint.z.toString().toLowerCase())),
 							playlist: 'Timeline: ' + subPoint.x.replace(/\|.*/, '') + ' - ' + subPoint.z.replace(/\|.*/, '')
 						},
 						{
-							name: 'By ' + this.axis.x.key + ' and top ' + this.axis.z.key, query: this.axis.x.tf + ' IS ' + subPoint.x + ' AND ' + _p(currPoints.map((newPoint) => fallbackTagsQuery(this.axis.z.tf, newPoint.z)).join(' OR ')),
+							name: 'By ' + this.axis.x.key + ' and top ' + this.axis.z.key, query: this.axis.x.tf + ' IS ' + subPoint.x.toString().toLowerCase() + ' AND ' + _p(currPoints.map((newPoint) => fallbackTagsQuery(this.axis.z.tf, newPoint.z.toString().toLowerCase())).join(' OR ')),
 							playlist: 'Timeline: ' + subPoint.x.replace(/\|.*/, '') + ' - Top ' + currPoints.length + ' ' + this.axis.z.key.replace(/\|.*/, '')
 						}
 					]

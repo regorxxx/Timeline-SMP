@@ -22,7 +22,8 @@
 - UI: added fallback text when no data is available, along a tip to force data refresh.
 - UI: added Double L. Click mouse shortcut to force data refresh (only when empty).
 ### Changed
-- Settings: global support for %fb2k_component_path%, %fb2k_profile_path% and %fb2k_path% in any input asking for paths.
+- Configuration: global support for %fb2k_component_path%, %fb2k_profile_path% and %fb2k_path% in any input asking for paths.
+- Configuration: improved handling of user definition files found at '[FOOBAR PROFILE FOLDER]\js_data\presets\global\' in case they got corrupted. The corrupted file will be backed up at the same folder and a new one created. Popups will warn about it, no longer requiring user actions. See [here](https://hydrogenaudio.org/index.php/topic,120978.msg1071225.html#msg1071225).
 ### Removed
 ### Fixed
 - UI: fixed animation while processing data if mouse was over the panel (it runned faster than it should be).

@@ -1,5 +1,5 @@
 'use strict';
-//13/10/25
+//16/10/25
 
 /* exported onLbtnUpPoint, onLbtnUpSettings, onRbtnUpImportSettings */
 
@@ -22,6 +22,7 @@ include('..\\window\\window_xxx_background_menu.js');
 
 /** @this _chart */
 function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-vars
+	if (!point) { return; }
 	// Constants
 	const menu = new _menu();
 	const bShowAllPoints = this.graph.multi && ['scatter', 'lines', 'fill'].includes(this.graph.type);
@@ -133,6 +134,13 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 }
 
 /** @this _chart */
+function onDblLbtnPoint(point, x, y, mask) { // eslint-disable-line no-unused-vars
+	if (!point && !this.series) {
+		this.setData();
+	}
+}
+
+/** @this _chart */
 function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 	// Constants
 	const properties = this.properties;
@@ -197,7 +205,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 				if (entry) { this.setData(entry); }
 			}
 		});
-		menu.newCheckMenuLast(() => list.filter(menu.isNotSeparator).findIndex((entry) => _qCond(entry.x) ===  this.axis.x.tf) === -1);
+		menu.newCheckMenuLast(() => list.filter(menu.isNotSeparator).findIndex((entry) => _qCond(entry.x) === this.axis.x.tf) === -1);
 		menu.newSeparator(subMenu);
 		_createSubMenuEditEntries(menu, subMenu, {
 			name: 'Axis X TF entries',

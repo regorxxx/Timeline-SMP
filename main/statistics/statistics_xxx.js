@@ -1,5 +1,5 @@
 ﻿'use strict';
-//06/08/25
+//16/10/25
 
 /* exported _chart */
 
@@ -1247,6 +1247,63 @@ function _chart({
 		}
 	};
 
+	/**
+	 * Fallback paint if no data is available.
+	 *
+	 * @property
+	 * @name paintNoData
+	 * @kind method
+	 * @memberof _chart
+	 * @param {GdiGraphics} gr - GDI graphics object from on_paint callback.
+	 * @returns {boolean}
+	*/
+	this.paintNoData = (gr) => {
+		const bDynLabelColor = this.configuration.bDynLabelColor && this.callbacks.config.backgroundColor;
+		const bgColor = bDynLabelColor
+			? this.configuration.bDynLabelColorBW
+				? invert(this.callbacks.config.backgroundColor()[0], true)
+				: Chroma.average(this.callbacks.config.backgroundColor(), void (0), [0.6, 0.4]).android()
+			: this.background.color;
+		const xAxisColor = bDynLabelColor ? bgColor : this.axis.x.color || bgColor;
+		const xAxisColorInverted = xAxisColor === this.axis.x.color
+			? xAxisColor
+			: this.configuration.bDynLabelColorBW
+				? bgColor
+				: invert(xAxisColor, true);
+		let xOffsetKey;
+		let yOffsetKey;
+		let x = this.x + this.margin.leftAuto + this.axis.x.width / 2;
+		let y = this.y + this.margin.top - this.axis.y.width;
+		let w = this.w - this.margin.right - this.axis.y.width / 2;
+		let h = this.h - this.margin.bottom;
+		switch (this.graph.type) {
+			case 'doughnut':
+			case 'pie':
+				// XY Titles
+				if (this.axis.x.show && this.axis.x.key.length && this.axis.x.showKey) {
+					yOffsetKey = gr.CalcTextHeight(this.axis.x.key, this.gFont) + _scale(2);
+					y -= yOffsetKey;
+				}
+				if (this.axis.y.show && this.axis.y.key.length && this.axis.y.showKey) {
+					xOffsetKey = gr.CalcTextHeight(this.axis.y.key, this.gFont) + _scale(2);
+					w -= xOffsetKey;
+				}
+				break;
+			default:
+				// XY Titles
+				if (this.axis.x.show && this.axis.x.key.length && this.axis.x.showKey || this.graph.type === 'timeline') {
+					yOffsetKey = gr.CalcTextHeight(this.axis.x.key, this.gFont) + _scale(2);
+					y -= yOffsetKey;
+				}
+				if (this.axis.y.show && this.axis.y.key.length && this.axis.y.showKey) {
+					xOffsetKey = gr.CalcTextHeight(this.axis.y.key, this.gFont) + _scale(2);
+					x += xOffsetKey;
+					w -= xOffsetKey;
+				}
+		}
+		gr.GdiDrawText('~ No data ~' + (!this.configuration.bLoadAsyncData ? '\n\nDouble L. Click to refresh' : ''), this.gFont, RGBA(...toRGB(xAxisColorInverted), 200), x, y, w, h, DT_CENTER | DT_VCENTER | DT_CALCRECT);
+	};
+
 	this.paint = (gr) => {
 		if (!window.ID) { return; }
 		if (!window.Width || !window.Height) { return; }
@@ -1254,6 +1311,7 @@ function _chart({
 		this.paintBg(gr);
 		if (this.configuration.bProfile) { this.profile.Print('Paint background', false); }
 		const { bHideToolbar } = this.paintGraph(gr);
+		if (!this.series) { this.paintNoData(gr); }
 		if (this.configuration.bProfile) { this.profile.Print('Paint graph', false); }
 		this.paintButtons(gr, bHideToolbar);
 		this.pop.paint(gr);
@@ -1825,6 +1883,8 @@ function _chart({
 			} else if (this.callbacks.point.onDblLbtn) {
 				const point = this.getCurrentPoint(false);
 				this.callbacks.point.onDblLbtn.call(this, point, x, y, mask);
+			} else if (!this.series && !this.configuration.bLoadAsyncData) {
+				this.setData();
 			}
 			return true;
 		}

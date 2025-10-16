@@ -19,10 +19,13 @@
 
 ## [Unreleased][]
 ### Added
+- UI: added fallback text when no data is available, along a tip to force data refresh.
+- UI: added Double L. Click mouse shortcut to force data refresh (only when empty).
 ### Changed
 - Settings: global support for %fb2k_component_path%, %fb2k_profile_path% and %fb2k_path% in any input asking for paths.
 ### Removed
 ### Fixed
+- UI: fixed animation while processing data if mouse was over the panel (it runned faster than it should be).
 
 ## [2.0.1] - 2025-09-29
 ### Added

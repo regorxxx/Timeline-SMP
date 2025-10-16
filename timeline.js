@@ -1,5 +1,5 @@
 ﻿'use strict';
-//13/10/25
+//16/10/25
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '2.1.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
@@ -18,7 +18,7 @@ include('main\\statistics\\statistics_xxx_menu.js');
 include('main\\timeline\\timeline_helpers.js');
 /* global  _gdiFont:readable, MK_LBUTTON:readable, deepAssign:readable, RGB:readable, isJSON:readable, _scale:readable, isString:readable, isBoolean:readable, globSettings:readable, checkUpdate:readable, getDataAsync:readable, _qCond:readable, queryJoin:readable, getData:readable, getPlaylistIndexArray:readable, _t:readable, isArrayEqual:readable, queryReplaceWithCurrent:readable, toType:readable, _ps:readable */
 include('main\\timeline\\timeline_menus.js');
-/* global onLbtnUpPoint:readable, onLbtnUpSettings:readable, createBackgroundMenu:readable, Chroma:readable, onRbtnUpImportSettings:readable, WshShell:readable, popup:readable, Input:readable */
+/* global onLbtnUpPoint:readable, onDblLbtnPoint:readable, onLbtnUpSettings:readable, createBackgroundMenu:readable, Chroma:readable, onRbtnUpImportSettings:readable, WshShell:readable, popup:readable, Input:readable */
 include('main\\window\\window_xxx_background.js');
 /* global _background:readable */
 include('main\\window\\window_xxx_dynamic_colors.js');
@@ -367,7 +367,8 @@ const defaultConfig = deepAssign()(
 		configuration: { bSlicePerKey: true },
 		callbacks: {
 			point: {
-				onLbtnUp: onLbtnUpPoint
+				onLbtnUp: onLbtnUpPoint,
+				onDblLbtn: onDblLbtnPoint,
 			},
 			settings: {
 				onLbtnUp: function (x, y, mask) { onLbtnUpSettings.call(this).btn_up(x, y); }, // eslint-disable-line no-unused-vars

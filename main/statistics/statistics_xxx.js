@@ -1598,6 +1598,8 @@ function _chart({
 	};
 
 	this.leave = (cleanNear) => {
+		if (!window.ID) { return false; }
+		if (this.pop.isEnabled()) { return false; }
 		this.mx = -1;
 		this.my = -1;
 		this.getButtonKeys().forEach((button) => this[button].hover = false);
@@ -1807,7 +1809,7 @@ function _chart({
 				return true;
 			} else if (this.callbacks.point.onLbtnUp) {
 				const point = this.getCurrentPoint(false);
-				if (point) { this.callbacks.point.onLbtnUp.call(this, point, x, y, mask); }
+				this.callbacks.point.onLbtnUp.call(this, point, x, y, mask);
 			}
 			return true;
 		}
@@ -1818,7 +1820,12 @@ function _chart({
 	this.lbtnDblClk = (x, y, mask) => {
 		mask -= MK_LBUTTON; // Remove useless mask here...
 		if (this.trace(x, y)) {
-			this.getButtonKeys().some((button) => this[button].hover && this[button].lbtn_dblclk(x, y, mask, this));
+			if (this.getButtonKeys().some((button) => this[button].hover && this[button].lbtn_dblclk(x, y, mask, this))) {
+				return true;
+			} else if (this.callbacks.point.onDblLbtn) {
+				const point = this.getCurrentPoint(false);
+				this.callbacks.point.onDblLbtn.call(this, point, x, y, mask);
+			}
 			return true;
 		}
 		return false;

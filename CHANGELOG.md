@@ -2,6 +2,7 @@
 
 ## [Table of Contents]
 - [Unreleased](#unreleased)
+- [2.1.0](#210---2025-10-28)
 - [2.0.1](#201---2025-09-29)
 - [2.0.0](#200---2025-09-20)
 - [1.5.0](#150---2024-10-09)
@@ -19,6 +20,12 @@
 
 ## [Unreleased][]
 ### Added
+### Changed
+### Removed
+### Fixed
+
+## [2.1.0] - 2025-10-28
+### Added
 - UI: added fallback text when no data is available, along a tip to force data refresh.
 - UI: added Double L. Click mouse shortcut to force data refresh (only when empty).
 ### Changed
@@ -26,7 +33,7 @@
 - Configuration: improved handling of user definition files found at '[FOOBAR PROFILE FOLDER]\js_data\presets\global\' in case they got corrupted. The corrupted file will be backed up at the same folder and a new one created. Popups will warn about it, no longer requiring user actions. See [here](https://hydrogenaudio.org/index.php/topic,120978.msg1071225.html#msg1071225).
 ### Removed
 ### Fixed
-- UI: fixed animation while processing data if mouse was over the panel (it runned faster than it should be).
+- UI: fixed animation while processing data if mouse was over the panel (it ran faster than it should be).
 
 ## [2.0.1] - 2025-09-29
 ### Added
@@ -268,7 +275,8 @@
 ### Removed
 ### Fixed
 
-[Unreleased]: https://github.com/regorxxx/World-Map-SMP/compare/v2.0.1...HEAD
+[Unreleased]: https://github.com/regorxxx/World-Map-SMP/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/regorxxx/World-Map-SMP/compare/v2.0.1...v2.1.0
 [2.0.1]: https://github.com/regorxxx/World-Map-SMP/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/regorxxx/World-Map-SMP/compare/v1.5.0...v2.0.0
 [1.5.0]: https://github.com/regorxxx/World-Map-SMP/compare/v1.4.1...v1.5.0

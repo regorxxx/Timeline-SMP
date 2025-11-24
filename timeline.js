@@ -1,5 +1,5 @@
 ﻿'use strict';
-//19/11/25
+//21/11/25
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '2.1.1', features: { drag_n_drop: false, grab_focus: true } }); }
 
@@ -37,7 +37,7 @@ let properties = {
 		(new _chart).exportConfig(),
 		{
 			graph: { type: 'timeline', multi: true, borderWidth: _scale(1), pointAlpha: Math.round(60 * 255 / 100) },
-			dataManipulation: { sort: { x: 'natural', y: null, z: null, my: 'natural num', mz: null }, group: 3, filter: null, slice: [0, Infinity], distribution: null },
+			dataManipulation: { sort: { x: 'natural', y: null, z: null, my: 'reverse num', mz: null }, group: 3, filter: null, slice: [0, Infinity], distribution: null },
 			background: { color: null },
 			chroma: { scheme: 'Set1' },
 			margin: { left: _scale(20), right: _scale(20), top: _scale(10), bottom: _scale(15) },

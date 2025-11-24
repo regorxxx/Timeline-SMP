@@ -2,6 +2,7 @@
 
 ## [Table of Contents]
 - [Unreleased](#unreleased)
+- [2.2.0](#211---2025-11-24)
 - [2.1.1](#211---2025-11-19)
 - [2.1.0](#210---2025-10-28)
 - [2.0.1](#201---2025-09-29)
@@ -21,11 +22,17 @@
 
 ## [Unreleased][]
 ### Added
+### Changed
+### Removed
+### Fixed
+
+## [2.2.0] - 2025-11-24
+### Added
 - UI: UI elements are now resizable using Alt + Ctrl + Mouse wheel, depending on the mouse position (over points, margins or buttons).
 ### Changed
 ### Removed
 ### Fixed
-- Fixed crash on Y-axis settings change. See [Issue 1](https://github.com/regorxxx/Timeline-SMP/issues/1).
+- UI: Fixed crash on Y-axis settings change. See [Issue 1](https://github.com/regorxxx/Timeline-SMP/issues/1).
 
 ## [2.1.1] - 2025-11-19
 ### Added
@@ -286,7 +293,8 @@
 ### Removed
 ### Fixed
 
-[Unreleased]: https://github.com/regorxxx/World-Map-SMP/compare/v2.1.1...HEAD
+[Unreleased]: https://github.com/regorxxx/World-Map-SMP/compare/v2.2.0...HEAD
+[2.2.0]: https://github.com/regorxxx/World-Map-SMP/compare/v2.1.1...v2.2.0
 [2.1.1]: https://github.com/regorxxx/World-Map-SMP/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/regorxxx/World-Map-SMP/compare/v2.0.1...v2.1.0
 [2.0.1]: https://github.com/regorxxx/World-Map-SMP/compare/v2.0.0...v2.0.1

@@ -24,6 +24,7 @@
 ### Changed
 ### Removed
 ### Fixed
+- Fixed crash on Y-axis settings change. See [Issue 1](https://github.com/regorxxx/Timeline-SMP/issues/1).
 
 ## [2.1.1] - 2025-11-19
 ### Added

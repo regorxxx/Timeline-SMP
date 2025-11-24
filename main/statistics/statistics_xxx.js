@@ -1,5 +1,5 @@
 ﻿'use strict';
-//16/11/25
+//21/11/25
 
 /* exported _chart */
 
@@ -2502,9 +2502,11 @@ function _chart({
 		if (bCheckColors && !dataAsync && !this.dataAsync) { this.checkColors(); } // NOSONAR
 		if (axis) {
 			if (axis.x) { this.axis.x = { ...this.axis.x, ...axis.x }; }
-			if (axis.y) { this.axis.y = { ...this.axis.y, ...axis.y }; }
+			if (axis.y) {
+				this.axis.y = { ...this.axis.y, ...axis.y };
+				if (Object.hasOwn(axis.y, 'show')) { bResizeButtons = true; }
+			}
 			if (axis.z) { this.axis.z = { ...this.axis.z, ...axis.z }; }
-			if (Object.hasOwn(axis.y, 'show')) { bResizeButtons = true; }
 		}
 		if (graphSpecs) {
 			if (graphSpecs.timeline) { this.graphSpecs.timeline = { ...this.graphSpecs.timeline, ...graphSpecs.timeline }; }
@@ -2872,7 +2874,7 @@ function _chart({
 	/** @type {{sort: {x:string|null, y:string|null, z:string|null, my:string|null, mz:string|null}, filter: null|function, slice: [number, number], distribution: null|string, probabilityPlot: null|string, group: number}} */
 	this.dataManipulation;
 	if (dataManipulation) {
-		if (dataManipulation.sort) { this.dataManipulation.sort = {...this.dataManipulation.sort, ...dataManipulation.sort }; }
+		if (dataManipulation.sort) { this.dataManipulation.sort = { ...this.dataManipulation.sort, ...dataManipulation.sort }; }
 		Object.keys(this.dataManipulation).filter((key) => !['sort'].includes(key)).forEach((key) => {
 			if (dataManipulation[key] !== null) { this.dataManipulation[key] = dataManipulation[key]; }
 		});

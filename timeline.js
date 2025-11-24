@@ -4,7 +4,7 @@
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '2.1.1', features: { drag_n_drop: false, grab_focus: true } }); }
 
 include('helpers\\helpers_xxx.js');
-/* global globTags:readable, globQuery:readable, globProfiler:readable, folders:readable, VK_CONTROL:readable, clone:readable */
+/* global globTags:readable, globQuery:readable, globProfiler:readable, folders:readable, VK_CONTROL:readable, clone:readable, VK_ALT:readable */
 include('helpers\\helpers_xxx_file.js');
 /* global _open:readable, utf8:readable, _save:readable, _foldPath:readable */
 include('helpers\\helpers_xxx_flags.js');
@@ -830,7 +830,9 @@ addEventListener('on_mouse_lbtn_dblclk', (x, y, mask) => {
 
 addEventListener('on_mouse_wheel', (step) => {
 	if (!window.ID) { return; }
-	charts.some((chart) => chart.mouseWheel(step));
+	if (utils.IsKeyPressed(VK_CONTROL) && utils.IsKeyPressed(VK_ALT)) {
+		charts.some((chart) => chart.mouseWheelResize(step, void(0), { bSaveProperties: true }));
+	} else { charts.some((chart) => chart.mouseWheel(step)); }
 });
 
 addEventListener('on_mouse_wheel_h', (step) => {

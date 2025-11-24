@@ -21,6 +21,7 @@
 
 ## [Unreleased][]
 ### Added
+- UI: UI elements are now resizable using Alt + Ctrl + Mouse wheel, depending on the mouse position (over points, margins or buttons).
 ### Changed
 ### Removed
 ### Fixed

@@ -1,5 +1,5 @@
 ﻿'use strict';
-//24/11/25
+//25/11/25
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '2.2.0', features: { drag_n_drop: false, grab_focus: true } }); }
 
@@ -10,13 +10,13 @@ include('helpers\\helpers_xxx_file.js');
 include('helpers\\helpers_xxx_flags.js');
 /* global VK_LWIN:readable */
 include('helpers\\helpers_xxx_prototypes_smp.js');
-/* global extendGR:readable, isUUID:readable */
+/* global extendGR:readable */
 include('main\\statistics\\statistics_xxx.js');
 /* global _chart:readable */
 include('main\\statistics\\statistics_xxx_menu.js');
 /* global createStatisticsMenu:readable, _menu:readable */
 include('main\\timeline\\timeline_helpers.js');
-/* global  _gdiFont:readable, MK_LBUTTON:readable, deepAssign:readable, RGB:readable, isJSON:readable, _scale:readable, isString:readable, isBoolean:readable, globSettings:readable, checkUpdate:readable, getDataAsync:readable, _qCond:readable, queryJoin:readable, getData:readable, getPlaylistIndexArray:readable, _t:readable, isArrayEqual:readable, queryReplaceWithCurrent:readable, toType:readable, _ps:readable */
+/* global  _gdiFont:readable, MK_LBUTTON:readable, deepAssign:readable, RGB:readable, isJSON:readable, _scale:readable, isString:readable, isBoolean:readable, globSettings:readable, checkUpdate:readable, getDataAsync:readable, _qCond:readable, queryJoin:readable, getData:readable, getPlaylistIndexArray:readable, _t:readable, isArrayEqual:readable, queryReplaceWithCurrent:readable, toType:readable */
 include('main\\timeline\\timeline_menus.js');
 /* global onLbtnUpPoint:readable, onDblLbtnPoint:readable, onLbtnUpSettings:readable, createBackgroundMenu:readable, Chroma:readable, onRbtnUpImportSettings:readable, WshShell:readable, popup:readable, Input:readable */
 include('main\\window\\window_xxx_background.js');
@@ -531,7 +531,7 @@ const nCharts = Array.from({ length: rows }, (row, i) => {
 		const h = window.Height / rows * (i + 1);
 		const x = w * j;
 		const y = window.Height / rows * i;
-		const title = (isUUID(window.Name.replace(/[{}]/g, '')) ? '' : window.Name + ' - ') + 'Graph ' + (1 + rows * i + j) + ' {' + newConfig[i][j].axis.x.key + ' - ' + newConfig[i][j].axis.y.key + '}';
+		const title = window.PanelName + ' - Graph ' + (1 + rows * i + j) + ' {' + newConfig[i][j].axis.x.key + ' - ' + newConfig[i][j].axis.y.key + '}';
 		return new _chart({ ...defaultConfig, x, y, w, h }).changeConfig({ ...newConfig[i][j], bPaint: false, title });
 	});
 });
@@ -601,7 +601,7 @@ charts.forEach((/** @type {_chart} */ chart, i) => {
 		if (bHasZ) { newConfig.axis.z = { key: entry.keyZ, tf: _qCond(entry.z) }; }
 		if (bHasZ || bHasTfZ) { newConfig.graph = { multi: true }; }
 		else { newConfig.graph = { multi: false }; }
-		const title = (isUUID(window.Name.replace(/[{}]/g, '')) ? '' : window.Name + ' - ') + 'Graph ' + i + ' {' + this.axis.x.key + ' - ' + this.axis.y.key + '}';
+		const title = window.PanelName + ' - Graph ' + i + ' {' + this.axis.x.key + ' - ' + this.axis.y.key + '}';
 		this.changeConfig({ ...newConfig, bPaint: true, bForceLoadData: true });
 		this.changeConfig({ title, bPaint: false, callbackArgs: { bSaveProperties: true } });
 	};
@@ -636,7 +636,7 @@ charts.forEach((/** @type {_chart} */ chart, i) => {
 		window.Repaint();
 		const answer = bForce
 			? popup.yes
-			: WshShell.Popup('Apply current settings to highlighted panel?\nCheck UI.', 0, window.Name + _ps(window.ScriptInfo.Name), popup.question + popup.yes_no);
+			: WshShell.Popup('Apply current settings to highlighted panel?\nCheck UI.', 0, window.FullPanelName, popup.question + popup.yes_no);
 		if (answer === popup.yes) {
 			const newBg = JSON.parse(String(settings.background[1]));
 			['x', 'y', 'w', 'h', 'callbacks'].forEach((key) => delete newBg[key]);
@@ -831,8 +831,8 @@ addEventListener('on_mouse_lbtn_dblclk', (x, y, mask) => {
 addEventListener('on_mouse_wheel', (step) => {
 	if (!window.ID) { return; }
 	if (utils.IsKeyPressed(VK_CONTROL) && utils.IsKeyPressed(VK_ALT)) {
-		charts.some((chart) => chart.mouseWheelResize(step, void(0), { bSaveProperties: true }));
-	} else { charts.some((chart) => chart.mouseWheel(step)); }
+		charts.some((chart) => chart.wheelResize(step, void(0), { bSaveProperties: true }));
+	} else { charts.some((chart) => chart.wheel(step)); }
 });
 
 addEventListener('on_mouse_wheel_h', (step) => {

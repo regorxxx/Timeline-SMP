@@ -1,9 +1,9 @@
 'use strict';
-//16/10/25
+//25/11/25
 
 /* exported onLbtnUpPoint, onLbtnUpSettings, onRbtnUpImportSettings */
 
-/* global _p:readable, checkQuery:readable, globTags:readable, globQuery:readable, round:readable, capitalizeAll:readable, properties:readable, WshShell:readable, popup:readable, _qCond:readable, overwriteProperties:readable, checkUpdate:readable, globSettings:readable , isArrayEqual:readable, _b:readable, folders:readable, dynQueryMode:readable, refreshData:readable, isUUID:readable, queryJoin:readable, queryReplaceWithCurrent:readable, selectedHandle:readable, VK_SHIFT:readable, fallbackTagsQuery:readable, getTimeRange:readable, timePeriods:readable, charts:readable, _ps:readable */
+/* global _p:readable, checkQuery:readable, globTags:readable, globQuery:readable, round:readable, capitalizeAll:readable, properties:readable, WshShell:readable, popup:readable, _qCond:readable, overwriteProperties:readable, checkUpdate:readable, globSettings:readable , isArrayEqual:readable, _b:readable, folders:readable, dynQueryMode:readable, refreshData:readable, queryJoin:readable, queryReplaceWithCurrent:readable, selectedHandle:readable, VK_SHIFT:readable, fallbackTagsQuery:readable, getTimeRange:readable, timePeriods:readable, charts:readable */
 include('..\\..\\helpers\\helpers_xxx_file.js');
 /* global _open:readable, utf8:readable */
 include('..\\..\\helpers\\helpers_xxx_playlists.js');
@@ -125,7 +125,7 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 							: ''
 					) +
 					'Total Tracks on library -not deduplicated-: ' + libItems.Count
-					, (isUUID(window.Name.replace(/[{}]/g, '')) ? '' : window.Name + ': ') + 'Point statistics'
+					, window.PanelName + ': Point statistics'
 				);
 			}
 		});
@@ -604,7 +604,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 				menuName: subMenuTwo, entryText: 'Check for updates...', func: () => {
 					if (typeof checkUpdate === 'undefined') { include('..\\..\\helpers\\helpers_xxx_web_update.js'); }
 					checkUpdate({ bDownload: globSettings.bAutoUpdateDownload, bOpenWeb: globSettings.bAutoUpdateOpenWeb, bDisableWarning: false })
-						.then((bFound) => !bFound && fb.ShowPopupMessage('No updates found.', window.Name + _ps(window.ScriptInfo.Name) + ': Update check'));
+						.then((bFound) => !bFound && fb.ShowPopupMessage('No updates found.', window.FullPanelName + ': Update check'));
 				}
 			});
 		}
@@ -636,7 +636,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 
 function onRbtnUpImportSettings() {
 	const menu = new _menu();
-	menu.newEntry({ entryText: 'Panel menu: ' + window.Name, flags: MF_GRAYED });
+	menu.newEntry({ entryText: 'Panel menu: ' + window.PanelName, flags: MF_GRAYED });
 	menu.newSeparator();
 	// Generic code is left from other packages, but only JSON settings is used
 	menu.newEntry({

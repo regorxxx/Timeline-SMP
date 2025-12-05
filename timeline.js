@@ -1,5 +1,5 @@
 ﻿'use strict';
-//25/11/25
+//05/12/25
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '2.2.1', features: { drag_n_drop: false, grab_focus: true } }); }
 
@@ -16,7 +16,7 @@ include('main\\statistics\\statistics_xxx.js');
 include('main\\statistics\\statistics_xxx_menu.js');
 /* global createStatisticsMenu:readable, _menu:readable */
 include('main\\timeline\\timeline_helpers.js');
-/* global  _gdiFont:readable, MK_LBUTTON:readable, deepAssign:readable, RGB:readable, isJSON:readable, _scale:readable, isString:readable, isBoolean:readable, globSettings:readable, checkUpdate:readable, getDataAsync:readable, _qCond:readable, queryJoin:readable, getData:readable, getPlaylistIndexArray:readable, _t:readable, isArrayEqual:readable, queryReplaceWithCurrent:readable, toType:readable */
+/* global  _gdiFont:readable, MK_LBUTTON:readable, deepAssign:readable, RGB:readable, isJSON:readable, _scale:readable, isString:readable, isBoolean:readable, globSettings:readable, checkUpdate:readable, getDataAsync:readable, _qCond:readable, queryJoin:readable, getData:readable, getPlaylistIndexArray:readable, _t:readable, isArrayEqual:readable, queryReplaceWithCurrent:readable, isFbMetadbHandle:readable */
 include('main\\timeline\\timeline_menus.js');
 /* global onLbtnUpPoint:readable, onDblLbtnPoint:readable, onLbtnUpSettings:readable, createBackgroundMenu:readable, Chroma:readable, onRbtnUpImportSettings:readable, WshShell:readable, popup:readable, Input:readable */
 include('main\\window\\window_xxx_background.js');
@@ -695,7 +695,7 @@ function refreshData(plsIdx, callback, bForce = false) {
 			const currSel = getSel();
 			if (currSel && !selectedHandle || !currSel && selectedHandle) { return true; }
 			if (selectedHandle && currSel) {
-				if (toType(currSel) === 'FbMetadbHandle' && toType(selectedHandle) === 'FbMetadbHandle' && currSel.RawPath === selectedHandle.RawPath) { return false; }
+				if (isFbMetadbHandle(currSel) && isFbMetadbHandle(selectedHandle) && currSel.RawPath === selectedHandle.RawPath) { return false; }
 				newQuery = queryReplaceWithCurrent(query, currSel, { bToLowerCase: true });
 				oldQuery = queryReplaceWithCurrent(query, selectedHandle, { bToLowerCase: true });
 			}

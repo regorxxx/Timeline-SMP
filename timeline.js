@@ -557,6 +557,8 @@ charts.forEach((/** @type {_chart} */ chart, i) => {
 				: false;
 		const bListensPerPeriod = bListens && timePeriods.includes(bHasX ? entry.x : (bHasTfX ? this.axis.x.tf : ''));
 		const dataSource = JSON.parse(this.properties.dataSource[1]);
+		const sourceType = Object.hasOwn(entry, 'sourceType') ? entry.sourceType : dataSource.sourceType;
+		const sourceArg = (Object.hasOwn(entry, 'sourceArg') ? entry.sourceArg : dataSource.sourceArg) || (sourceType === 'handleList' ? this.dragDropCache : null) || null;
 		const dataOpts = JSON.parse(this.properties.data[1]);
 		const timeRange = getTimeRange(this.properties);
 		const groupBy = JSON.parse(this.properties.groupBy[1]);
@@ -574,8 +576,8 @@ charts.forEach((/** @type {_chart} */ chart, i) => {
 				option,
 				groupBy: Object.hasOwn(entry, 'groupBy') ? entry.groupBy : groupBy,
 				optionArg: Object.hasOwn(entry, 'optionArg') ? entry.optionArg : timeRange,
-				sourceType: Object.hasOwn(entry, 'sourceType') ? entry.sourceType : dataSource.sourceType,
-				sourceArg: (Object.hasOwn(entry, 'sourceArg') ? entry.sourceArg : dataSource.sourceArg) || null,
+				sourceType,
+				sourceArg,
 				x: bHasX ? entry.x : _qCond(this.axis.x.tf || '', true),
 				y: bHasY ? entry.y : _qCond(this.axis.y.tf || '', true),
 				z: bHasZ ? entry.z : _qCond(this.axis.z.tf || '', true),
@@ -945,10 +947,11 @@ addEventListener('on_notify_data', (name, info) => {
 			break;
 		}
 		// External integration
-		case window.ScriptInfo.Name + ': add tracks': {
+		case window.ScriptInfo.Name + ': add tracks': { // { window?: string[], chart?: string[], bAdd?: boolean, handleList: FbMetadbHandleList }
 			if (info && info.window && !info.window.some((v) => v === window.Name)) { break; }
 			if (!info.handleList) { return; }
-			charts.every((chart) => {
+			charts.forEach((chart) => {
+				if (info && info.chart && !info.chart.some((v) => v === chart.title)) { return; }
 				let sourceArg = new FbMetadbHandleList(info.handleList);
 				if (sourceArg && sourceArg.Count) {
 					sourceArg.Sort();
@@ -960,9 +963,102 @@ addEventListener('on_notify_data', (name, info) => {
 						sourceArg = chart.dragDropCache;
 					}
 					chart.setData({ sourceType: 'handleList', sourceArg, queryHandle: sourceArg[0] });
-					return true;
 				}
 			});
+			break;
+		}
+		case window.ScriptInfo.Name + ': refresh data': { // { window?: string[], chart?: string[] }
+			if (info && info.window && !info.window.some((v) => v === window.Name)) { break; }
+			charts.forEach((chart) => {
+				if (info && info.chart && !info.chart.some((v) => v === chart.title)) { return; }
+				chart.setData();
+			});
+			break;
+		}
+		case window.ScriptInfo.Name + ': set data by entry name': { // { window?: string[], chart?: string[], xEntry?: string, yEntry?: string, zEntry?: string }
+			if (info && info.window && !info.window.some((v) => v === window.Name)) { break; }
+			if (info) {
+				charts.forEach((chart) => {
+					if (info.chart && !info.chart.some((v) => v === chart.title)) { return; }
+					let entry = {};
+					if (info.xEntry) {
+						const entries = JSON.parse(properties.xEntries[1]);
+						entry = { ...entry, ...(entries.find((entry) => entry.name === info.xEntry || {})) };
+					}
+					if (info.yEntry) {
+						const entries = JSON.parse(properties.yEntries[1]);
+						entry = { ...entry, ...(entries.find((entry) => entry.name === info.yEntry || {})) };
+					}
+					if (info.yEntry) {
+						const entries = JSON.parse(properties.zEntries[1]);
+						entry = { ...entry, ...(entries.find((entry) => entry.name === info.zEntry || {})) };
+					}
+					if (Object.keys(entry).length > 0) {
+						chart.setData(entry);
+					}
+				});
+			}
+			break;
+		}
+		case window.ScriptInfo.Name + ': set data filter by name': { // { window?: string[], chart?: string[], filterEntry: string, bSaveProperties?: boolean }
+			if (info && info.window && !info.window.some((v) => v === window.Name)) { break; }
+			if (info && info.filterEntry) {
+				charts.forEach((chart) => {
+					if (info.chart && !info.chart.some((v) => v === chart.title)) { return; }
+					const entries = JSON.parse(chart.properties.queryEntries[1]);
+					const entry = entries.find((entry) => entry.name === info.filterEntry);
+					if (entry) {
+						if (info.bSaveProperties) {
+							chart.properties.dataQuery[1] = entry.query;
+							if (entry.dynQueryMode) {
+								for (let key in dynQueryMode) { dynQueryMode[key] = entry.dynQueryMode[key] || false; }
+								chart.properties.dynQueryMode[1] = JSON.stringify(dynQueryMode);
+							}
+							overwriteProperties(chart.properties);
+						}
+						chart.setData(entry);
+					}
+				});
+			}
+			break;
+		}
+		case window.ScriptInfo.Name + ': set data source': { // { window?: string[], chart?: string[], sourceType: string, sourceArg?: string[]|FbMetadbHandleList, bSaveProperties?: boolean }
+			if (info && info.window && !info.window.some((v) => v === window.Name)) { break; }
+			if (info && info.sourceType) {
+				if (!['library', 'activePlaylist', 'playingPlaylist', 'playlist', 'handleList'].includes(info.sourceType)) { return; }
+				charts.forEach((chart) => {
+					if (info && info.chart && !info.chart.some((v) => v === chart.title)) { return; }
+					const entry = {sourceType: info.sourceType};
+					chart.dragDropCache.RemoveAll();
+					if (info.sourceType === 'handleList') {
+						if (info.sourceArg) { chart.dragDropCache.AddRange(info.sourceArg); }
+						entry.sourceArg = chart.dragDropCache;
+						entry.queryHandle = chart.dragDropCache[0];
+					} else if (info.sourceType === 'playlist') {
+						entry.sourceArg = info.sourceArg && Array.isArray(info.sourceArg) ? clone(info.sourceArg) : [];
+					}
+					if (info.bSaveProperties) {
+						const dataSource = JSON.parse(properties.dataSource[1]);
+						dataSource.sourceType = entry.sourceType;
+						dataSource.sourceArg = info.sourceType === 'playlist' ? entry.sourceArg : null;
+						chart.properties.dataQuery[1] = JSON.stringify(dataSource);
+						overwriteProperties(chart.properties);
+					}
+					chart.setData(entry);
+				});
+			}
+			break;
+		}
+		case window.ScriptInfo.Name + ': set data': { // { window?: string[], chart?: string[], entry: object }
+			if (info && info.window && !info.window.some((v) => v === window.Name)) { break; }
+			if (info && info.entry) {
+				const entry = clone(info.entry);
+				charts.forEach((chart) => {
+					if (info.chart && !info.chart.some((v) => v === chart.title)) { return; }
+					chart.setData(entry);
+				});
+			}
+			break;
 		}
 	}
 });

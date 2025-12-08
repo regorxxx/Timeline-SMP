@@ -24,6 +24,8 @@
 ## [Unreleased][]
 ### Added
 - Drag n' drop: added drag n' drop support, which allows to send selection to the chart to draw statistics for these tracks (replacing any previously set source). Additionally, there is a new source mode called 'Manual' which only reacts to drag n' drop or tracks sent by other panels. Note drag n' dropping any track when any other source is set will -temporarily- replace the current source (until it gets updated by any other condition), but once tracks have been dropped you can continue adding new ones (pressing Ctrl.) or replace the previous ones (default).
+- External integration:  added external integration via window.NotifyOthers(callback, arg) with other scripts. Window arg property should be an array with desired target panel names. All panels execute the action if it is not provided, otherwise only the matching panels. Note panel notifications only work within the same JS host component (i.e. no SMP <-> JSplitter). Currently available callbacks (name -> arg): [new]
+	* 'Timeline-SMP: add tracks'				-> { window: [string], bAdd: boolean, handleList: FbMetadbHandleList }, like drag n' drop, to temporarily set the source to given tracks. bAdd indicates whether to add or replace previous tracks.
 ### Changed
 ### Removed
 ### Fixed

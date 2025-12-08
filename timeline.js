@@ -914,10 +914,12 @@ addEventListener('on_playlist_items_removed', (idx) => { // eslint-disable-line 
 addEventListener('on_notify_data', (name, info) => {
 	if (name === 'bio_imgChange' || name === 'bio_chkTrackRev' || name === 'xxx-scripts: panel name reply') { return; }
 	switch (name) { // NOSONAR
+		// Share panel settings
 		case window.ScriptInfo.Name + ': share UI settings': {
 			if (info) { charts.every((chart) => chart.applyUiSettings(clone(info))); }
 			break;
 		}
+		// Dynamic colors
 		case window.ScriptInfo.Name + ': set colors': { // Needs an array of 3 colors or an object {background, left, right}
 			if (info && charts.some((chart) => chart.properties.bOnNotifyColors[1])) {
 				const colors = clone(info);
@@ -941,6 +943,26 @@ addEventListener('on_notify_data', (name, info) => {
 				window.NotifyOthers(String(info), background.scheme);
 			}
 			break;
+		}
+		// External integration
+		case window.ScriptInfo.Name + ': add tracks': {
+			if (info && info.window && !info.window.some((v) => v === window.Name)) { break; }
+			if (!info.handleList) { return; }
+			charts.every((chart) => {
+				let sourceArg = new FbMetadbHandleList(info.handleList);
+				if (sourceArg && sourceArg.Count) {
+					sourceArg.Sort();
+					if (Object.hasOwn(info.bAdd) && info.bAdd) {
+						chart.dragDropCache.RemoveAll();
+						chart.dragDropCache.AddRange(sourceArg);
+					} else {
+						chart.dragDropCache.MakeUnion(sourceArg);
+						sourceArg = chart.dragDropCache;
+					}
+					chart.setData({ sourceType: 'handleList', sourceArg, queryHandle: sourceArg[0] });
+					return true;
+				}
+			});
 		}
 	}
 });

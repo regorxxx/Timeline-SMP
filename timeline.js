@@ -1,14 +1,14 @@
 ﻿'use strict';
-//05/12/25
+//08/12/25
 
-if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '2.2.1', features: { drag_n_drop: false, grab_focus: true } }); }
+if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '2.2.1', features: { drag_n_drop: true, grab_focus: true } }); }
 
 include('helpers\\helpers_xxx.js');
-/* global globTags:readable, globQuery:readable, globProfiler:readable, folders:readable, VK_CONTROL:readable, clone:readable, VK_ALT:readable */
+/* global globTags:readable, globQuery:readable, globProfiler:readable, folders:readable, VK_CONTROL:readable, clone:readable, VK_ALT:readable, dropEffect:readable, MK_CONTROL:readable */
 include('helpers\\helpers_xxx_file.js');
 /* global _open:readable, utf8:readable, _save:readable, _foldPath:readable */
 include('helpers\\helpers_xxx_flags.js');
-/* global VK_LWIN:readable */
+/* global VK_LWIN:readable, dropMask:readable */
 include('helpers\\helpers_xxx_prototypes_smp.js');
 /* global extendGR:readable */
 include('main\\statistics\\statistics_xxx.js');
@@ -542,6 +542,7 @@ const charts = nCharts.flat(Infinity);
 */
 charts.forEach((/** @type {_chart} */ chart, i) => {
 	chart.properties = properties;
+	chart.dragDropCache = new FbMetadbHandleList();
 	chart.setData = function (entry = {}) {
 		const bHasX = Object.hasOwn(entry, 'x') && entry.x.length;
 		const bHasY = Object.hasOwn(entry, 'y') && entry.y.length;
@@ -831,7 +832,7 @@ addEventListener('on_mouse_lbtn_dblclk', (x, y, mask) => {
 addEventListener('on_mouse_wheel', (step) => {
 	if (!window.ID) { return; }
 	if (utils.IsKeyPressed(VK_CONTROL) && utils.IsKeyPressed(VK_ALT)) {
-		charts.some((chart) => chart.wheelResize(step, void(0), { bSaveProperties: true }));
+		charts.some((chart) => chart.wheelResize(step, void (0), { bSaveProperties: true }));
 	} else { charts.some((chart) => chart.wheel(step)); }
 });
 
@@ -917,7 +918,7 @@ addEventListener('on_notify_data', (name, info) => {
 			if (info) { charts.every((chart) => chart.applyUiSettings(clone(info))); }
 			break;
 		}
-		case window.ScriptInfo.Name +': set colors': { // Needs an array of 3 colors or an object {background, left, right}
+		case window.ScriptInfo.Name + ': set colors': { // Needs an array of 3 colors or an object {background, left, right}
 			if (info && charts.some((chart) => chart.properties.bOnNotifyColors[1])) {
 				const colors = clone(info);
 				const getColor = (key) => Object.hasOwn(colors, key) ? colors.background : colors[['background', 'left', 'right'].indexOf(key)];
@@ -942,6 +943,50 @@ addEventListener('on_notify_data', (name, info) => {
 			break;
 		}
 	}
+});
+
+addEventListener('on_drag_enter', (action, x, y, mask) => { // eslint-disable-line no-unused-vars
+	// Avoid things outside foobar2000
+	if (action.Effect === dropEffect.none || (action.Effect & dropEffect.link) === dropEffect.link) { action.Effect = dropEffect.none; }
+});
+
+addEventListener('on_drag_leave', (action, x, y, mask) => {
+	on_mouse_leave(x, y, mask);
+});
+
+addEventListener('on_drag_over', (action, x, y, mask) => {
+	// Avoid things outside foobar2000
+	if (action.Effect === dropEffect.none || (action.Effect & dropEffect.link) === dropEffect.link) { action.Effect = dropEffect.none; return; }
+	charts.some((chart) => {
+		if (chart.move(x, y, mask)) {
+			if ((mask & dropMask.ctrl) === dropMask.ctrl && chart.dragDropCache.Count) { action.Effect = dropEffect.copy; action.Text = 'Add tracks to chart'; } // Mask is mouse + key
+			else { action.Effect = dropEffect.move; action.Text = 'Add tracks to chart (replace)'; }
+			return true;
+		}
+	});
+});
+
+addEventListener('on_drag_drop', (action, x, y, mask) => {
+	// Avoid things outside foobar2000
+	if (action.Effect === dropEffect.none) { return; }
+	charts.some((chart) => {
+		if (chart.move(x, y, mask)) {
+			let sourceArg = fb.GetSelections(1);
+			if (sourceArg && sourceArg.Count) {
+				sourceArg.Sort();
+				if ((mask & MK_CONTROL) === MK_CONTROL) {
+					chart.dragDropCache.MakeUnion(sourceArg);
+					sourceArg = chart.dragDropCache;
+				} else {
+					chart.dragDropCache.RemoveAll();
+					chart.dragDropCache.AddRange(sourceArg);
+				}
+				chart.setData({ sourceType: 'handleList', sourceArg, queryHandle: sourceArg[0] });
+				return true;
+			}
+		}
+	});
+	action.Effect = dropEffect.none; // Forces not sending things to a playlist
 });
 
 if (charts.some((chart) => chart.properties.bOnNotifyColors[1])) { // Ask color-servers at init

@@ -1,5 +1,5 @@
 'use strict';
-//25/11/25
+//08/12/25
 
 /* exported onLbtnUpPoint, onLbtnUpSettings, onRbtnUpImportSettings */
 
@@ -414,12 +414,13 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 			{ entryText: 'Current playlist', sourceType: 'activePlaylist' },
 			{ entryText: 'Playing playlist', sourceType: 'playingPlaylist' },
 			{ entryText: 'Selected playlist(s)...', sourceType: 'playlist', sourceArg: null },
+			{ entryText: 'Manual (drag n\' drop)', sourceType: 'handleList', sourceArg: null },
 		];
 		options.forEach((option) => {
 			menu.newEntry({
 				menuName: subMenu, entryText: option.entryText, func: () => {
 					if (Object.hasOwn(option, 'sourceArg')) {
-						if (option.sourceArg === null) {
+						if (option.sourceArg === null && option.sourceType !== 'handleList') {
 							const input = Input.string('string', dataSource.sourceArg || '', 'Enter playlist name(s):\n(separated by ;)', 'Playlist sources', 'My Playlist;Other Playlist', void (0), true) || Input.lastInput;
 							if (input === null) { return; }
 							dataSource.sourceArg = input.split(';');
@@ -427,6 +428,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 							dataSource.sourceArg = option.sourceArg;
 						}
 					}
+					this.dragDropCache.RemoveAll(); // Delete any cached drag n' drop tracks
 					dataSource.sourceType = option.sourceType;
 					properties.dataSource[1] = JSON.stringify(dataSource);
 					overwriteProperties(properties);
@@ -510,18 +512,18 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 				if (this.configuration.bLoadAsyncData) {
 					fb.ShowPopupMessage('Chart will not display any data upon panel reload/startup until it\'s manually forced to do so using \'Force data refresh\' menu entry.\n\nThis may be used to improve loading times if chart is only meant to be used on demand.', 'Timeline-SMP');
 				}
-			}
+			}, flags: ['handleList'].includes(dataSource.sourceType) ? MF_GRAYED : MF_STRING
 		});
-		menu.newCheckMenuLast(() => this.configuration.bLoadAsyncData);
+		menu.newCheckMenuLast(() => !['handleList'].includes(dataSource.sourceType) && this.configuration.bLoadAsyncData);
 		menu.newSeparator(subMenu);
 		menu.newEntry({
 			menuName: subMenu, entryText: 'Auto-refresh data sources', func: () => {
 				properties.bAutoData[1] = !properties.bAutoData[1];
 				overwriteProperties(properties);
-			}, flags: dataSource.sourceType === 'library' ? MF_GRAYED : MF_STRING
+			}, flags: ['library', 'handleList'].includes(dataSource.sourceType) ? MF_GRAYED : MF_STRING
 		});
 		menu.appendToLast(dataSource.sourceType === 'library' ? '\t[non library]' : '');
-		menu.newCheckMenuLast(() => dataSource.sourceType !== 'library' && properties.bAutoData[1]);
+		menu.newCheckMenuLast(() => !['library', 'handleList'].includes(dataSource.sourceType) && properties.bAutoData[1]);
 		const playingTF = JSON.parse(properties.playingTF[1]).map((tag) => tag.toUpperCase());
 		const bAlways = isArrayEqual(playingTF, ['*']);
 		const playingTFTip = bAlways
@@ -533,9 +535,9 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 				if (input === null) { return; }
 				properties.playingTF[1] = JSON.stringify(input.map((tag) => tag.toUpperCase()));
 				overwriteProperties(properties);
-			}, flags: dataSource.sourceType === 'library' || !properties.bAutoData[1] ? MF_GRAYED : MF_STRING
+			}, flags: ['library', 'handleList'].includes(dataSource.sourceType) || !properties.bAutoData[1] ? MF_GRAYED : MF_STRING
 		});
-		menu.newCheckMenuLast(() => dataSource.sourceType !== 'library' && !!properties.playingTF[1].length);
+		menu.newCheckMenuLast(() => !['library', 'handleList'].includes(dataSource.sourceType) && !!properties.playingTF[1].length);
 		menu.newSeparator(subMenu);
 		const subMenuTwo = menu.newMenu('Auto-refresh dynamic queries', subMenu, properties.dataQuery[1].count('#') >= 2 ? MF_STRING : MF_GRAYED);
 		[

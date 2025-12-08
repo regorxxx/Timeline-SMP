@@ -23,6 +23,7 @@
 
 ## [Unreleased][]
 ### Added
+- Drag n' drop: added drag n' drop support, which allows to send selection to the chart to draw statistics for these tracks (replacing any previously set source). Additionally, there is a new source mode called 'Manual' which only reacts to drag n' drop or tracks sent by other panels.
 ### Changed
 ### Removed
 ### Fixed

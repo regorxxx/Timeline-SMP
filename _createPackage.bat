@@ -1,4 +1,5 @@
 @ECHO off
+@ECHO off
 REM ------------------------------------------------------------------
 REM Create packages (zip file) from js files v.29/09/2025
 REM Requires 7za.exe on windows to compress (otherwise do it manually)
@@ -428,9 +429,9 @@ IF "%version%"=="" (
 	EXIT /B 1
 )
 SET version=%version:if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '=%
-SET version=%version:', features: { drag_n_drop: false, grab_focus: true } }); }=%
+SET version=%version:', features: { drag_n_drop: true, grab_focus: true } }); }=%
 REM features
-SET enableDragDrop=false
+SET enableDragDrop=true
 SET shouldGrabFocus=true
 REM global variable
 SET root=%packagesFolder%\%name: =-%

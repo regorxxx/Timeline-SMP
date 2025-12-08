@@ -1,5 +1,5 @@
 ﻿'use strict';
-//29/11/25
+//08/12/25
 
 /* exported getData, getDataAsync */
 
@@ -80,6 +80,7 @@ function getData({
 	zGroups = { filter: false, sort: null /* (a, b) => b.count - a.count */ },
 	filePaths = { worldMapArtists: _foldPath(folders.data + 'worldMap.json') }
 } = {}) {
+	if (sourceType === 'handleList' && !sourceArg) { return null; }
 	const noSplitTags = new Set(['ALBUM', 'TITLE']); noSplitTags.forEach((tag) => noSplitTags.add(_t(tag)));
 	const dedupByIdTags = new Set(['TITLE']); dedupByIdTags.forEach((tag) => dedupByIdTags.add(_t(tag)));
 	const source = getDataHelpers.filterSource(query, getSource(sourceType, sourceArg), queryHandle);
@@ -283,6 +284,7 @@ async function getDataAsync({
 	listenBrainz = { token: '', user: '', bOffline: true },
 	filePaths = { worldMapArtists: _foldPath(folders.data + 'worldMap.json') }
 } = {}) {
+	if (sourceType === 'handleList' && !sourceArg) { return null; }
 	const noSplitTags = new Set(['ALBUM', 'TITLE']); noSplitTags.forEach((tag) => noSplitTags.add(_t(tag)));
 	const dedupByIdTags = new Set(['TITLE']); dedupByIdTags.forEach((tag) => dedupByIdTags.add(_t(tag)));
 	const source = getDataHelpers.filterSource(query, getSource(sourceType, sourceArg), queryHandle);

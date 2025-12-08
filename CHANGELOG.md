@@ -24,12 +24,18 @@
 ## [Unreleased][]
 ### Added
 - Drag n' drop: added drag n' drop support, which allows to send selection to the chart to draw statistics for these tracks (replacing any previously set source). Additionally, there is a new source mode called 'Manual' which only reacts to drag n' drop or tracks sent by other panels. Note drag n' dropping any track when any other source is set will -temporarily- replace the current source (until it gets updated by any other condition), but once tracks have been dropped you can continue adding new ones (pressing Ctrl.) or replace the previous ones (default).
-- External integration:  added external integration via window.NotifyOthers(callback, arg) with other scripts. Window arg property should be an array with desired target panel names. All panels execute the action if it is not provided, otherwise only the matching panels. Note panel notifications only work within the same JS host component (i.e. no SMP <-> JSplitter). Currently available callbacks (name -> arg): [new]
-	* 'Timeline-SMP: add tracks'				-> { window: [string], bAdd: boolean, handleList: FbMetadbHandleList }, like drag n' drop, to temporarily set the source to given tracks. bAdd indicates whether to add or replace previous tracks.
+- External integration:  added external integration via window.NotifyOthers(callback, arg) with other scripts. Window arg property should be an array with desired target panel names. All panels execute the action if it is not provided, otherwise only the matching panels. Chart arg follows the same behaviour for for panel with multiple charts (by Title). Note panel notifications only work within the same JS host component (i.e. no SMP <-> JSplitter). Currently available callbacks (name -> arg): [new]
+	* 'Timeline-SMP: add tracks'				-> { window?: string[], chart?: string[], bAdd?: boolean, handleList: FbMetadbHandleList }, like drag n' drop, to temporarily set the source to given tracks. bAdd indicates whether to add or replace previous tracks. Note this source change is never saved between panel reloads.
+	* 'Timeline-SMP: refresh data'				-> { window?: string[], chart?: string[] }, Equivalent to 'Settings/Force data refresh'
+	* 'Timeline-SMP: set data by entry name'	-> { window?: string[], chart?: string[], xEntry?: string, yEntry?: string, zEntry?: string }, Equivalent to 'Settings/Set *-Axis Data'. Match by name. Changes to multiple axis are done by setting their respective names in a single call. Note this change is always saved between panel reloads.
+	* 'Timeline-SMP: set data filter by name'	-> { window?: string[], chart?: string[], filterEntry: string, bSaveProperties?: boolean }, Equivalent to 'Settings/Data filtering'. Match by name. bSaveProperties controls whether the new setting is saved between panel reloads or not.
+	* 'Timeline-SMP: set data source'			-> { window?: string[], chart?: string[], sourceType: string, sourceArg?: string[]|FbMetadbHandleList, bSaveProperties?: boolean }, Sets data source. sourceType can be any of 'library'|'activePlaylist'|'playingPlaylist'|'playlist'|'handleList'. When using 'playlist' as source, sourceArg must be an array of playlist names; for 'handleList', provide a FbMetadbHandleList. bSaveProperties controls whether the new setting is saved between panel reloads or not.
+	* 'Timeline-SMP: set data'					-> { window?: string[], chart?: string[], entry: object }, Completely sets chart data with custom variables, check chart.setData() at timeline.js file (main.js within package).
 ### Changed
 ### Removed
 ### Fixed
 - JSplitter: fixed compatibility bug with JSplitter (any version) due to improper constructor used on JS Host as reported [here](https://github.com/regorxxx/Infinity-Tools-SMP/pull/6) and [here](https://hydrogenaudio.org/index.php/topic,126743.msg1073615.html#msg1073615).
+- Data: fixed secondary settings not being applied when using built-in query filters based on selection.
 
 ## [2.2.1] - 2025-11-25
 ### Added

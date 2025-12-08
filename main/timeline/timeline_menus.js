@@ -463,7 +463,8 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 					menuName: subMenu, entryText: entry.name, func: () => {
 						properties.dataQuery[1] = entry.query;
 						if (entry.dynQueryMode) {
-							for (let key in dynQueryMode) { properties.dynQueryMode[key] = dynQueryMode[key]; }
+							for (let key in dynQueryMode) { dynQueryMode[key] = entry.dynQueryMode[key] || false; }
+							properties.dynQueryMode[1] = JSON.stringify(dynQueryMode);
 						}
 						overwriteProperties(properties);
 						this.setData(entry);

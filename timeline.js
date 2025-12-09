@@ -1,5 +1,5 @@
 ﻿'use strict';
-//08/12/25
+//09/12/25
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '2.2.1', features: { drag_n_drop: true, grab_focus: true } }); }
 
@@ -927,8 +927,8 @@ addEventListener('on_notify_data', (name, info) => {
 				const colors = clone(info);
 				const getColor = (key) => Object.hasOwn(colors, key) ? colors.background : colors[['background', 'left', 'right'].indexOf(key)];
 				const hasColor = (key) => typeof getColor(key) !== 'undefined';
-				if (background.colorMode !== 'none' && hasColor('bakground')) {
-					background.changeConfig({ config: { colorModeOptions: { color: getColor('bakground') } }, callbackArgs: { bSaveProperties: false } });
+				if (background.colorMode !== 'none' && hasColor('background')) {
+					background.changeConfig({ config: { colorModeOptions: { color: getColor('background') } }, callbackArgs: { bSaveProperties: false } });
 				}
 				if (hasColor('left') && hasColor('right')) { charts.forEach((chart) => chart.callbacks.config.artColors([getColor('left'), getColor('right')])); }
 				window.Repaint();

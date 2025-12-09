@@ -34,6 +34,7 @@
 	* 'Timeline-SMP: set data'					-> { window?: string[], chart?: string[], entry: object }, Completely sets chart data with custom variables, check chart.setData() at timeline.js file (main.js within package).
 ### Changed
 - Data: Z-axis is now disabled when using the Y-axis 'Listens (range)' option along special X-axis keys (day, week, month, ...), since no data can be currently calculated in such mode for 3D charts. Previously it simply displayed no data.
+- Data: filter (Y-axis) settings are now saved and restored between sessions. This is done by serializing the actual filter function as a string within the properties panel, so it's technically possible to edit it and add more complex logic. Don't ask for support/info about it, since only the default 'Greater than', 'Lower than', ... options are supported.
 - UI: 'Set *-axis data' submenus now show the custom TF expression used, if any, at 'By Tf...' entry.
 ### Removed
 ### Fixed

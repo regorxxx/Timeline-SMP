@@ -432,6 +432,7 @@ const defaultConfig = deepAssign()(
 						['x', 'y', 'w', 'h'].forEach((key) => delete config[key]);
 						['x', 'y', 'z'].forEach((c) => ['key', 'tf'].forEach((key) => delete config.axis[c][key]));
 						config.dataManipulation.sort = this.exportSortLabel();
+						if (config.dataManipulation.filter) { config.dataManipulation.filter = config.dataManipulation.filter.toString(); }
 						this.properties.chart[1] = JSON.stringify(config);
 						this.properties.data[1] = JSON.stringify(this.exportDataLabels());
 						if (changeArgs.configuration && changeArgs.configuration.bDynSeriesColor) {

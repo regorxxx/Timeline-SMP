@@ -564,7 +564,9 @@ charts.forEach((/** @type {_chart} */ chart, i) => {
 		const dataOpts = JSON.parse(this.properties.data[1]);
 		const timeRange = getTimeRange(this.properties);
 		const groupBy = JSON.parse(this.properties.groupBy[1]);
-		const chartConfig = JSON.parse(this.properties.chart[1]);
+		const chartConfig = JSON.parse(this.properties.chart[1], (key, value) => {
+			return (key === 'slice' && value ? value.map((v) => (v === null ? Infinity : v)) : value);
+		});
 		const filePaths = JSON.parse(this.properties.filePaths[1]);
 		const option = bHasTfZ || bHasZ
 			? bListens

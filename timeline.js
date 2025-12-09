@@ -615,6 +615,30 @@ charts.forEach((/** @type {_chart} */ chart, i) => {
 		this.changeConfig({ ...newConfig, bPaint: true, bForceLoadData: true });
 		this.changeConfig({ title, bPaint: false, callbackArgs: { bSaveProperties: true } });
 	};
+	chart.saveDataSettings = function (input) {
+		if (Object.hasOwn(input, 'timeRange')) {
+			const timeRange = JSON.parse(this.properties.timeRange[1], (key, val) => val === null ? Infinity : val);
+			if (Object.hasOwn(input.timeRange, 'timePeriod')) { timeRange.timePeriod = input.timeRange.timePeriod; }
+			if (Object.hasOwn(input.timeRange, 'timeKey')) { timeRange.timeKey = input.timeRange.timeKey; }
+			this.properties.timeRange[1] = JSON.stringify(timeRange);
+		}
+		if (Object.hasOwn(input, 'query')) { this.properties.dataQuery[1] = input.query; }
+		if (Object.hasOwn(input, 'dynQueryMode')) {
+			for (let key in dynQueryMode) { dynQueryMode[key] = input.dynQueryMode[key] || false; }
+			this.properties.dynQueryMode[1] = JSON.stringify(dynQueryMode);
+		}
+		if (Object.hasOwn(input, 'groupBy')) {
+			chart.properties.groupBy[1] = JSON.stringify(input.groupBy);
+		}
+		if (Object.hasOwn(input, 'dataSource')) {
+			const dataSource = JSON.parse(this.properties.dataSource[1]);
+			if (Object.hasOwn(input.dataSource, 'sourceType')) { dataSource.sourceType = input.dataSource.sourceType; }
+			if (Object.hasOwn(input.dataSource, 'sourceArg')) { dataSource.sourceArg = dataSource.sourceType === 'playlist' ? input.dataSource.sourceArg : null; }
+			if (Object.hasOwn(input.dataSource, 'bRemoveDuplicates')) { dataSource.bRemoveDuplicates = input.dataSource.bRemoveDuplicates; }
+			this.properties.dataSource[1] = JSON.stringify(dataSource);
+		}
+		overwriteProperties(chart.properties);
+	};
 	chart.shareUiSettings = function (mode = 'popup') {
 		const settings = Object.fromEntries(
 			['chart', 'background']

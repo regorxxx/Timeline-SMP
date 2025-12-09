@@ -240,7 +240,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 						const bTfY = isNaN(entry.y);
 						if (!bHasY || bListens || bListensPerPeriod || bProportional || bTfY) {
 							for (let key in groupBy) { groupBy[key] = null; }
-							properties.groupBy[1] = JSON.stringify(groupBy);
+							this.saveDataSettings({ groupBy });
 						}
 						this.setData(entry);
 					}
@@ -338,8 +338,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 					for (let key in option.groupBy) {
 						groupBy[key] = option.groupBy[key];
 					}
-					properties.groupBy[1] = JSON.stringify(groupBy);
-					overwriteProperties(properties);
+					this.saveDataSettings({ groupBy });
 					this.changeConfig({ axis: { y: { key: option.groupBy.yKey } }, callbackArgs: { bSaveProperties: true } });
 					this.setData();
 				}
@@ -348,12 +347,22 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 		});
 		menu.newSeparator(subMenu);
 		menu.newEntry({
+			menuName: subMenu, entryText: 'By TF...\t' + _b(groupBy.y !== null ? groupBy.y.cut(10) : ''), func: () => {
+				groupBy.y = Input.string('string', groupBy.y || '%ALBUM%', 'Input desired tag for aggregation:', 'Y-Axis label', '%ALBUM%') || Input.lastInput;
+				if (groupBy.y === null) { return; };
+				groupBy.yKey = Input.string('string', groupBy.yKey || 'Albums', 'Input the desired Y-Axis label:', 'Y-Axis label', 'Albums') || Input.lastInput;
+				if (groupBy.yKey === null) { return; };
+				this.saveDataSettings({ groupBy });
+				this.changeConfig({ axis: { y: { key: groupBy.yKey } }, callbackArgs: { bSaveProperties: true } });
+				this.setData();
+			}
+		});
+		menu.newCheckMenuLast(() => groupBy.y !== null && groupBy.yKey !== null && !options.some((option) => Object.keys(option.groupBy).every((key) => groupBy[key] === option.groupBy[key])));
+		menu.newSeparator(subMenu);
+		menu.newEntry({
 			menuName: subMenu, entryText: 'None (disable aggregation)', func: () => {
-				for (let key in groupBy) {
-					groupBy[key] = null;
-				}
-				properties.groupBy[1] = JSON.stringify(groupBy);
-				overwriteProperties(properties);
+				for (let key in groupBy) { groupBy[key] = null; }
+				this.saveDataSettings({ groupBy });
 				const input = Input.string('string', 'Tracks', 'Input the desired Y-Axis label:', 'Y-Axis label', 'Tracks') || Input.lastInput;
 				if (input === null) { return; };
 				this.changeConfig({ axis: { y: { key: input } }, callbackArgs: { bSaveProperties: true } });
@@ -378,8 +387,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 				menuName: subMenu, entryText: option.entryText, func: () => {
 					timeRange.timePeriod = option.timePeriod;
 					timeRange.timeKey = option.timeKey;
-					properties.timeRange[1] = JSON.stringify(timeRange);
-					overwriteProperties(properties);
+					this.saveDataSettings({ timeRange });
 					this.setData({ optionArg: getTimeRange(properties) });
 				}
 			});
@@ -431,9 +439,8 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 					}
 					this.dragDropCache.RemoveAll(); // Delete any cached drag n' drop tracks
 					dataSource.sourceType = option.sourceType;
-					properties.dataSource[1] = JSON.stringify(dataSource);
-					overwriteProperties(properties);
-					this.setData({ ...dataSource });
+					this.saveDataSettings({ dataSource });
+					this.setData(dataSource);
 				}
 			});
 		});
@@ -445,9 +452,8 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 		menu.newEntry({
 			menuName: subMenu, entryText: 'Remove duplicates', func: () => {
 				dataSource.bRemoveDuplicates = !dataSource.bRemoveDuplicates;
-				properties.dataSource[1] = JSON.stringify(dataSource);
-				overwriteProperties(properties);
-				this.setData({ ...dataSource });
+				this.saveDataSettings({ dataSource });
+				this.setData(dataSource);
 			}
 		});
 		menu.newCheckMenuLast(() => dataSource.bRemoveDuplicates);
@@ -462,12 +468,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 			else {
 				menu.newEntry({
 					menuName: subMenu, entryText: entry.name, func: () => {
-						properties.dataQuery[1] = entry.query;
-						if (entry.dynQueryMode) {
-							for (let key in dynQueryMode) { dynQueryMode[key] = entry.dynQueryMode[key] || false; }
-							properties.dynQueryMode[1] = JSON.stringify(dynQueryMode);
-						}
-						overwriteProperties(properties);
+						this.saveDataSettings(entry);
 						this.setData(entry);
 					}
 				});
@@ -479,8 +480,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 			menuName: subMenu, entryText: 'By query...', func: () => {
 				const input = Input.string('string', properties.dataQuery[1], 'Enter query:\n(dynamic queries also allowed, see readme)', 'Filter source by query', 'ALL');
 				if (input === null) { return; }
-				properties.dataQuery[1] = input;
-				overwriteProperties(properties);
+				this.saveDataSettings({ query: input });
 				this.setData({ query: input });
 			}
 		});

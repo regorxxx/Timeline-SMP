@@ -32,6 +32,8 @@
 	* 'Timeline-SMP: set data source'			-> { window?: string[], chart?: string[], sourceType: string, sourceArg?: string[]|FbMetadbHandleList, bSaveProperties?: boolean }, Sets data source. sourceType can be any of 'library'|'activePlaylist'|'playingPlaylist'|'playlist'|'handleList'. When using 'playlist' as source, sourceArg must be an array of playlist names; for 'handleList', provide a FbMetadbHandleList. bSaveProperties controls whether the new setting is saved between panel reloads or not.
 	* 'Timeline-SMP: set data'					-> { window?: string[], chart?: string[], entry: object }, Completely sets chart data with custom variables, check chart.setData() at timeline.js file (main.js within package).
 ### Changed
+- Data: Z-axis is now disabled when using the Y-axis 'Listens (range)' option along special X-axis keys (day, week, month, ...), since no data can be currently calculated in such mode for 3D charts. Previously it simply displayed no data.
+- UI: 'Set *-axis data' submenus now show the custom TF expression used, if any, at 'By Tf...' entry.
 ### Removed
 ### Fixed
 - JSplitter: fixed compatibility bug with JSplitter (any version) due to improper constructor used on JS Host as reported [here](https://github.com/regorxxx/Infinity-Tools-SMP/pull/6) and [here](https://hydrogenaudio.org/index.php/topic,126743.msg1073615.html#msg1073615).

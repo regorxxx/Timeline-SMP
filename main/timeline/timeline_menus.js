@@ -1,5 +1,5 @@
 'use strict';
-//08/12/25
+//09/12/25
 
 /* exported onLbtnUpPoint, onLbtnUpSettings, onRbtnUpImportSettings */
 
@@ -200,7 +200,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 		});
 		menu.newSeparator(subMenu);
 		menu.newEntry({
-			menuName: subMenu, entryText: 'By TF...', func: () => {
+			menuName: subMenu, entryText: 'By TF...\t' + _b(bHasY ? this.axis.x.tf.cut(10) : ''), func: () => {
 				const entry = inputTF('x');
 				if (entry) { this.setData(entry); }
 			}
@@ -250,7 +250,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 		});
 		menu.newSeparator(subMenu);
 		menu.newEntry({
-			menuName: subMenu, entryText: 'By TF...', func: () => {
+			menuName: subMenu, entryText: 'By TF...\t' + _b(bHasY ? this.axis.y.tf.cut(10) : ''), func: () => {
 				const entry = inputTF('y');
 				if (entry) { this.setData(entry); }
 			}
@@ -271,7 +271,8 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 		});
 	}
 	if (bShowZ) {	// Z
-		const subMenu = menu.newMenu('Set Z-axis data', void (0), Object.hasOwn(this.axis.z, 'tf') ? MF_CHECKED : MF_STRING);
+		const bHasZ = Object.hasOwn(this.axis.z, 'tf');
+		const subMenu = menu.newMenu('Set Z-axis data', void (0), bListensPerPeriod ? MF_GRAYED : bHasZ ? MF_CHECKED : MF_STRING);
 		menu.newEntry({ menuName: subMenu, entryText: 'Z-axis:', flags: MF_GRAYED });
 		menu.newSeparator(subMenu);
 		const list = JSON.parse(properties.zEntries[1]);
@@ -289,15 +290,15 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 				this.setData();
 			}
 		});
-		menu.newCheckMenuLast(() => !Object.hasOwn(this.axis.z, 'tf'));
+		menu.newCheckMenuLast(() => !bHasZ);
 		menu.newSeparator(subMenu);
 		menu.newEntry({
-			menuName: subMenu, entryText: 'By TF...', func: () => {
+			menuName: subMenu, entryText: 'By TF...\t' + _b(bHasZ ? this.axis.z.tf.cut(10) : ''), func: () => {
 				const entry = inputTF('z');
 				if (entry) { this.setData(entry); }
 			}
 		});
-		menu.newCheckMenuLast(() => Object.hasOwn(this.axis.z, 'tf') && list.filter(menu.isNotSeparator).findIndex((entry) => this.axis.z.tf === _qCond(entry.z)) === -1);
+		menu.newCheckMenuLast(() => bHasZ && list.filter(menu.isNotSeparator).findIndex((entry) => this.axis.z.tf === _qCond(entry.z)) === -1);
 		menu.newSeparator(subMenu);
 		_createSubMenuEditEntries(menu, subMenu, {
 			name: 'Axis Z TF entries',
@@ -359,7 +360,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 				this.setData();
 			}
 		});
-		menu.newCheckMenuLast(() => Object.keys(groupBy).every((key) => groupBy[key] === null));
+		menu.newCheckMenuLast(() => Object.values(groupBy).every((val) => val === null));
 	}
 	{	// Listens range
 		const subMenu = menu.newMenu('Time range', void (0), !bListens && !bListensPerPeriod ? MF_GRAYED : (timeRange.timePeriod !== Infinity ? MF_CHECKED : MF_STRING));

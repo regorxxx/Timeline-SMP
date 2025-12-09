@@ -478,17 +478,19 @@ newConfig.forEach((row) => row.forEach((config) => {
 	const groupBy = JSON.parse(properties.groupBy[1]);
 	const bHasX = Object.hasOwn(config.axis.x, 'tf') && config.axis.x.tf.length;
 	const bHasY = Object.hasOwn(config.axis.y, 'tf') && config.axis.y.tf.length;
-	const bHasZ = Object.hasOwn(config.axis.z, 'tf') && config.axis.z.tf.length;
 	const bListens = bHasY
 		? config.axis.y.tf === '#LISTENS#'
 		: false;
 	const bListensPerPeriod = bListens && bHasX && timePeriods.includes(config.axis.x.tf);
+	const bHasZ = Object.hasOwn(config.axis.z, 'tf') && config.axis.z.tf.length && !bListensPerPeriod;
 	const bAsync = properties.bAsync[1];
 	if (bAsync || defaultConfig.configuration.bLoadAsyncData) {
 		const func = bAsync ? getDataAsync : getData;
 		config[bAsync ? 'dataAsync' : 'data'] = () => func({
 			option: bHasZ
-				? 'timeline'
+				? bListens
+					? 'timeline playcount'
+					: 'timeline'
 				: bListensPerPeriod
 					? 'playcount period'
 					: bListens
@@ -546,16 +548,16 @@ charts.forEach((/** @type {_chart} */ chart, i) => {
 	chart.setData = function (entry = {}) {
 		const bHasX = Object.hasOwn(entry, 'x') && entry.x.length;
 		const bHasY = Object.hasOwn(entry, 'y') && entry.y.length;
-		const bHasZ = Object.hasOwn(entry, 'z') && entry.z.length;
 		const bHasTfX = Object.hasOwn(this.axis.x, 'tf') && this.axis.x.tf.length;
 		const bHasTfY = Object.hasOwn(this.axis.y, 'tf') && this.axis.y.tf.length;
-		const bHasTfZ = Object.hasOwn(this.axis.z, 'tf') && this.axis.z.tf.length;
 		const bListens = bHasY
 			? entry.y === '#LISTENS#'
 			: bHasTfY
 				? this.axis.y.tf === '#LISTENS#'
 				: false;
 		const bListensPerPeriod = bListens && timePeriods.includes(bHasX ? entry.x : (bHasTfX ? this.axis.x.tf : ''));
+		const bHasTfZ = Object.hasOwn(this.axis.z, 'tf') && this.axis.z.tf.length && !bListensPerPeriod;
+		const bHasZ = Object.hasOwn(entry, 'z') && entry.z.length && !bListensPerPeriod;
 		const dataSource = JSON.parse(this.properties.dataSource[1]);
 		const sourceType = Object.hasOwn(entry, 'sourceType') ? entry.sourceType : dataSource.sourceType;
 		const sourceArg = (Object.hasOwn(entry, 'sourceArg') ? entry.sourceArg : dataSource.sourceArg) || (sourceType === 'handleList' ? this.dragDropCache : null) || null;
@@ -565,7 +567,9 @@ charts.forEach((/** @type {_chart} */ chart, i) => {
 		const chartConfig = JSON.parse(this.properties.chart[1]);
 		const filePaths = JSON.parse(this.properties.filePaths[1]);
 		const option = bHasTfZ || bHasZ
-			? 'timeline'
+			? bListens
+				? 'timeline playcount'
+				: 'timeline'
 			: bListensPerPeriod
 				? 'playcount period'
 				: bListens

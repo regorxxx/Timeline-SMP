@@ -7,7 +7,7 @@ include('statistics_xxx_helper.js');
 /* global _gdiFont:readable, getBrightness:readable, toRGB:readable, RGBA:readable, invert:readable, Chroma:readable, _scale:readable, _tt:readable, round:readable, DT_CENTER:readable, DT_END_ELLIPSIS:readable, DT_CALCRECT:readable, DT_NOPREFIX:readable, DT_RIGHT:readable, DT_LEFT:readable, DT_VCENTER:readable, TextRenderingHint:readable, StringFormatFlags:readable, InterpolationMode:readable, RotateFlipType:readable, VK_SHIFT:readable, range:readable, RGB:readable, isFunction:readable, _p:readable, IDC_HAND:readable, IDC_ARROW:readable, debounce:readable, throttle:readable, VK_CONTROL:readable, MK_LBUTTON:readable, colorbrewer:readable, NatSort:readable, MK_SHIFT:readable, _button:readable, chars:readable, _popup:readable, opaqueColor:readable, memoryPrint:readable, strNumCollator:readable */
 
 /**
- * @typedef {'timeline'|'bars'|'bars-horizontal'|'lines'|'fill'|'scatter'|'doughnut'|'pie'} _chartGraphType
+ * @typedef {'timeline'|'bars'|'bars-horizontal'|'lines'|'lines-hq'|'fill'|'scatter'|'doughnut'|'pie'} _chartGraphType
  */
 
 /**
@@ -2879,6 +2879,10 @@ function _chart({
 
 	this.exportSortLabel = () => {
 		return this.sortKey;
+	};
+
+	this.serializeFunction = (func) => {
+		return func.toString().replaceAll('\n', '').replace('function anonymous', 'function ');
 	};
 
 	this.initData = () => {

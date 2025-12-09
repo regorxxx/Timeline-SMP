@@ -432,7 +432,7 @@ const defaultConfig = deepAssign()(
 						['x', 'y', 'w', 'h'].forEach((key) => delete config[key]);
 						['x', 'y', 'z'].forEach((c) => ['key', 'tf'].forEach((key) => delete config.axis[c][key]));
 						config.dataManipulation.sort = this.exportSortLabel();
-						if (config.dataManipulation.filter) { config.dataManipulation.filter = config.dataManipulation.filter.toString(); }
+						if (config.dataManipulation.filter) { config.dataManipulation.filter = this.serializeFunction(config.dataManipulation.filter); }
 						this.properties.chart[1] = JSON.stringify(config);
 						this.properties.data[1] = JSON.stringify(this.exportDataLabels());
 						if (changeArgs.configuration && changeArgs.configuration.bDynSeriesColor) {
@@ -1046,7 +1046,7 @@ addEventListener('on_notify_data', (name, info) => {
 			}
 			break;
 		}
-		case window.ScriptInfo.Name + ': set data aggregation': { // { window?: string[], chart?: string[], groupBy: object, bSaveProperties?: boolean }
+		case window.ScriptInfo.Name + ': set data aggregation': { // { window?: string[], chart?: string[], groupBy: {y?: string, yKey?: string }, bSaveProperties?: boolean }
 			if (info && info.window && !info.window.some((v) => v === window.Name)) { break; }
 			if (info && info.groupBy) {
 				charts.forEach((chart) => {
@@ -1060,7 +1060,7 @@ addEventListener('on_notify_data', (name, info) => {
 			}
 			break;
 		}
-		case window.ScriptInfo.Name + ': set data time range': { // { window?: string[], chart?: string[], timeRange: object, bSaveProperties?: boolean }
+		case window.ScriptInfo.Name + ': set data time range': { // { window?: string[], chart?: string[], timeRange: { timePeriod?: number, timeKey?: string }, bSaveProperties?: boolean }
 			if (info && info.window && !info.window.some((v) => v === window.Name)) { break; }
 			if (info && info.timeRange) {
 				charts.forEach((chart) => {
@@ -1170,7 +1170,7 @@ addEventListener('on_notify_data', (name, info) => {
 				charts.forEach((chart) => {
 					if (info.chart && !info.chart.some((v) => v === chart.title)) { return; }
 					const dataManipulation = {};
-					if (Object.hasOwn(info, 'filter')) { dataManipulation.filter = typeof info.filter === 'function' ? info.filter.toString() : info.filter; }
+					if (Object.hasOwn(info, 'filter')) { dataManipulation.filter = typeof info.filter === 'function' ? chart.serializeFunction(info.filter) : info.filter; }
 					if (Object.hasOwn(info, 'mFilter')) { dataManipulation.mFilter = info.mFilter; }
 					this.changeConfig({ dataManipulation, callbackArgs: { bSaveProperties: !!info.bSaveProperties } });
 				});
@@ -1184,7 +1184,7 @@ addEventListener('on_notify_data', (name, info) => {
 					if (info.chart && !info.chart.some((v) => v === chart.title)) { return; }
 					const settings = clone(info.settings);
 					if (Object.hasOwn(settings, 'dataManipulation') && Object.hasOwn(settings.dataManipulation, 'filter') && typeof settings.dataManipulation.filter === 'function') {
-						settings.dataManipulation.filter = settings.dataManipulation.filter.toString();
+						settings.dataManipulation.filter = chart.serializeFunction(settings.dataManipulation.filter);
 					}
 					this.changeConfig({ ...settings, callbackArgs: { bSaveProperties: !!info.bSaveProperties } });
 				});

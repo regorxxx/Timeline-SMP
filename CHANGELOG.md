@@ -2,6 +2,7 @@
 
 ## [Table of Contents]
 - [Unreleased](#unreleased)
+- [2.3.0](#230---2025-12-12)
 - [2.2.1](#221---2025-11-25)
 - [2.2.0](#220---2025-11-24)
 - [2.1.1](#211---2025-11-19)
@@ -22,6 +23,12 @@
 - [0.6.0](#060---2023-11-15)
 
 ## [Unreleased][]
+### Added
+### Changed
+### Removed
+### Fixed
+
+## [2.3.0] - 2025-12-12
 ### Added
 - Data: is now possible to create 3D charts with the Y-axis 'Listens (range)' option, along any X-axis and Z-axis TF (except a case mentioned below). It should calculate the playcounts for the given time range for each Z-group. Previously it simply displayed no data in these cases.
 - Data: new menu entry to set custom TF expressions for data aggregation.
@@ -326,8 +333,10 @@
 ### Removed
 ### Fixed
 
-[Unreleased]: ../../compare/v2.2.1...HEAD
+[Unreleased]: ../../compare/v2.3.0...HEAD
+[2.3.0]: ../../compare/v2.2.1...v2.3.0
 [2.2.1]: ../../compare/v2.2.0...v2.2.1
+[2.2.0]: ../../compare/v2.1.1...v2.3.0
 [2.2.0]: ../../compare/v2.1.1...v2.2.0
 [2.1.1]: ../../compare/v2.1.0...v2.1.1
 [2.1.0]: ../../compare/v2.0.1...v2.1.0

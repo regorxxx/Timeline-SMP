@@ -35,8 +35,8 @@ Configurable by Title Format, lets you generate playlists based on selection. Ba
  1. [Statistics-Framework-SMP](https://github.com/regorxxx/Statistics-Framework-SMP): An open source framework to display charts on foobar2000.
 
 ## Requirements (only one host component required)
- 4. [Spider Monkey Panel or JSplitter](../../wiki/SMP-vs-JSplitter-notes): JavaScript host component required to install this. Available in x86 and x64.
- 5. [Required fonts](https://github.com/regorxxx/foobar2000-assets/tree/main/Fonts): FontAwesome, Segoe UI, Arial Unicode MS
+ 1. [Spider Monkey Panel or JSplitter](../../wiki/SMP-vs-JSplitter-notes): JavaScript host component required to install this. Available in x86 and x64.
+ 2. [Required fonts](https://github.com/regorxxx/foobar2000-assets/tree/main/Fonts): FontAwesome, Segoe UI, Arial Unicode MS
 
 ## Installation
 See [Wiki](../../wiki/Installation) or the [_INSTALLATION (txt)](../main/_INSTALLATION.txt).

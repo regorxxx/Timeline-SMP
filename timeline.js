@@ -1,5 +1,5 @@
 ﻿'use strict';
-//09/12/25
+//17/12/25
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '2.3.0', features: { drag_n_drop: true, grab_focus: true } }); }
 
@@ -29,10 +29,7 @@ include('helpers\\helpers_xxx_properties.js');
 globProfiler.Print('helpers');
 
 let properties = {
-	background: ['Background options', JSON.stringify(deepAssign()(
-		(new _background).defaults(),
-		{ colorMode: 'gradient', colorModeOptions: { color: [RGB(270, 270, 270), RGB(300, 300, 300)] }, coverMode: 'front' }
-	)), { func: isJSON, forceDefaults: true }],
+	background: ['Background options', JSON.stringify(_background.defaults()), { func: isJSON, forceDefaults: true }],
 	chart: ['Chart options', JSON.stringify(deepAssign()(
 		(new _chart).exportConfig(),
 		{
@@ -1166,7 +1163,7 @@ addEventListener('on_notify_data', (name, info) => {
 		}
 		case window.ScriptInfo.Name + ': set chart filter': { // { window?: string[], chart?: string[], filter?: Function|string, mFilter?: boolean, bSaveProperties?: boolean }
 			if (info && info.window && !info.window.some((v) => v === window.Name)) { break; }
-			if (info && (Object.hasOwn(info, 'filter') || Object.hasOwn(info, 'mfilter'))) {
+			if (info && (Object.hasOwn(info, 'filter') || Object.hasOwn(info, 'mFilter'))) {
 				charts.forEach((chart) => {
 					if (info.chart && !info.chart.some((v) => v === chart.title)) { return; }
 					const dataManipulation = {};

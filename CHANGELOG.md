@@ -31,6 +31,7 @@
 - UI: improvements on dynamic colors handling in some extreme cases with main and secondary colors being almost equal.
 ### Removed
 ### Fixed
+- UI: fixed color-server not replying when third party panels asked for color scheme.
 
 ## [2.3.0] - 2025-12-12
 ### Added

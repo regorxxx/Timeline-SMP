@@ -1,5 +1,5 @@
 ﻿'use strict';
-//17/12/25
+//19/12/25
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '2.3.0', features: { drag_n_drop: true, grab_focus: true } }); }
 
@@ -969,7 +969,7 @@ addEventListener('on_notify_data', (name, info) => {
 			break;
 		}
 		case 'Colors: ask color scheme': {
-			if (info && charts.some((chart) => chart.properties.bOnNotifyColors[1]) && background.scheme) {
+			if (info && charts.some((chart) => chart.properties.bNotifyColors[1]) && background.scheme) {
 				window.NotifyOthers(String(info), background.scheme);
 			}
 			break;

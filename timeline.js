@@ -390,6 +390,7 @@ const defaultConfig = deepAssign()(
 								entryText: 'Listen to color-servers',
 								func: () => {
 									this.properties.bOnNotifyColors[1] = !this.properties.bOnNotifyColors[1];
+									if (this.configuration.bDynSeriesColor && this.properties.bOnNotifyColors[1]) { fb.ShowPopupMessage('Warning: Dynamic colors (background art mode) and Color-server listening are enabled at the same time.\n\nThis setting may probably produce glitches since 2 color sources are being used, while one tries to override the other.\n\nIt\'s recommended to only use one of these features, unless you know what you are DOMStringList.', window.ScriptInfo.Name + ': Dynamic colors'); }
 									overwriteProperties(this.properties);
 									if (this.properties.bOnNotifyColors[1]) {
 										window.NotifyOthers('Colors: ask color scheme', window.ScriptInfo.Name + ': set color scheme');

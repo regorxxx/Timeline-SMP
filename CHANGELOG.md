@@ -27,6 +27,7 @@
 ### Added
 - Data: new setting to control the refresh rate for automatic data changes. This ensures smooth selection track changes and playlist operations while dynamic filters based on selection are in use. Panel is no longer updated on every track change but only with the last one after consecutive fast changes within the debounce time window.
 ### Changed
+- Code cleanup and performance improvements if panel is disabled or during startup.
 - UI: changed color for processing popup overlay.
 ### Removed
 ### Fixed

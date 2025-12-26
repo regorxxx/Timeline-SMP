@@ -1,5 +1,5 @@
 ﻿'use strict';
-//24/12/25
+//26/12/25
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '2.4.0-beta', features: { drag_n_drop: true, grab_focus: true } }); }
 
@@ -10,7 +10,7 @@ include('helpers\\helpers_xxx_file.js');
 include('helpers\\helpers_xxx_flags.js');
 /* global VK_LWIN:readable, dropMask:readable */
 include('helpers\\helpers_xxx_prototypes_smp.js');
-/* global extendGR:readable */
+/* global extendGR:readable, debounce:readable, isInt:readable */
 include('main\\statistics\\statistics_xxx.js');
 /* global _chart:readable */
 include('main\\statistics\\statistics_xxx_menu.js');
@@ -42,7 +42,7 @@ let properties = {
 				x: { show: true, color: RGB(50, 50, 50), width: _scale(2), ticks: 'auto', labels: true, bAltLabels: true },
 				y: { show: false, color: RGB(50, 50, 50), width: _scale(2), ticks: 5, labels: true }
 			},
-			configuration: { bDynLabelColor: true, bDynLabelColorBW: true, bDynSeriesColor: true, bDynBgColor: false, bLoadAsyncData: true },
+			configuration: { bDynLabelColor: true, bDynLabelColorBW: true, bDynSeriesColor: true, bDynBgColor: false, bLoadAsyncData: true, bPopupBackground: true },
 			buttons: { alpha: 25, timer: 1500 },
 		}
 	)), { func: isJSON, forceDefaults: true }],
@@ -227,6 +227,7 @@ let properties = {
 		preferPlayback: true,
 		multipleSelection: false
 	}), { func: isJSON, forceDefaults: true }],
+	dataRefreshRate: ['Data refresh max rate (ms)', 250, { func: isInt, range: [[0, Infinity]] }],
 	filePaths: ['External database paths', JSON.stringify({
 		listenBrainzArtists: _foldPath(folders.data + 'listenbrainz_artists.json'),
 		searchByDistanceArtists: _foldPath(folders.data + 'searchByDistance_artists.json'),
@@ -701,7 +702,8 @@ let playingPlaylist = plman.PlayingPlaylist;
 let activePlaylist = plman.ActivePlaylist;
 let selectedHandle = getSel();
 let selectedPlaylists = -1;
-function refreshData(plsIdx, callback, bForce = false) {
+
+function refreshChartsData(plsIdx, callback, bForce = false) {
 	let bRefresh = false;
 	if (bForce) {
 		charts.forEach((chart) => { chart.setData(); });
@@ -787,6 +789,21 @@ function refreshData(plsIdx, callback, bForce = false) {
 	}
 	return bRefresh;
 }
+
+/**
+ * Refresh data of charts (usually for dynamic filters associated to source). It's debounced for successive calls.
+ *
+ * @function
+ * @name refreshData
+ * @kind variable
+ * @param {number} plsIdx - Playlist index for source
+ * @param {string} callback - Callback (name) which triggered the refresh
+ * @param {boolean} bForce - Force data refresh
+ * @type {boolean}
+ */
+const refreshData = properties.dataRefreshRate[1]
+	? debounce(refreshChartsData, properties.dataRefreshRate[1])
+	: refreshChartsData;
 
 /*
 	Callbacks

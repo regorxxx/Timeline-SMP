@@ -25,9 +25,12 @@
 
 ## [Unreleased][]
 ### Added
+- Data: new setting to control the refresh rate for automatic data changes. This ensures smooth selection track changes and playlist operations while dynamic filters based on selection are in use. Panel is no longer updated on every track change but only with the last one after consecutive fast changes within the debounce time window.
 ### Changed
+- UI: changed color for processing popup overlay.
 ### Removed
 ### Fixed
+- UI: panel no longer shows "no data" message while popup overlay is enabled (usually while processing new data).
 
 ## [2.4.0] - 2025-12-23
 ### Added

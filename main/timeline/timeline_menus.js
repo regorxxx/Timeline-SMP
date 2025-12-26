@@ -1,5 +1,5 @@
-'use strict';
-//09/12/25
+﻿'use strict';
+//26/12/25
 
 /* exported onLbtnUpPoint, onLbtnUpSettings, onRbtnUpImportSettings */
 
@@ -573,6 +573,16 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 			}
 		});
 		menu.newCheckMenuLast(() => dynQueryMode.multipleSelection);
+		menu.newSeparator(subMenu);
+		menu.newEntry({
+			menuName: subMenu, entryText: 'Max Refresh rate...\t' + _b(properties.dataRefreshRate[1] + ' ms'), func: () => {
+				const input = Input.number('int positive', properties.dataRefreshRate[1], 'Set ms:\n(integer number ≥0)', 'Data max refresh rate', 250);
+				if (input === null) { return; }
+				properties.dataRefreshRate[1] = input;
+				overwriteProperties(properties);
+				window.Reload();
+			}
+		});
 	}
 	{	// Other
 		menu.newSeparator();

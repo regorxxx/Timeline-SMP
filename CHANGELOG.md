@@ -28,8 +28,10 @@
 - Data: new setting to control the refresh rate for automatic data changes. This ensures smooth selection track changes and playlist operations while dynamic filters based on selection are in use. Panel is no longer updated on every track change but only with the last one after consecutive fast changes within the debounce time window.
 - UI: added new setting to background for art crop: center (default), bottom, top.
 - UI: added new setting to background for art zoom, similar to the effect at Library-Tree-SMP (in that case is based on blur level).
+- UI: added new art mode 'Folder' to background which allows to display any image from a given folder path, like 'thumbs.js' SMP/JSplitter sample. Along this mode, added new cycle settings and file sorting (by name or date) to control how images are chosen.
 ### Changed
 - UI: reworked background submenu.
+- UI: 'Folder' and 'Path' art modes on background now support TF expressions.
 - UI: changed color for processing popup overlay.
 - Code cleanup and performance improvements if panel is disabled or during startup.
 - Code cleanup and performance improvements for background code. In particular when art has been set to be invisible for exclusive art colors processing or set to none.

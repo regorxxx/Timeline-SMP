@@ -1,5 +1,5 @@
 ﻿'use strict';
-//26/12/25
+//28/12/25
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '2.4.0-beta', features: { drag_n_drop: true, grab_focus: true } }); }
 
@@ -52,7 +52,7 @@ let properties = {
 		z: { key: 'Artist', tf: _qCond(globTags.artist) }
 	}), { func: isJSON, forceDefaults: true }],
 	dataQuery: ['Data query', 'ALL', { func: isString }],
-	dataSource: ['Data source', JSON.stringify({ sourceType: 'library', sourceArg: null, bRemoveDuplicates: true }), { func: isJSON, forceDefaults: true }],
+	dataSource: ['Data source', JSON.stringify({ sourceType: 'library', sourceArg: null, bRemoveDuplicates: true, removeDuplicatesOptions: { checkKeys: globTags.remDupl, sortBias: globQuery.remDuplBias } }), { func: isJSON, forceDefaults: true }],
 	groupBy: ['Data aggregation', JSON.stringify({
 		x: null, xKey: null,
 		y: null, yKey: null,
@@ -515,6 +515,7 @@ newConfig.forEach((row) => row.forEach((config) => {
 			queryHandle: getSel(),
 			bProportional: config.axis.y.bProportional,
 			bRemoveDuplicates: dataSource.bRemoveDuplicates,
+			removeDuplicatesOptions: dataSource.removeDuplicatesOptions || {},
 			filePaths
 		});
 		if (!bAsync) { config.data = config.data(); }
@@ -599,7 +600,10 @@ charts.forEach((/** @type {_chart} */ chart, i) => {
 				], 'AND') || void (0),
 				queryHandle: getSel(),
 				bProportional: bHasY ? entry.bProportional : dataOpts.y.bProportional,
-				bRemoveDuplicates: Object.hasOwn(entry, 'bRemoveDuplicates') ? entry.bRemoveDuplicates : dataSource.bRemoveDuplicates,
+				removeDuplicatesOptions: {
+					...(dataSource.removeDuplicatesOptions || {}),
+					...(Object.hasOwn(entry, 'removeDuplicatesOptions') ? entry.removeDuplicatesOptions : {})
+				},
 				filePaths
 			}),
 			axis: {},
@@ -634,6 +638,7 @@ charts.forEach((/** @type {_chart} */ chart, i) => {
 			if (Object.hasOwn(input.dataSource, 'sourceType')) { dataSource.sourceType = input.dataSource.sourceType; }
 			if (Object.hasOwn(input.dataSource, 'sourceArg')) { dataSource.sourceArg = dataSource.sourceType === 'playlist' ? input.dataSource.sourceArg : null; }
 			if (Object.hasOwn(input.dataSource, 'bRemoveDuplicates')) { dataSource.bRemoveDuplicates = input.dataSource.bRemoveDuplicates; }
+			if (Object.hasOwn(input.dataSource, 'removeDuplicatesOptions')) { dataSource.removeDuplicatesOptions = input.dataSource.removeDuplicatesOptions; }
 			this.properties.dataSource[1] = JSON.stringify(dataSource);
 		}
 		overwriteProperties(chart.properties);
@@ -1106,6 +1111,7 @@ addEventListener('on_notify_data', (name, info) => {
 					chart.dragDropCache.RemoveAll();
 					if (Object.hasOwn(info.dataSource, 'sourceType')) { dataSource.sourceType = info.dataSource.sourceType; }
 					if (Object.hasOwn(info.dataSource, 'bRemoveDuplicates')) { dataSource.bRemoveDuplicates = info.dataSource.bRemoveDuplicates; }
+					if (Object.hasOwn(info.dataSource, 'removeDuplicatesOptions')) { dataSource.removeDuplicatesOptions = info.dataSource.removeDuplicatesOptions; }
 					if (dataSource.sourceType === 'handleList') {
 						if (Object.hasOwn(info.dataSource, 'sourceArg')) { chart.dragDropCache.AddRange(info.dataSource.sourceArg); }
 						dataSource.sourceArg = chart.dragDropCache;

@@ -1,5 +1,5 @@
 ﻿'use strict';
-//26/12/25
+//28/12/25
 
 /* exported onLbtnUpPoint, onLbtnUpSettings, onRbtnUpImportSettings */
 
@@ -448,7 +448,9 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 			const idx = options.findIndex((opt) => opt.sourceType === dataSource.sourceType);
 			return (idx !== -1 ? idx : 0);
 		}, options);
-		menu.newSeparator(subMenu);
+	}
+	{	// Data filtering
+		const subMenu = menu.newMenu('Data deduplication', void(0), dataSource.bRemoveDuplicates ? MF_CHECKED : MF_STRING);
 		menu.newEntry({
 			menuName: subMenu, entryText: 'Remove duplicates', func: () => {
 				dataSource.bRemoveDuplicates = !dataSource.bRemoveDuplicates;
@@ -457,6 +459,34 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 			}
 		});
 		menu.newCheckMenuLast(() => dataSource.bRemoveDuplicates);
+		menu.newSeparator(subMenu);
+		[
+			{ removeDuplicatesOptions: { checkKeys: [globTags.title, globTags.artist, 'MUSICBRAINZ_ALBUMID'] }, entryText: 'By Title|Artist|Album ID' },
+			{ removeDuplicatesOptions: { checkKeys: [globTags.title, globTags.artist, 'ALBUM'] }, entryText: 'By Title|Artist|Album' },
+			{ removeDuplicatesOptions: { checkKeys: [globTags.title, globTags.artist, '$year(%DATE%)'] }, entryText: 'By Title|Artist|Year' },
+			{ removeDuplicatesOptions: { checkKeys: [globTags.title, globTags.artist] }, entryText: 'By Title|Artist' },
+			{ removeDuplicatesOptions: { checkKeys: [globTags.title] }, entryText: 'By Title' },
+		].forEach((opt) => {
+			menu.newEntry({
+				menuName: subMenu, entryText: opt.entryText, func: () => {
+					dataSource.removeDuplicatesOptions = { ...dataSource.removeDuplicatesOptions, ...opt.removeDuplicatesOptions };
+					this.saveDataSettings({ dataSource });
+					this.setData(dataSource);
+				}, flags: !dataSource.bRemoveDuplicates ? MF_GRAYED : MF_STRING
+			});
+			menu.newCheckMenuLast(() => Object.keys(opt.removeDuplicatesOptions).every((key) =>
+				JSON.stringify(opt.removeDuplicatesOptions[key]) === JSON.stringify(dataSource.removeDuplicatesOptions[key])
+			));
+		});
+		menu.newSeparator(subMenu);
+		menu.newEntry({
+			menuName: subMenu, entryText: 'By custom TF...' + '\t' + _b((dataSource.removeDuplicatesOptions.checkQueys || globTags.remDupl).join(', ').cut(10)), func: () => {
+				const input = Input.json('array strings', dataSource.removeDuplicatesOptions.checkQueys || globTags.remDupl, 'Enter tags:\n', 'Deduplicate source tags', globTags.remDupl);
+				if (input === null) { return; }
+				this.saveDataSettings({ dataSource });
+				this.setData(dataSource);
+			}, flags: !dataSource.bRemoveDuplicates ? MF_GRAYED : MF_STRING
+		});
 	}
 	{	// Data filtering
 		const subMenu = menu.newMenu('Data filtering');

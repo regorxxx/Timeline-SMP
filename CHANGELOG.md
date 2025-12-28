@@ -26,6 +26,7 @@
 ## [Unreleased][]
 ### Added
 - Data: new setting to control the refresh rate for automatic data changes. This ensures smooth selection track changes and playlist operations while dynamic filters based on selection are in use. Panel is no longer updated on every track change but only with the last one after consecutive fast changes within the debounce time window.
+- Data: new settings to adjust data deduplication by TF. Multiple default presets are available along the possibility to add your custom TF expressions. There is also support for X,Y,Z-Axis entries setting their own deduplication expressions, but currently unused in default presets (such settings can be added via custom entries though).
 - UI: added new setting to background for art crop: center (default), bottom, top.
 - UI: added new setting to background for art zoom, similar to the effect at Library-Tree-SMP (in that case is based on blur level).
 - UI: added new art mode 'Folder' to background which allows to display any image from a given folder path, like 'thumbs.js' SMP/JSplitter sample. Along this mode, added new cycle settings and file sorting (by name or date) to control how images are chosen.

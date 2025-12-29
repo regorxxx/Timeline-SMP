@@ -41,6 +41,7 @@
 ### Removed
 ### Fixed
 - UI: panel no longer shows "no data" message while popup overlay is enabled (usually while processing new data).
+- UI: mouse cursor being shown as hand when over left/right buttons even if they were not shown.
 
 ## [2.4.0] - 2025-12-23
 ### Added

@@ -1,10 +1,10 @@
 ﻿'use strict';
-//28/12/25
+//29/12/25
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '2.4.0-beta', features: { drag_n_drop: true, grab_focus: true } }); }
 
 include('helpers\\helpers_xxx.js');
-/* global globTags:readable, globQuery:readable, globProfiler:readable, folders:readable, VK_CONTROL:readable, clone:readable, VK_ALT:readable, dropEffect:readable, MK_CONTROL:readable */
+/* global globTags:readable, globQuery:readable, globProfiler:readable, folders:readable, VK_CONTROL:readable, clone:readable, VK_ALT:readable, dropEffect:readable, MK_CONTROL:readable, VK_SHIFT:readable */
 include('helpers\\helpers_xxx_file.js');
 /* global _open:readable, utf8:readable, _save:readable, _foldPath:readable */
 include('helpers\\helpers_xxx_flags.js');
@@ -304,7 +304,7 @@ const background = new _background({
 	callbacks: {
 		change: function (config, changeArgs, callbackArgs) {
 			if (callbackArgs && callbackArgs.bSaveProperties) {
-				['x', 'y', 'w', 'h', 'callbacks'].forEach((key) => delete config[key]);
+				['x', 'y', 'w', 'h'].forEach((key) => delete config[key]);
 				properties.background[1] = JSON.stringify(config);
 				overwriteProperties(properties);
 			}
@@ -841,6 +841,7 @@ addEventListener('on_size', (width, height) => {
 
 addEventListener('on_mouse_move', (x, y, mask) => {
 	if (!window.ID) { return; }
+	background.move(x, y, mask);
 	if (mask === MK_LBUTTON) {
 		charts.forEach((chart) => {
 			if (chart.inFocus) {
@@ -857,6 +858,7 @@ addEventListener('on_mouse_move', (x, y, mask) => {
 
 addEventListener('on_mouse_leave', () => {
 	charts.forEach((chart) => { chart.leave(); });
+	background.leave();
 });
 
 addEventListener('on_mouse_rbtn_up', (x, y, mask) => {
@@ -885,8 +887,10 @@ addEventListener('on_mouse_lbtn_dblclk', (x, y, mask) => {
 addEventListener('on_mouse_wheel', (step) => {
 	if (!window.ID) { return; }
 	if (utils.IsKeyPressed(VK_CONTROL) && utils.IsKeyPressed(VK_ALT)) {
-		charts.some((chart) => chart.wheelResize(step, void (0), { bSaveProperties: true }));
-	} else { charts.some((chart) => chart.wheel(step)); }
+		if (utils.IsKeyPressed(VK_SHIFT)) { background.wheelResize(step, void (0), { bSaveProperties: true }); }
+		else { charts.some((chart) => chart.wheelResize(step, void (0), { bSaveProperties: true })); }
+	} else if (utils.IsKeyPressed(VK_SHIFT)) { background.cycleArtAsync(step); }
+	else { charts.some((chart) => chart.wheel(step)); }
 });
 
 addEventListener('on_mouse_wheel_h', (step) => {

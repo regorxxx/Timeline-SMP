@@ -1,5 +1,5 @@
 ﻿'use strict';
-//29/12/25
+//01/01/26
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '2.4.0-beta', features: { drag_n_drop: true, grab_focus: true } }); }
 
@@ -330,7 +330,7 @@ const background = new _background({
 				background.changeConfig({ config: { colorModeOptions: { color: JSON.parse(properties.background[1]).colorModeOptions.color } }, callbackArgs: { bSaveProperties: false } });
 				charts.forEach((chart) => chart.callbacks.config.artColors(JSON.parse(chart.properties.chart[1]).chroma.scheme, bForced));
 			}
-			window.Repaint();
+			if (window.IsVisible) { window.Repaint(); }
 		},
 		artColorsNotify: (colArray, bForced = false) => {
 			if (!bForced && !charts.some((chart) => chart.properties.bNotifyColors[1])) { return; }
@@ -671,7 +671,7 @@ charts.forEach((/** @type {_chart} */ chart, i) => {
 	};
 	chart.applyUiSettings = function (settings, bForce) {
 		window.highlight = true;
-		window.Repaint();
+		if (window.IsVisible) { window.Repaint(); }
 		const answer = bForce
 			? popup.yes
 			: WshShell.Popup('Apply current settings to highlighted panel?\nCheck UI.', 0, window.FullPanelName, popup.question + popup.yes_no);
@@ -694,10 +694,10 @@ charts.forEach((/** @type {_chart} */ chart, i) => {
 			this.changeConfig({ ...toApplyChart, bRepaint: true, callbackArgs: { bSaveProperties: true } });
 			background.changeConfig({ config: newBg, bRepaint: false, callbackArgs: { bSaveProperties: true } });
 			window.highlight = false;
-			window.Repaint();
+			if (window.IsVisible) { window.Repaint(); }
 		} else {
 			window.highlight = false;
-			window.Repaint();
+			if (window.IsVisible) { window.Repaint(); }
 		}
 	};
 });
@@ -836,7 +836,6 @@ addEventListener('on_size', (width, height) => {
 			nCharts[i][j].changeConfig({ x, y, w, h, bPaint: false });
 		}
 	}
-	window.Repaint();
 });
 
 addEventListener('on_mouse_move', (x, y, mask) => {
@@ -986,7 +985,7 @@ addEventListener('on_notify_data', (name, info) => {
 					background.changeConfig({ config: { colorModeOptions: { color: getColor('background') } }, callbackArgs: { bSaveProperties: false } });
 				}
 				if (hasColor('left') && hasColor('right')) { charts.forEach((chart) => chart.callbacks.config.artColors([getColor('left'), getColor('right')])); }
-				window.Repaint();
+				if (window.IsVisible) { window.Repaint(); }
 			}
 			break;
 		}

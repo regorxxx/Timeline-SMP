@@ -450,7 +450,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 		}, options);
 	}
 	{	// Data filtering
-		const subMenu = menu.newMenu('Data deduplication', void(0), dataSource.bRemoveDuplicates ? MF_CHECKED : MF_STRING);
+		const subMenu = menu.newMenu('Data deduplication', void (0), dataSource.bRemoveDuplicates ? MF_CHECKED : MF_STRING);
 		menu.newEntry({
 			menuName: subMenu, entryText: 'Remove duplicates', func: () => {
 				dataSource.bRemoveDuplicates = !dataSource.bRemoveDuplicates;

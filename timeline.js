@@ -1,5 +1,5 @@
 ﻿'use strict';
-//01/01/26
+//07/01/26
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '2.4.0-beta', features: { drag_n_drop: true, grab_focus: true } }); }
 
@@ -315,10 +315,10 @@ const background = new _background({
 				const bChangeBg = charts.some((chart) => chart.configuration.bDynBgColor);
 				const { main, sec, note } = dynamicColors(
 					colArray,
-					bChangeBg ? RGB(122, 122, 122) : background.getColors()[0],
+					bChangeBg ? RGB(122, 122, 122) : background.getAvgPanelColor(),
 					true
 				);
-				if (bChangeBg && background.colorMode !== 'none') {
+				if (bChangeBg && background.useColors) {
 					const gradient = [Chroma(note).saturate(2).luminance(0.005).android(), note];
 					const bgColor = Chroma.scale(gradient).mode('lrgb')
 						.colors(background.colorModeOptions.color.length, 'android')
@@ -396,6 +396,8 @@ const defaultConfig = deepAssign()(
 									if (this.properties.bOnNotifyColors[1]) {
 										window.NotifyOthers('Colors: ask color scheme', window.ScriptInfo.Name + ': set color scheme');
 										window.NotifyOthers('Colors: ask color', window.ScriptInfo.Name + ': set colors');
+									} else if (!properties.bDynamicColors[1]) {
+										background.callbacks.artColors(void(0), true);
 									}
 								},
 								checkFunc: () => this.properties.bOnNotifyColors[1]
@@ -447,7 +449,7 @@ const defaultConfig = deepAssign()(
 						}
 					}
 				},
-				backgroundColor: background.getColors,
+				backgroundColor: background.getAvgPanelColor,
 				artColors: function (scheme, bForced) {
 					if (scheme && (this.configuration.bDynSeriesColor || bForced)) { // This flag has been added at script init
 						this.changeConfig({ colors: [], chroma: { scheme }, bPaint: true, callbackArgs: { bSaveProperties: false } });
@@ -915,28 +917,28 @@ addEventListener('on_key_up', (vKey) => {
 });
 
 addEventListener('on_playback_new_track', () => { // To show playing now playlist indicator...
-	if (background.coverMode.toLowerCase() !== 'none') { background.updateImageBg(); }
+	if (background.useCover) { background.updateImageBg(); }
 	if (!window.ID) { return; }
 	if (charts.some((chart) => chart.properties.bAutoData[1])) { refreshData(plman.PlayingPlaylist, 'on_playback_new_track'); }
 	if (dynQueryMode.onPlayback) { refreshData(plman.PlayingPlaylist, 'on_playback_new_track_dynQuery'); }
 });
 
 addEventListener('on_selection_changed', () => {
-	if (background.coverMode.toLowerCase() !== 'none' && (!background.coverModeOptions.bNowPlaying || !fb.IsPlaying)) {
+	if (background.useCover && (!background.coverModeOptions.bNowPlaying || !fb.IsPlaying)) {
 		background.updateImageBg();
 	}
 	if (dynQueryMode.onSelection) { refreshData(plman.ActivePlaylist, 'on_selection_changed_dynQuery'); }
 });
 
 addEventListener('on_item_focus_change', () => {
-	if (background.coverMode.toLowerCase() !== 'none' && (!background.coverModeOptions.bNowPlaying || !fb.IsPlaying)) {
+	if (background.useCover && (!background.coverModeOptions.bNowPlaying || !fb.IsPlaying)) {
 		background.updateImageBg();
 	}
 	if (dynQueryMode.onSelection) { refreshData(plman.ActivePlaylist, 'on_item_focus_change_dynQuery'); }
 });
 
 addEventListener('on_playlist_switch', () => {
-	if (background.coverMode.toLowerCase() !== 'none' && (!background.coverModeOptions.bNowPlaying || !fb.IsPlaying)) {
+	if (background.useCover && (!background.coverModeOptions.bNowPlaying || !fb.IsPlaying)) {
 		background.updateImageBg();
 	}
 	if (!window.ID) { return; }
@@ -945,12 +947,12 @@ addEventListener('on_playlist_switch', () => {
 
 addEventListener('on_playback_stop', (reason) => {
 	if (reason !== 2) { // Invoked by user or Starting another track
-		if (background.coverMode.toLowerCase() !== 'none' && background.coverModeOptions.bNowPlaying) { background.updateImageBg(); }
+		if (background.useCover && background.coverModeOptions.bNowPlaying) { background.updateImageBg(); }
 	}
 });
 
 addEventListener('on_playlists_changed', () => { // To show/hide loaded playlist indicators...
-	if (background.coverMode.toLowerCase() !== 'none' && (!background.coverModeOptions.bNowPlaying || !fb.IsPlaying)) {
+	if (background.useCover && (!background.coverModeOptions.bNowPlaying || !fb.IsPlaying)) {
 		background.updateImageBg();
 	}
 	if (!window.ID) { return; }
@@ -981,7 +983,7 @@ addEventListener('on_notify_data', (name, info) => {
 				const colors = clone(info);
 				const getColor = (key) => Object.hasOwn(colors, key) ? colors.background : colors[['background', 'left', 'right'].indexOf(key)];
 				const hasColor = (key) => typeof getColor(key) !== 'undefined';
-				if (background.colorMode !== 'none' && hasColor('background')) {
+				if (background.useColors && hasColor('background')) {
 					background.changeConfig({ config: { colorModeOptions: { color: getColor('background') } }, callbackArgs: { bSaveProperties: false } });
 				}
 				if (hasColor('left') && hasColor('right')) { charts.forEach((chart) => chart.callbacks.config.artColors([getColor('left'), getColor('right')])); }

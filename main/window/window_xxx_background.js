@@ -446,10 +446,10 @@ function _background({
 	this.paintBlend = ({
 		gr,
 		limits = { x, y, w, h },
-		alpha = 105
+		alpha = this.colorModeOptions.blendAlpha
 	}) => {
 		if (this.colorMode === 'blend' && this.coverImg.art.image) {
-			const intensity = 1.05;
+			const intensity = 91.05 - Math.min(Math.max(this.colorModeOptions.blendIntensity, 1.05), 90);
 			const img = this.coverImg.art.image.Clone(0, 0, this.coverImg.art.image.Width, this.coverImg.art.image.Height)
 				.Resize(limits.w * intensity / 100, limits.h * intensity / 100, 2)
 				.Resize(limits.w, limits.h, 2);
@@ -1245,8 +1245,8 @@ _background.defaults = (bPosition = false, bCallbacks = false) => {
 		timer: 60,
 		coverMode: 'front',
 		coverModeOptions: { blur: 90, bCircularBlur: false, angle: 0, alpha: 85, mute: 0, edgeGlow: 0, bloom: 0, path: '', pathCycleTimer: 10000, pathCycleSort: 'date', bNowPlaying: true, bNoSelection: false, bProportions: true, bFill: true, fillCrop: 'center', zoom: 0, reflection: 'none', bCacheAlbum: true, bProcessColors: true },
-		colorMode: 'bigradient',
-		colorModeOptions: { bDither: true, bUiColors: false, bDarkBiGradOut: true, angle: 91, focus: 1, color: [0xff2e2e2e, 0xff212121] }, // RGB(45,45,45), RGB(33,33,33)
+		colorMode: 'blend',
+		colorModeOptions: { bDither: true, bUiColors: false, bDarkBiGradOut: true, angle: 91, focus: 1, color: [0xff2e2e2e, 0xff212121], blendIntensity: 90, blendAlpha: 105 }, // RGB(45,45,45), RGB(33,33,33)
 		...(bCallbacks
 			? {
 				callbacks: {

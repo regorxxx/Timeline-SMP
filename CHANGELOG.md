@@ -35,6 +35,7 @@
 - UI: added new background setting to prefer placement of dark colors at the outer edge of the panel in bigradient color mode.
 - UI: added new background setting for art reflection effects. Only available when crop setting is set to none.
 - UI: added new background setting for basic art manipulation.
+- UI: added blend color mode which mimics [Library-Tree-SMP](https://github.com/regorxxx/Library-Tree-SMP/), Biography blend theme. Requires art enabled.
 - UI: added DUI/CUI color settings for background, which are applied on the color mode used.
 ### Changed
 - UI: cleanup and rework of background submenu and its integration with other settings.

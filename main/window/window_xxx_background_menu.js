@@ -286,24 +286,26 @@ function createBackgroundMenu(appendTo, parentMenu, options = { nameColors: fals
 					const input = Input.number(option.type, this.colorModeOptions[option.key], 'Enter number:' + option.inputHint, window.Name + ' (' + window.ScriptInfo.Name + ')', 100, option.checks);
 					if (input === null) { return; }
 					this.changeConfig({ config: { colorModeOptions: { [option.key]: input } }, callbackArgs: { bSaveProperties: true } });
-				}, flags: ['gradient', 'bigradient'].includes(this.colorMode.toLowerCase()) ? MF_STRING : MF_GRAYED
+				}, flags: ['gradient', 'bigradient'].includes(this.colorMode) ? MF_STRING : MF_GRAYED
 			});
 		});
 		[
 			{ isEq: null, key: this.colorModeOptions.bDarkBiGradOut, value: null, newValue: !this.colorModeOptions.bDarkBiGradOut, entryText: 'Gradient prefer dark out' }
 		].forEach(createMenuOption('colorModeOptions', 'bDarkBiGradOut', subMenu, true));
-		menu.getLastEntry().flags = ['bigradient'].includes(this.colorMode.toLowerCase()) ? MF_STRING : MF_GRAYED;
+		menu.getLastEntry().flags = ['bigradient'].includes(this.colorMode) ? MF_STRING : MF_GRAYED;
 		menu.newSeparator(subMenu);
 		[
-			{ key: 'blendIntensity', entryText: 'Blend intensity...', type: 'int positive', checks: [(num) => num >= 0 && num < 90], inputHint: '\nClockwise.\n(0 to 360)' },
-			{ key: 'blendAlpha', entryText: 'Blend opacity...', type: 'real positive', checks: [(num) => num >= 0 && num <= 1], inputHint: '\nWhere the centred color will be at its highest intensity.\n(0 to 1)' },
+			{ key: 'blendIntensity', entryText: 'Blend blur intensity...', type: 'int positive', checks: [(num) => num >= 0 && num < 90], inputHint: '\nBlur intensity.\n(0 to 90)' },
+			{ key: 'blendAlpha', entryText: 'Blend opacity...', type: 'int positive', checks: [(num) => num >= 0 && num <= 100], inputHint: '\n0 is transparent, 100 is opaque.\n(0 to 100)' },
 		].forEach((option) => {
+			const prevVal = option.key === 'blendAlpha' ? Math.round(this.colorModeOptions[option.key] * 100 / 255) : this.colorModeOptions[option.key];
 			menu.newEntry({
-				menuName: subMenu, entryText: option.entryText + '\t[' + this.colorModeOptions[option.key] + ']', func: () => {
-					const input = Input.number(option.type, this.colorModeOptions[option.key], 'Enter number:' + option.inputHint, window.Name + ' (' + window.ScriptInfo.Name + ')', 100, option.checks);
+				menuName: subMenu, entryText: option.entryText + '\t[' + prevVal + ']', func: () => {
+					const input = Input.number('int positive', prevVal, 'Enter number:' + option.inputHint, window.Name + ' (' + window.ScriptInfo.Name + ')', 100, option.checks);
 					if (input === null) { return; }
-					this.changeConfig({ config: { colorModeOptions: { [option.key]: input } }, callbackArgs: { bSaveProperties: true } });
-				}, flags: ['gradient', 'bigradient'].includes(this.colorMode.toLowerCase()) ? MF_STRING : MF_GRAYED
+					const newVal = option.key === 'alpha' ? Math.round(input * 255 / 100) : input;
+					this.changeConfig({ config: { colorModeOptions: { [option.key]: newVal } }, callbackArgs: { bSaveProperties: true } });
+				}, flags: this.colorMode === 'blend' ? MF_STRING : MF_GRAYED
 			});
 		});
 	}

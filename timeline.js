@@ -1,5 +1,5 @@
 ﻿'use strict';
-//07/01/26
+//08/01/26
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '2.4.0-beta', features: { drag_n_drop: true, grab_focus: true } }); }
 
@@ -405,13 +405,21 @@ const defaultConfig = deepAssign()(
 								menuName,
 								entryText: 'Act as color-server',
 								func: () => {
-									this.properties.bNotifyColors[1] = !this.properties.bNotifyColors[1];
+									this.properties.bNotifyColors[1] = !(this.properties.bNotifyColors[1] && background.useCoverColors);
 									overwriteProperties(this.properties);
-									if (this.properties.bNotifyColors[1] && background.scheme) {
-										window.NotifyOthers('Colors: set color scheme', background.scheme);
+									if (this.properties.bNotifyColors[1]) {
+										if (background.scheme) { window.NotifyOthers('Colors: set color scheme', background.scheme); }
+										else if (!background.useCoverColors) {
+											background.changeConfig({
+												bRepaint: false, callbackArgs: { bSaveProperties: true },
+												config: !background.useCover
+													? { coverMode: background.getDefaultCoverMode(), coverModeOptions: { alpha: 0, bProcessColors: true } }
+													: { coverModeOptions: { bProcessColors: true } },
+											});
+										}
 									}
 								},
-								checkFunc: () => this.properties.bNotifyColors[1]
+								checkFunc: () => this.properties.bNotifyColors[1] && background.useCoverColors
 							},
 						]);
 					});
@@ -815,6 +823,29 @@ const refreshData = properties.dataRefreshRate[1]
 /*
 	Callbacks
 */
+{
+	const callback = () => {
+		if (background.useCover && (!background.coverModeOptions.bNowPlaying || !fb.IsPlaying)) {
+			background.updateImageBg();
+		}
+	};
+	['on_item_focus_change', 'on_selection_changed', 'on_playlists_changed', 'on_playlist_items_added', 'on_playlist_items_removed', 'on_playlist_switch'].forEach((e) => addEventListener(e, callback));
+
+	addEventListener('on_playback_stop', (reason) => {
+		if (reason !== 2) { // Invoked by user or Starting another track
+			if (background.useCover && background.coverModeOptions.bNowPlaying) { background.updateImageBg(); }
+		}
+	});
+
+	addEventListener('on_playback_new_track', () => {
+		if (background.useCover) { background.updateImageBg(); }
+	});
+
+	addEventListener('on_colours_changed', () => {
+		background.colorsChanged();
+	});
+}
+
 addEventListener('on_paint', (gr) => {
 	if (!window.ID) { return; }
 	if (!window.Width || !window.Height) { return; }
@@ -917,44 +948,25 @@ addEventListener('on_key_up', (vKey) => {
 });
 
 addEventListener('on_playback_new_track', () => { // To show playing now playlist indicator...
-	if (background.useCover) { background.updateImageBg(); }
 	if (!window.ID) { return; }
 	if (charts.some((chart) => chart.properties.bAutoData[1])) { refreshData(plman.PlayingPlaylist, 'on_playback_new_track'); }
 	if (dynQueryMode.onPlayback) { refreshData(plman.PlayingPlaylist, 'on_playback_new_track_dynQuery'); }
 });
 
 addEventListener('on_selection_changed', () => {
-	if (background.useCover && (!background.coverModeOptions.bNowPlaying || !fb.IsPlaying)) {
-		background.updateImageBg();
-	}
 	if (dynQueryMode.onSelection) { refreshData(plman.ActivePlaylist, 'on_selection_changed_dynQuery'); }
 });
 
 addEventListener('on_item_focus_change', () => {
-	if (background.useCover && (!background.coverModeOptions.bNowPlaying || !fb.IsPlaying)) {
-		background.updateImageBg();
-	}
 	if (dynQueryMode.onSelection) { refreshData(plman.ActivePlaylist, 'on_item_focus_change_dynQuery'); }
 });
 
 addEventListener('on_playlist_switch', () => {
-	if (background.useCover && (!background.coverModeOptions.bNowPlaying || !fb.IsPlaying)) {
-		background.updateImageBg();
-	}
 	if (!window.ID) { return; }
 	if (charts.some((chart) => chart.properties.bAutoData[1])) { refreshData(-1, 'on_playlist_switch'); }
 });
 
-addEventListener('on_playback_stop', (reason) => {
-	if (reason !== 2) { // Invoked by user or Starting another track
-		if (background.useCover && background.coverModeOptions.bNowPlaying) { background.updateImageBg(); }
-	}
-});
-
 addEventListener('on_playlists_changed', () => { // To show/hide loaded playlist indicators...
-	if (background.useCover && (!background.coverModeOptions.bNowPlaying || !fb.IsPlaying)) {
-		background.updateImageBg();
-	}
 	if (!window.ID) { return; }
 	if (charts.some((chart) => chart.properties.bAutoData[1])) { refreshData(-1, 'on_playlists_changed'); }
 });

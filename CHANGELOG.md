@@ -2,6 +2,7 @@
 
 ## [Table of Contents]
 - [Unreleased](#unreleased)
+- [2.5.0](#250---2026-01-12)
 - [2.4.0](#240---2025-12-23)
 - [2.3.0](#230---2025-12-12)
 - [2.2.1](#221---2025-11-25)
@@ -24,6 +25,12 @@
 - [0.6.0](#060---2023-11-15)
 
 ## [Unreleased][]
+### Added
+### Changed
+### Removed
+### Fixed
+
+## [2.5.0] - 2026-01-12
 ### Added
 - Data: new setting to control the refresh rate for automatic data changes. This ensures smooth selection track changes and playlist operations while dynamic filters based on selection are in use. Panel is no longer updated on every track change but only with the last one after consecutive fast changes within the debounce time window.
 - Data: new settings to adjust data deduplication by TF. Multiple default presets are available along the possibility to add your custom TF expressions. There is also support for X,Y,Z-Axis entries setting their own deduplication expressions, but currently unused in default presets (such settings can be added via custom entries though).
@@ -366,7 +373,8 @@
 ### Removed
 ### Fixed
 
-[Unreleased]: ../../compare/v2.4.0...HEAD
+[Unreleased]: ../../compare/v2.5.0...HEAD
+[2.5.0]: ../../compare/v2.4.0...v2.5.0
 [2.4.0]: ../../compare/v2.3.0...v2.4.0
 [2.3.0]: ../../compare/v2.2.1...v2.3.0
 [2.2.1]: ../../compare/v2.2.0...v2.2.1

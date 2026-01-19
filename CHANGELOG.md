@@ -26,7 +26,9 @@
 
 ## [Unreleased][]
 ### Added
+- UI: new setting to show/hide axis' ticks.
 ### Changed
+- UI: show/hide axis settings no longer affects other subelements like title, ticks, etc.
 ### Removed
 ### Fixed
 - UI: added some missing settings for 'Share UI settings' feature.

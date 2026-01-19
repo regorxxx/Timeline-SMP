@@ -1,5 +1,5 @@
 ﻿'use strict';
-//12/01/26
+//16/01/26
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '2.5.0', features: { drag_n_drop: true, grab_focus: true } }); }
 
@@ -312,13 +312,13 @@ const background = new _background({
 		artColors: (colArray, bForced) => {
 			if (!bForced && !charts.some((chart) => chart.configuration.bDynSeriesColor)) { return; }
 			else if (colArray) {
-				const bChangeBg = charts.some((chart) => chart.configuration.bDynBgColor);
+				const bChangeBg = charts.some((chart) => chart.configuration.bDynBgColor) && background.useColors && !background.useColorsBlend;
 				const { main, sec, note } = dynamicColors(
 					colArray,
 					bChangeBg ? RGB(122, 122, 122) : background.getAvgPanelColor(),
 					true
 				);
-				if (bChangeBg && background.useColors) {
+				if (bChangeBg) {
 					const gradient = [Chroma(note).saturate(2).luminance(0.005).android(), note];
 					const bgColor = Chroma.scale(gradient).mode('lrgb')
 						.colors(background.colorModeOptions.color.length, 'android')
@@ -397,7 +397,7 @@ const defaultConfig = deepAssign()(
 										window.NotifyOthers('Colors: ask color scheme', window.ScriptInfo.Name + ': set color scheme');
 										window.NotifyOthers('Colors: ask color', window.ScriptInfo.Name + ': set colors');
 									} else if (!properties.bDynamicColors[1]) {
-										background.callbacks.artColors(void(0), true);
+										background.callbacks.artColors(void (0), true);
 									}
 								},
 								checkFunc: () => this.properties.bOnNotifyColors[1]
@@ -655,7 +655,7 @@ charts.forEach((/** @type {_chart} */ chart, i) => {
 	};
 	chart.shareUiSettings = function (mode = 'popup') {
 		const settings = Object.fromEntries(
-			['chart', 'background']
+			['chart', 'background', 'bOnNotifyColors', 'bNotifyColors']
 				.map((key) => [key, clone(this.properties[key].slice(0, 2))])
 		);
 		switch (mode.toLowerCase()) {
@@ -688,6 +688,10 @@ charts.forEach((/** @type {_chart} */ chart, i) => {
 		if (answer === popup.yes) {
 			const newBg = JSON.parse(String(settings.background[1]));
 			['x', 'y', 'w', 'h', 'callbacks'].forEach((key) => delete newBg[key]);
+			['bOnNotifyColors', 'bNotifyColors'].forEach((key) => {
+				this.properties[key][1] = !!settings[key][1];
+				if (Object.hasOwn(this, key)) { this[key] = this.properties[key][1]; }
+			});
 			const toApplyChart = { graph: {} };
 			const newChart = JSON.parse(String(settings.chart[1]));
 			['borderWidth', 'pointAlpha'].forEach((key) => {

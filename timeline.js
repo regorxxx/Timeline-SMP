@@ -1,5 +1,5 @@
 ﻿'use strict';
-//16/01/26
+//19/01/26
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '2.5.0', features: { drag_n_drop: true, grab_focus: true } }); }
 
@@ -439,7 +439,7 @@ const defaultConfig = deepAssign()(
 				change: function (config, changeArgs, callbackArgs) {
 					if (callbackArgs && callbackArgs.bSaveProperties) {
 						['x', 'y', 'w', 'h'].forEach((key) => delete config[key]);
-						['x', 'y', 'z'].forEach((c) => ['key', 'tf'].forEach((key) => delete config.axis[c][key]));
+						['x', 'y', 'z'].forEach((c) => ['key', 'tf'].forEach((key) => config.axis[c][key] = ''));
 						config.dataManipulation.sort = this.exportSortLabel();
 						if (config.dataManipulation.filter) { config.dataManipulation.filter = this.serializeFunction(config.dataManipulation.filter); }
 						this.properties.chart[1] = JSON.stringify(config);
@@ -704,7 +704,7 @@ charts.forEach((/** @type {_chart} */ chart, i) => {
 				toApplyChart[key] = newChart[key];
 			});
 			['x', 'y', 'w', 'h'].forEach((key) => delete toApplyChart[key]);
-			['x', 'y', 'z'].forEach((c) => ['key', 'tf'].forEach((key) => delete toApplyChart.axis[c][key]));
+			['x', 'y', 'z'].forEach((c) => ['key', 'tf'].forEach((key) => toApplyChart.axis[c][key] = ''));
 			this.changeConfig({ ...toApplyChart, bRepaint: true, callbackArgs: { bSaveProperties: true } });
 			background.changeConfig({ config: newBg, bRepaint: false, callbackArgs: { bSaveProperties: true } });
 			window.highlight = false;

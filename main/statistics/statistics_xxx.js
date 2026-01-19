@@ -1,5 +1,5 @@
 ﻿'use strict';
-//12/01/26
+//19/01/26
 
 /* exported _chart */
 
@@ -2875,9 +2875,9 @@ function _chart({
 
 	this.exportDataLabels = () => {
 		return {
-			x: { key: this.axis.x.key, tf: this.axis.x.tf },
-			y: { key: this.axis.y.key, tf: this.axis.y.tf, bProportional: this.axis.y.bProportional },
-			z: { key: this.axis.z.key, tf: this.axis.z.tf }
+			x: { key: this.axis.x.key || '', tf: this.axis.x.tf || '' },
+			y: { key: this.axis.y.key || '', tf: this.axis.y.tf || '', bProportional: this.axis.y.bProportional },
+			z: { key: this.axis.z.key || '', tf: this.axis.z.tf || '' }
 		};
 	};
 

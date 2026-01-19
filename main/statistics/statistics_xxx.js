@@ -1132,7 +1132,7 @@ function _chart({
 			default: // eslint-disable-line no-fallthrough
 				// Y Axis ticks
 				if (this.axis.y.labels || this.axis.y.showTicks || this.axis.y.showKey) {
-					if (graphType !== 'timeline' && this.axis.y.labels || this.axis.y.showTicks) {
+					if (graphType !== 'timeline' && (this.axis.y.labels || this.axis.y.showTicks)) {
 						ticks.forEach((tick, i) => {
 							const yTick = y - tick / (maxY || 1) * (y - h) || y;
 							if (yTick < 0) { return; }

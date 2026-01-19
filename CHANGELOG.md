@@ -28,6 +28,7 @@
 ### Added
 - UI: new setting to show/hide axis' ticks.
 - UI: new setting to merge X-Y labels on some chart types (like 'Bars (horizontal)').
+- UI: new setting to apply colors as gradient based on point value for some chart types ('Bars', 'Fill', ...).
 ### Changed
 - UI: show/hide axis settings no longer affects other subelements like title, ticks, etc.
 ### Removed

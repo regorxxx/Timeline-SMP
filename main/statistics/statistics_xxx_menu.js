@@ -97,6 +97,7 @@ function createStatisticsMenu({ bClear = true, menuKey = 'menu', onBtnUp = null,
 	const fineGraphs = new Set(['bars', 'fill', 'doughnut', 'pie', 'timeline', 'horizontal-bars']).difference(hideCharts || new Set());
 	const sizeGraphs = new Set(['scatter', 'lines']).difference(hideCharts || new Set());
 	const switchedGraphs = new Set(['horizontal-bars']);
+	const gradientGraphs =  new Set(['horizontal-bars', 'bars', 'timeline', 'fill']);
 	// Header
 	menu.newEntry({ entryText: this.title, flags: MF_GRAYED });
 	menu.newSeparator();
@@ -514,6 +515,10 @@ function createStatisticsMenu({ bClear = true, menuKey = 'menu', onBtnUp = null,
 				return { isEq: null, key: this.graph.pointAlpha, value: null, newValue: Math.round(val * 255 / 100), entryText: val.toString() + (val === 0 ? '\t(transparent)' : val === 100 ? '\t(opaque)' : '') };
 			}).forEach(createMenuOption('graph', 'pointAlpha', configSubMenu));
 		}
+		menu.newSeparator(subMenu);
+		[
+			{ isEq: null, key: this.configuration.bGradientPoints, value: null, newValue: !this.configuration.bGradientPoints, entryText: 'Use color gradients', flags: gradientGraphs.has(this.graph.type) ? MF_STRING : MF_GRAYED },
+		].forEach(createMenuOption('configuration', 'bGradientPoints', subMenu, true));
 	}
 	return menu;
 }

@@ -405,6 +405,11 @@ function createStatisticsMenu({ bClear = true, menuKey = 'menu', onBtnUp = null,
 			[
 				{ isEq: null, key: this.axis.x.bAltLabels, value: null, newValue: !this.axis.x.bAltLabels, entryText: 'Alt. X labels' },
 			].forEach(createMenuOption('axis', ['x', 'bAltLabels'], subMenuTwo, true));
+			if (switchedGraphs.has(this.graph.type)) {
+				[
+					{ isEq: null, key: this.axis.x.mergeLabels, value: null, newValue: !this.axis.x.mergeLabels, entryText: 'Merge X-Y labels' },
+				].forEach(createMenuOption('axis', ['x', 'mergeLabels'], subMenuTwo, true));
+			}
 			if (this.graph.type === 'timeline' && this.graph.multi) {
 				[
 					{ isEq: null, key: this.graphSpecs.timeline.bAxisCenteredX, value: null, newValue: !this.graphSpecs.timeline.bAxisCenteredX, entryText: 'Center X tick' },

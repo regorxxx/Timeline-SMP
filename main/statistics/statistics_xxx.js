@@ -156,7 +156,7 @@ function _chart({
 		this.background = { color: RGB(255, 255, 255), image: null };
 		this.grid = { x: { show: false, color: RGB(0, 0, 0), width: _scale(1) }, y: { show: false, color: RGB(0, 0, 0), width: _scale(1) } };
 		this.axis = {
-			x: { show: true, showTicks: true, showKey: true, color: RGB(0, 0, 0), width: _scale(2), ticks: 'auto', labels: true, bSingleLabels: true, key: '', bAltLabels: false, tf: '' },
+			x: { show: true, showTicks: true, showKey: true, color: RGB(0, 0, 0), width: _scale(2), ticks: 'auto', labels: true, bSingleLabels: true, key: '', bAltLabels: false, mergeLabels: true, tf: '' },
 			y: { show: true, showTicks: true, showKey: true, color: RGB(0, 0, 0), width: _scale(2), ticks: 10, labels: true, key: 'tracks', tf: '', bProportional: false },
 			z: { key: '', tf: '' },
 		};
@@ -879,7 +879,7 @@ function _chart({
 								series.forEach((value) => {
 									const axisIdx = Math.abs(xAxisValuesLen - xAxisValues.indexOf(value.x) - 1); // Idx reversed
 									let topMax = value.y / (maxY || 1) * (w - x);
-									const valueX = value.x.toString().split('|')[0];
+									const valueX = value.x.toString().split('|')[0] + (this.axis.x.mergeLabels ? ' - ' + value.y.toString() : '');
 									let yLabel = y - axisIdx * tickW;
 									if (this.axis.x.labels) {
 										const flags = (this.axis.x.bAltLabels ? DT_CENTER : DT_LEFT) | DT_END_ELLIPSIS | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX;
@@ -2966,15 +2966,15 @@ function _chart({
 	this.sortKey = null;
 	/** @type {number}} */
 	this.series = data ? data.length : 0;
-	/** @type {{type: string, multi: Boolean, borderWidth: number, point:'circle'|'cross'|'triangle', pointAlpha: number}} */
+	/** @type {{type: _chartGraphType, multi: Boolean, borderWidth: number, point:_chartGraphPoint, pointAlpha: number}} */
 	this.graph = { ...this.graph, ...(graph || {}) };
 	/** @type {{color: number, image: {imageGDI: GdiGraphics}}} */
 	this.background = { ...this.background, ...(background || {}) };
 	/** @type {number[]|number[][]} */
 	this.colors = colors;
-	/** @type {{scheme: 'diverging'|'qualitative'|'sequential'|'random'|number[], colorBlindSafe: Boolean, interpolation: 'lrgb'|'rgb'|'lab'|'hsl'|'lch'}} @see https://vis4.net/chromajs/#color-scales */
+	/** @type {{scheme: 'diverging'|'qualitative'|'sequential'|'random'|number[], colorBlindSafe: Boolean, interpolation: _chartChromaInterpolation}} @see https://vis4.net/chromajs/#color-scales */
 	this.chroma = { ...this.chroma, ...(chroma || {}) };
-	/** @type {{x: {show:boolean, showKey:boolean, showTicks:boolean, color:number, width:number, ticks:boolean, labels:boolean, key:string, bSingleLabels:boolean, bAltLabels:boolean}, y: {show:boolean, showKey:boolean, showTicks:boolean, color:number, width:number, ticks:boolean, labels:boolean, key:string}, z: {show:boolean, showKey:boolean, showTicks:boolean, color:number, width:number, ticks:boolean, labels:boolean, key:string}}} */
+	/** @type {{x: {show:boolean, showKey:boolean, showTicks:boolean, color:number, width:number, ticks:boolean, labels:boolean, key:string, bSingleLabels:boolean, bAltLabels:boolean, mergeLabels:boolean}, y: {show:boolean, showKey:boolean, showTicks:boolean, color:number, width:number, ticks:boolean, labels:boolean, key:string}, z: {show:boolean, showKey:boolean, showTicks:boolean, color:number, width:number, ticks:boolean, labels:boolean, key:string}}} */
 	this.axis;
 	if (axis) {
 		if (axis.x) { this.axis.x = { ...this.axis.x, ...axis.x }; }

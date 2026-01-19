@@ -33,7 +33,7 @@ let properties = {
 	chart: ['Chart options', JSON.stringify(deepAssign()(
 		(new _chart).exportConfig(),
 		{
-			graph: { type: 'timeline', multi: true, borderWidth: _scale(1), pointAlpha: Math.round(60 * 255 / 100) },
+			graph: { type: 'timeline', multi: true, borderWidth: _scale(1), pointAlpha: Math.round(255 * 60 / 100) },
 			dataManipulation: { sort: { x: 'natural', y: null, z: null, my: 'reverse num', mz: null }, group: 3, filter: null, slice: [0, Infinity], distribution: null },
 			background: { color: null },
 			chroma: { scheme: 'Set1' },
@@ -880,7 +880,7 @@ addEventListener('on_mouse_move', (x, y, mask) => {
 	background.move(x, y, mask);
 	if (mask === MK_LBUTTON) {
 		charts.forEach((chart) => {
-			if (chart.inFocus) {
+			if (chart.inFocus && chart.mX !== x) {
 				if (!chart.isOnButton(x, y) && chart.getCurrentRange() < chart.getMaxRange()) {
 					window.SetCursor(32653);
 					chart.scrollX({ x, release: 0x01 /* VK_LBUTTON */, bThrottle: true });

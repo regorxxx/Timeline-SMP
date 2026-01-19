@@ -32,6 +32,7 @@
 - UI: show/hide axis settings no longer affects other subelements like title, ticks, etc.
 ### Removed
 ### Fixed
+- UI: cursor is no longer changed on single click over point, only while dragging.
 - UI: added some missing settings for 'Share UI settings' feature.
 - UI: small fixes for background blend color mode.
 - UI: fixed art cycling glitch on background folder mode after using the mouse wheel.

@@ -1,5 +1,5 @@
 ﻿'use strict';
-//19/01/26
+//02/02/26
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '2.5.0', features: { drag_n_drop: true, grab_focus: true } }); }
 
@@ -10,7 +10,7 @@ include('helpers\\helpers_xxx_file.js');
 include('helpers\\helpers_xxx_flags.js');
 /* global VK_LWIN:readable, dropMask:readable */
 include('helpers\\helpers_xxx_prototypes_smp.js');
-/* global extendGR:readable, debounce:readable, isInt:readable */
+/* global extendGR:readable, debounce:readable, isIntInf:readable */
 include('main\\statistics\\statistics_xxx.js');
 /* global _chart:readable */
 include('main\\statistics\\statistics_xxx_menu.js');
@@ -227,7 +227,7 @@ let properties = {
 		preferPlayback: true,
 		multipleSelection: false
 	}), { func: isJSON, forceDefaults: true }],
-	dataRefreshRate: ['Data refresh max rate (ms)', 250, { func: isInt, range: [[0, Infinity]] }],
+	dataRefreshRate: ['Data refresh max rate (ms)', 250, { func: isIntInf, range: [[0, Infinity]] }],
 	filePaths: ['External database paths', JSON.stringify({
 		listenBrainzArtists: _foldPath(folders.data + 'listenbrainz_artists.json'),
 		searchByDistanceArtists: _foldPath(folders.data + 'searchByDistance_artists.json'),
@@ -899,7 +899,7 @@ addEventListener('on_mouse_leave', () => {
 
 addEventListener('on_mouse_rbtn_up', (x, y, mask) => {
 	if (utils.IsKeyPressed(VK_CONTROL) && utils.IsKeyPressed(VK_LWIN)) {
-		return onRbtnUpImportSettings().btn_up(x, y);
+		return onRbtnUpImportSettings.call(charts[0]).btn_up(x, y);
 	}
 	charts.some((chart) => chart.rbtnUp(x, y, mask));
 	return true; // left shift + left windows key will bypass this callback and will open default context menu.

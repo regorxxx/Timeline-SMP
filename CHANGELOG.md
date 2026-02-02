@@ -30,6 +30,7 @@
 - UI: new setting to merge X-Y labels on some chart types (like 'Bars (horizontal)').
 - UI: new setting to apply colors as gradient based on point value for some chart types ('Bars', 'Fill', ...).
 ### Changed
+- Installation: panel menu, accessed through 'Ctrl + Win + R. Click' (which works globally on any script and panel, at any position), now also includes the script version number and a submenu to check and set auto-updates.
 - UI: show/hide axis settings no longer affects other subelements like title, ticks, etc.
 ### Removed
 ### Fixed

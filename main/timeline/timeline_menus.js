@@ -1,5 +1,5 @@
 ﻿'use strict';
-//28/12/25
+//02/02/26
 
 /* exported onLbtnUpPoint, onLbtnUpSettings, onRbtnUpImportSettings */
 
@@ -678,9 +678,10 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 	return menu;
 }
 
-function onRbtnUpImportSettings() {
+function onRbtnUpImportSettings(properties = this.properties || {}) {
 	const menu = new _menu();
 	menu.newEntry({ entryText: 'Panel menu: ' + window.PanelName, flags: MF_GRAYED });
+	menu.newEntry({ entryText: 'Version: ' + window.ScriptInfo.Version, flags: MF_GRAYED });
 	menu.newSeparator();
 	// Generic code is left from other packages, but only JSON settings is used
 	menu.newEntry({
@@ -714,6 +715,29 @@ function onRbtnUpImportSettings() {
 	menu.newEntry({
 		entryText: 'Panel properties...', func: () => window.ShowProperties()
 	});
+	menu.newSeparator();
+	{
+		const subMenuTwo = menu.newMenu('Updates');
+		menu.newEntry({
+			menuName: subMenuTwo, entryText: 'Automatically check for updates', func: () => {
+				properties.bAutoUpdateCheck[1] = !properties.bAutoUpdateCheck[1];
+				overwriteProperties(properties);
+				if (properties.bAutoUpdateCheck[1]) {
+					if (typeof checkUpdate === 'undefined') { include('..\\..\\helpers\\helpers_xxx_web_update.js'); }
+					setTimeout(checkUpdate, 1000, { bDownload: globSettings.bAutoUpdateDownload, bOpenWeb: globSettings.bAutoUpdateOpenWeb, bDisableWarning: false });
+				}
+			}
+		});
+		menu.newCheckMenuLast(() => properties.bAutoUpdateCheck[1]);
+		menu.newSeparator(subMenuTwo);
+		menu.newEntry({
+			menuName: subMenuTwo, entryText: 'Check for updates...', func: () => {
+				if (typeof checkUpdate === 'undefined') { include('..\\..\\helpers\\helpers_xxx_web_update.js'); }
+				checkUpdate({ bDownload: globSettings.bAutoUpdateDownload, bOpenWeb: globSettings.bAutoUpdateOpenWeb, bDisableWarning: false })
+					.then((bFound) => !bFound && fb.ShowPopupMessage('No updates found.', window.FullPanelName + ': Update check'));
+			}
+		});
+	}
 	menu.newSeparator();
 	menu.newEntry({
 		entryText: 'Reload panel', func: () => window.Reload()

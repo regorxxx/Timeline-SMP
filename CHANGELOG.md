@@ -32,6 +32,7 @@
 ### Changed
 - Installation: panel menu, accessed through 'Ctrl + Win + R. Click' (which works globally on any script and panel, at any position), now also includes the script version number and a submenu to check and set auto-updates.
 - UI: show/hide axis settings no longer affects other subelements like title, ticks, etc.
+- Helpers: support for long paths (>260 chars) in multiple internal file handling functions.
 ### Removed
 ### Fixed
 - UI: cursor is no longer changed on single click over point, only while dragging.

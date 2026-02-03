@@ -1,5 +1,5 @@
 ﻿'use strict';
-//02/02/26
+//03/02/26
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '2.5.0', features: { drag_n_drop: true, grab_focus: true } }); }
 
@@ -509,7 +509,9 @@ newConfig.forEach((row) => row.forEach((config) => {
 			groupBy,
 			optionArg: timeRange,
 			sourceType: dataSource.sourceType,
-			sourceArg: dataSource.sourceArg || null,
+			sourceArg: dataSource.sourceType === 'panel'
+				? new FbMetadbHandleList()
+				: dataSource.sourceArg || null,
 			x: bHasX ? _qCond(config.axis.x.tf, true) : '',
 			y: bHasY ? _qCond(config.axis.y.tf, true) : '',
 			z: bHasZ ? _qCond(config.axis.z.tf, true) : '',
@@ -556,6 +558,10 @@ const charts = nCharts.flat(Infinity);
 charts.forEach((/** @type {_chart} */ chart, i) => {
 	chart.properties = properties;
 	chart.dragDropCache = new FbMetadbHandleList();
+	chart.panelCache = {
+		uuid: [],
+		handleList: {}
+	};
 	chart.setData = function (entry = {}) {
 		const bHasX = Object.hasOwn(entry, 'x') && entry.x.length;
 		const bHasY = Object.hasOwn(entry, 'y') && entry.y.length;
@@ -571,7 +577,18 @@ charts.forEach((/** @type {_chart} */ chart, i) => {
 		const bHasZ = Object.hasOwn(entry, 'z') && entry.z.length && !bListensPerPeriod;
 		const dataSource = JSON.parse(this.properties.dataSource[1]);
 		const sourceType = Object.hasOwn(entry, 'sourceType') ? entry.sourceType : dataSource.sourceType;
-		const sourceArg = (Object.hasOwn(entry, 'sourceArg') ? entry.sourceArg : dataSource.sourceArg) || (sourceType === 'handleList' ? this.dragDropCache : null) || null;
+		if (sourceType === 'panel' && Object.hasOwn(entry, 'sourceArg') && Array.isArray(entry.sourceArg)) {
+			this.panelCache.uuid.length = 0;
+			this.panelCache.uuid.push(...dataSource.sourceArg);
+		}
+		const sourceArg = ['handleList', 'panel'].includes(sourceType)
+			? Object.hasOwn(entry, 'sourceArg') && entry.sourceArg instanceof FbMetadbHandleList
+				? entry.sourceArg
+				: this.dragDropCache
+			: (Object.hasOwn(entry, 'sourceArg')
+				? entry.sourceArg
+				: dataSource.sourceArg
+			) || null;
 		const dataOpts = JSON.parse(this.properties.data[1]);
 		const timeRange = getTimeRange(this.properties);
 		const groupBy = JSON.parse(this.properties.groupBy[1]);
@@ -646,7 +663,11 @@ charts.forEach((/** @type {_chart} */ chart, i) => {
 		if (Object.hasOwn(input, 'dataSource')) {
 			const dataSource = JSON.parse(this.properties.dataSource[1]);
 			if (Object.hasOwn(input.dataSource, 'sourceType')) { dataSource.sourceType = input.dataSource.sourceType; }
-			if (Object.hasOwn(input.dataSource, 'sourceArg')) { dataSource.sourceArg = dataSource.sourceType === 'playlist' ? input.dataSource.sourceArg : null; }
+			if (Object.hasOwn(input.dataSource, 'sourceArg')) {
+				dataSource.sourceArg = ['playlist', 'panel'].includes(dataSource.sourceType)
+					? input.dataSource.sourceArg
+					: null;
+			}
 			if (Object.hasOwn(input.dataSource, 'bRemoveDuplicates')) { dataSource.bRemoveDuplicates = input.dataSource.bRemoveDuplicates; }
 			if (Object.hasOwn(input.dataSource, 'removeDuplicatesOptions')) { dataSource.removeDuplicatesOptions = input.dataSource.removeDuplicatesOptions; }
 			this.properties.dataSource[1] = JSON.stringify(dataSource);
@@ -1019,6 +1040,27 @@ addEventListener('on_notify_data', (name, info) => {
 			break;
 		}
 		// External integration
+		case window.ScriptInfo.Name + ': panel tracks': { // { window?: string[], chart?: string[], handleList: FbMetadbHandleList, uuid: string }
+			if (info && info.window && !info.window.some((v) => v === window.Name)) { break; }
+			if (!info.handleList) { return; }
+			charts.forEach((chart) => {
+				if (info && info.chart && !info.chart.some((v) => v === chart.title)) { return; }
+				if (!chart.panelCache.uuid.includes(info.uuid)) { return; }
+				chart.panelCache.uuid.forEach(v => {
+					if (info.uuid === v) {
+						chart.panelCache.handleList[v] = new FbMetadbHandleList(info.handleList);
+						chart.panelCache.handleList[v].Sort();
+					}
+				});
+				chart.dragDropCache.RemoveAll();
+				Object.values(chart.panelCache.handleList).forEach((handleList) => chart.dragDropCache.MakeUnion(handleList));
+				const sourceArg = chart.dragDropCache;
+				if (sourceArg && sourceArg.Count) {
+					chart.setData({ sourceType: 'panel', sourceArg, queryHandle: sourceArg[0] });
+				}
+			});
+			break;
+		}
 		case window.ScriptInfo.Name + ': add tracks': { // { window?: string[], chart?: string[], bAdd?: boolean, handleList: FbMetadbHandleList }
 			if (info && info.window && !info.window.some((v) => v === window.Name)) { break; }
 			if (!info.handleList) { return; }
@@ -1125,7 +1167,7 @@ addEventListener('on_notify_data', (name, info) => {
 		case window.ScriptInfo.Name + ': set data source': { // { window?: string[], chart?: string[], dataSource: { sourceType?: string, sourceArg?: string[]|FbMetadbHandleList, bRemoveDuplicates?: boolean }, bSaveProperties?: boolean }
 			if (info && info.window && !info.window.some((v) => v === window.Name)) { break; }
 			if (info && info.dataSource) {
-				if (!['library', 'activePlaylist', 'playingPlaylist', 'playlist', 'handleList'].includes(info.sourceType)) { return; }
+				if (!['library', 'activePlaylist', 'playingPlaylist', 'playlist', 'handleList', 'panel'].includes(info.sourceType)) { return; }
 				charts.forEach((chart) => {
 					if (info && info.chart && !info.chart.some((v) => v === chart.title)) { return; }
 					const dataSource = {};
@@ -1280,11 +1322,29 @@ addEventListener('on_drag_drop', (action, x, y, mask) => {
 	action.Effect = dropEffect.none; // Forces not sending things to a playlist
 });
 
-if (charts.some((chart) => chart.properties.bOnNotifyColors[1])) { // Ask color-servers at init
-	setTimeout(() => {
-		window.NotifyOthers('Colors: ask color scheme', window.ScriptInfo.Name + ': set color scheme');
-		window.NotifyOthers('Colors: ask colors', window.ScriptInfo.Name + ': set colors');
-	}, 1000);
+charts.some((chart) => {
+	if (chart.properties.bOnNotifyColors[1]) { // Ask color-servers at init
+		setTimeout(() => {
+			window.NotifyOthers('Colors: ask color scheme', window.ScriptInfo.Name + ': set color scheme');
+			window.NotifyOthers('Colors: ask colors', window.ScriptInfo.Name + ': set colors');
+		}, 1000);
+		return true;
+	}
+});
+
+{  // Set panel sources at init and notify other panels
+	const dataSource = JSON.parse(properties.dataSource[1]);
+	if (dataSource.sourceType === 'panel' && Array.isArray(dataSource.sourceArg) && dataSource.sourceArg.length) {
+		charts.every((chart) => chart.panelCache.uuid.push(...dataSource.sourceArg));
+		charts.some((chart) => {
+			if (chart.configuration.bLoadAsyncData) {
+				setTimeout(() => {
+					window.NotifyOthers('Library-Tree-SMP: ask selection', chart.panelCache.uuid);
+				}, 1000);
+				return true;
+			}
+		});
+	}
 }
 
 globProfiler.Print('callbacks');

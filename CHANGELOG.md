@@ -29,6 +29,7 @@
 - UI: new setting to show/hide axis' ticks.
 - UI: new setting to merge X-Y labels on some chart types (like 'Bars (horizontal)').
 - UI: new setting to apply colors as gradient based on point value for some chart types ('Bars', 'Fill', ...).
+- External integration: added integration with [Library-Tree-SMP](https://github.com/regorxxx/Library-Tree-SMP). Once source can be set to panel, you can directly send tracks from library tree to charts for statistics purposes. It works the same than panel source mode on Library-Tree-SMP, just by adding the library tree panel name as source (multiple source panels are allowed).
 ### Changed
 - Installation: panel menu, accessed through 'Ctrl + Win + R. Click' (which works globally on any script and panel, at any position), now also includes the script version number and a submenu to check and set auto-updates.
 - UI: show/hide axis settings no longer affects other subelements like title, ticks, etc.

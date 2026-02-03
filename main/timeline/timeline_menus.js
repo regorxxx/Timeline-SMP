@@ -1,5 +1,5 @@
 ﻿'use strict';
-//02/02/26
+//03/02/26
 
 /* exported onLbtnUpPoint, onLbtnUpSettings, onRbtnUpImportSettings */
 
@@ -423,16 +423,24 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 			{ entryText: 'Current playlist', sourceType: 'activePlaylist' },
 			{ entryText: 'Playing playlist', sourceType: 'playingPlaylist' },
 			{ entryText: 'Selected playlist(s)...', sourceType: 'playlist', sourceArg: null },
+			{ entryText: 'Panel...', sourceType: 'panel', sourceArg: null },
 			{ entryText: 'Manual (drag n\' drop)', sourceType: 'handleList', sourceArg: null },
 		];
 		options.forEach((option) => {
 			menu.newEntry({
 				menuName: subMenu, entryText: option.entryText, func: () => {
 					if (Object.hasOwn(option, 'sourceArg')) {
-						if (option.sourceArg === null && option.sourceType !== 'handleList') {
-							const input = Input.string('string', dataSource.sourceArg || '', 'Enter playlist name(s):\n(separated by ;)', 'Playlist sources', 'My Playlist;Other Playlist', void (0), true) || Input.lastInput;
-							if (input === null) { return; }
-							dataSource.sourceArg = input.split(';');
+						if (option.sourceArg === null) {
+							if (!['handleList', 'panel'].includes(option.sourceType)) {
+								const input = Input.string('string', dataSource.sourceArg || '', 'Enter playlist name(s):\n(separated by |)', 'Playlist sources', 'My Playlist|Other Playlist', void (0), true) || Input.lastInput;
+								if (input === null) { return; }
+								dataSource.sourceArg = input.split('|');
+							} else if ('panel' === option.sourceType) {
+								const input = Input.string('string', dataSource.sourceArg || '', 'Enter source panel name:\n\n• To get the name, go to the panel to be used as source\n• Press Shift + Windows + R. Click and choose \'configure panel\'\n• Paste the panel name or ID, at the top, into here\n• Edit source panel name if required\n• For more than one source panel, use pipe separator, for ex:\n\tPanel 1|Panel 2', 'Playlist sources', 'Panel 1|Panel 2', void (0)) || Input.lastInput;
+								if (input === null) { return; }
+								dataSource.sourceArg = input.split('|');
+								this.panelCache.uuid.push(...dataSource.sourceArg);
+							}
 						} else {
 							dataSource.sourceArg = option.sourceArg;
 						}
@@ -441,6 +449,9 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 					dataSource.sourceType = option.sourceType;
 					this.saveDataSettings({ dataSource });
 					this.setData(dataSource);
+					if (option.sourceType === 'panel') {
+						window.NotifyOthers('Library-Tree-SMP: ask selection', this.panelCache.uuid);
+					}
 				}
 			});
 		});
@@ -552,10 +563,10 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 			menuName: subMenu, entryText: 'Auto-refresh data sources', func: () => {
 				properties.bAutoData[1] = !properties.bAutoData[1];
 				overwriteProperties(properties);
-			}, flags: ['library', 'handleList'].includes(dataSource.sourceType) ? MF_GRAYED : MF_STRING
+			}, flags: ['library', 'handleList', 'panel'].includes(dataSource.sourceType) ? MF_GRAYED : MF_STRING
 		});
 		menu.appendToLast(dataSource.sourceType === 'library' ? '\t[non library]' : '');
-		menu.newCheckMenuLast(() => !['library', 'handleList'].includes(dataSource.sourceType) && properties.bAutoData[1]);
+		menu.newCheckMenuLast(() => !['library', 'handleList', 'panel'].includes(dataSource.sourceType) && properties.bAutoData[1]);
 		const playingTF = JSON.parse(properties.playingTF[1]).map((tag) => tag.toUpperCase());
 		const bAlways = isArrayEqual(playingTF, ['*']);
 		const playingTFTip = bAlways
@@ -567,9 +578,9 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 				if (input === null) { return; }
 				properties.playingTF[1] = JSON.stringify(input.map((tag) => tag.toUpperCase()));
 				overwriteProperties(properties);
-			}, flags: ['library', 'handleList'].includes(dataSource.sourceType) || !properties.bAutoData[1] ? MF_GRAYED : MF_STRING
+			}, flags: ['library', 'handleList', 'panel'].includes(dataSource.sourceType) || !properties.bAutoData[1] ? MF_GRAYED : MF_STRING
 		});
-		menu.newCheckMenuLast(() => !['library', 'handleList'].includes(dataSource.sourceType) && !!properties.playingTF[1].length);
+		menu.newCheckMenuLast(() => !['library', 'handleList', 'panel'].includes(dataSource.sourceType) && !!properties.playingTF[1].length);
 		menu.newSeparator(subMenu);
 		const subMenuTwo = menu.newMenu('Auto-refresh dynamic queries', subMenu, properties.dataQuery[1].count('#') >= 2 ? MF_STRING : MF_GRAYED);
 		[

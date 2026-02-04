@@ -423,7 +423,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 			{ entryText: 'Current playlist', sourceType: 'activePlaylist' },
 			{ entryText: 'Playing playlist', sourceType: 'playingPlaylist' },
 			{ entryText: 'Selected playlist(s)...', sourceType: 'playlist', sourceArg: null },
-			{ entryText: 'Panel...', sourceType: 'panel', sourceArg: null },
+			{ entryText: 'Panel(s)...', sourceType: 'panel', sourceArg: null },
 			{ entryText: 'Manual (drag n\' drop)', sourceType: 'handleList', sourceArg: null },
 		];
 		options.forEach((option) => {

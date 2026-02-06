@@ -1,5 +1,5 @@
 ﻿'use strict';
-//03/02/26
+//05/02/26
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '2.5.0', features: { drag_n_drop: true, grab_focus: true } }); }
 
@@ -1046,17 +1046,33 @@ addEventListener('on_notify_data', (name, info) => {
 			charts.forEach((chart) => {
 				if (info && info.chart && !info.chart.some((v) => v === chart.title)) { return; }
 				if (!chart.panelCache.uuid.includes(info.uuid)) { return; }
+				let bChanged = false;
 				chart.panelCache.uuid.forEach(v => {
 					if (info.uuid === v) {
-						chart.panelCache.handleList[v] = new FbMetadbHandleList(info.handleList);
-						chart.panelCache.handleList[v].Sort();
+						const handleList = new FbMetadbHandleList(info.handleList);
+						handleList.Sort();
+						// Checks if new tracks are different than current ones
+						// Doesn't check if the union of all sources is equal to the current one, only single sources
+						if (chart.panelCache.handleList[v] && !bChanged) {
+							const oriCount = chart.panelCache.handleList[v].Count;
+							chart.panelCache.handleList[v].MakeIntersection(handleList);
+							const commonCount = chart.panelCache.handleList[v].Count;
+							if (oriCount !== commonCount || commonCount !== handleList.Count) {
+								bChanged = true;
+								chart.panelCache.handleList[v] = handleList;
+							}
+						} else {
+							chart.panelCache.handleList[v] = handleList;
+						}
 					}
 				});
-				chart.dragDropCache.RemoveAll();
-				Object.values(chart.panelCache.handleList).forEach((handleList) => chart.dragDropCache.MakeUnion(handleList));
-				const sourceArg = chart.dragDropCache;
-				if (sourceArg && sourceArg.Count) {
-					chart.setData({ sourceType: 'panel', sourceArg, queryHandle: sourceArg[0] });
+				if (bChanged) {
+					chart.dragDropCache.RemoveAll();
+					Object.values(chart.panelCache.handleList).forEach((handleList) => chart.dragDropCache.MakeUnion(handleList));
+					const sourceArg = chart.dragDropCache;
+					if (sourceArg && sourceArg.Count) {
+						chart.setData({ sourceType: 'panel', sourceArg, queryHandle: sourceArg[0] });
+					}
 				}
 			});
 			break;

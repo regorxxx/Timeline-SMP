@@ -40,6 +40,7 @@
 - UI: added some missing settings for 'Share UI settings' feature.
 - UI: small fixes for background blend color mode.
 - UI: fixed art cycling glitch on background folder mode after using the mouse wheel.
+- Drag n' drop: workaround for CUI/SMP drag n' drop bug while dragging tracks directly from album list panel, without library view playlist usage. See [here](https://hydrogenaudio.org/index.php/topic,116669.msg1077838.html#msg1077838) and [CUI Issue 459](https://github.com/reupen/album_list_panel/issues/459).
 
 ## [2.5.0] - 2026-01-12
 ### Added

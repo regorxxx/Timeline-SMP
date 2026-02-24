@@ -1,5 +1,5 @@
 ﻿'use strict';
-//05/02/26
+//24/02/26
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '2.5.0', features: { drag_n_drop: true, grab_focus: true } }); }
 
@@ -10,7 +10,7 @@ include('helpers\\helpers_xxx_file.js');
 include('helpers\\helpers_xxx_flags.js');
 /* global VK_LWIN:readable, dropMask:readable */
 include('helpers\\helpers_xxx_prototypes_smp.js');
-/* global extendGR:readable, debounce:readable, isIntInf:readable */
+/* global extendGR:readable, debounce:readable, isIntInf:readable, isInt:readable */
 include('main\\statistics\\statistics_xxx.js');
 /* global _chart:readable */
 include('main\\statistics\\statistics_xxx_menu.js');
@@ -29,6 +29,7 @@ include('helpers\\helpers_xxx_properties.js');
 globProfiler.Print('helpers');
 
 let properties = {
+	drawMode: ['Draw mode: GDI (0), D2D (1)', 0, { func: isInt, range: [[0,1]] }],
 	background: ['Background options', JSON.stringify(_background.defaults()), { func: isJSON, forceDefaults: true }],
 	chart: ['Chart options', JSON.stringify(deepAssign()(
 		(new _chart).exportConfig(),
@@ -241,6 +242,9 @@ Object.keys(properties).forEach(p => properties[p].push(properties[p][1]));
 setProperties(properties, '', 0);
 properties = getPropertiesPairs(properties, '', 0);
 checkJsonProperties(properties);
+
+// GDI/D2D draw mode
+window.DrawMode = properties.drawMode[1];
 
 // Helpers
 const dynQueryMode = JSON.parse(properties.dynQueryMode[1]);

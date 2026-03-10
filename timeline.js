@@ -1,5 +1,5 @@
 ﻿'use strict';
-//26/02/26
+//08/03/26
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '2.5.0', features: { drag_n_drop: true, grab_focus: true } }); }
 
@@ -234,7 +234,7 @@ let properties = {
 	dataRefreshRate: ['Data refresh max rate (ms)', 250, { func: isIntInf, range: [[0, Infinity]] }],
 	filePaths: ['External database paths', JSON.stringify({
 		listenBrainzArtists: _foldPath(folders.data + 'listenbrainz_artists.json'),
-		searchByDistanceArtists: _foldPath(folders.data + 'searchByDistance_artists.json'),
+		musicMapArtists: _foldPath(folders.data + 'musicmap_artists.json'),
 		worldMapArtists: _foldPath(folders.data + 'worldMap.json'),
 		lastfmArtists: _foldPath(folders.data + 'lastfm_artists.json')
 	}), { func: isJSON, forceDefaults: true }],

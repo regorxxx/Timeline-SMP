@@ -436,7 +436,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 								if (input === null) { return; }
 								dataSource.sourceArg = input.split('|');
 							} else if ('panel' === option.sourceType) {
-								const input = Input.string('string', dataSource.sourceArg || '', 'Enter source panel name:\n\n• To get the name, go to the panel to be used as source\n• Press Shift + Windows + R. Click and choose \'configure panel\'\n• Paste the panel name or ID, at the top, into here\n• Edit source panel name if required\n• For more than one source panel, use pipe separator, for ex:\n\tPanel 1|Panel 2', 'Playlist sources', 'Panel 1|Panel 2', void (0)) || Input.lastInput;
+								const input = Input.string('string', dataSource.sourceArg || '', 'Enter source panel name:\n\n• To get the name, go to the panel to be used as source\n• Press Shift + Windows + R. Click and choose \'configure panel\'\n• Paste the panel name or ID, at the top, into here\n• Edit source panel name if required\n• For more than one source panel, use pipe separator, for ex:\n\tPanel 1|Panel 2\n\nThis will use third party compatible panels like Library-Tree-SMP selection as source.', 'Panel sources', 'Panel 1|Panel 2', void (0)) || Input.lastInput;
 								if (input === null) { return; }
 								dataSource.sourceArg = input.split('|');
 								this.panelCache.uuid.push(...dataSource.sourceArg);

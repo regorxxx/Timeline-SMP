@@ -1,5 +1,5 @@
 ﻿'use strict';
-//03/02/26
+//13/04/26
 
 /* exported onLbtnUpPoint, onLbtnUpSettings, onRbtnUpImportSettings */
 
@@ -153,7 +153,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 	const bListens = bHasY
 		? this.axis.y.tf === '#LISTENS#'
 		: false;
-	const bListensPerPeriod = bListens && bHasX && timePeriods.includes(this.axis.x.tf);
+	const bListensPerPeriod = bListens && bHasX && timePeriods.has(this.axis.x.tf);
 	const inputTF = (axis = 'x', bCopyCurrent = false) => {
 		axis = axis.toLowerCase();
 		if (bCopyCurrent) {
@@ -205,7 +205,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 				if (entry) { this.setData(entry); }
 			}
 		});
-		menu.newCheckMenuLast(() => list.filter(menu.isNotSeparator).findIndex((entry) => _qCond(entry.x) === this.axis.x.tf) === -1);
+		menu.newCheckMenuLast(() => !list.filter(menu.isNotSeparator).some((entry) => _qCond(entry.x) === this.axis.x.tf) );
 		menu.newSeparator(subMenu);
 		_createSubMenuEditEntries(menu, subMenu, {
 			name: 'Axis X TF entries',
@@ -237,7 +237,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 						}
 						const bListens = entry.y === '#LISTENS#';
 						const bProportional = entry.bProportional;
-						const bTfY = isNaN(entry.y);
+						const bTfY = Number.isNaN(Number(entry.y));
 						if (!bHasY || bListens || bListensPerPeriod || bProportional || bTfY) {
 							for (let key in groupBy) { groupBy[key] = null; }
 							this.saveDataSettings({ groupBy });
@@ -255,7 +255,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 				if (entry) { this.setData(entry); }
 			}
 		});
-		menu.newCheckMenuLast(() => list.filter(menu.isNotSeparator).findIndex((entry) => this.axis.y.tf === _qCond(entry.y) && this.axis.y.bProportional === entry.bProportional) === -1);
+		menu.newCheckMenuLast(() => !list.filter(menu.isNotSeparator).some((entry) => this.axis.y.tf === _qCond(entry.y) && this.axis.y.bProportional === entry.bProportional) );
 		menu.newSeparator(subMenu);
 		_createSubMenuEditEntries(menu, subMenu, {
 			name: 'Axis Y TF entries',
@@ -298,7 +298,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 				if (entry) { this.setData(entry); }
 			}
 		});
-		menu.newCheckMenuLast(() => bHasZ && list.filter(menu.isNotSeparator).findIndex((entry) => this.axis.z.tf === _qCond(entry.z)) === -1);
+		menu.newCheckMenuLast(() => bHasZ && !list.filter(menu.isNotSeparator).some((entry) => this.axis.z.tf === _qCond(entry.z)) );
 		menu.newSeparator(subMenu);
 		_createSubMenuEditEntries(menu, subMenu, {
 			name: 'Axis Z TF entries',
@@ -316,7 +316,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 	menu.newSeparator();
 	{	// Group by
 		const bProportional = bHasY ? this.axis.y.bProportional : false;
-		const bTfY = bHasY ? isNaN(this.axis.y.tf) : false;
+		const bTfY = bHasY ? Number.isNaN(Number(this.axis.y.tf)) : false;
 		const subMenu = menu.newMenu(
 			'Aggregate by', void (0),
 			!bHasY || bListens || bListensPerPeriod || bProportional || bTfY
@@ -347,7 +347,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 		});
 		menu.newSeparator(subMenu);
 		menu.newEntry({
-			menuName: subMenu, entryText: 'By TF...\t' + _b(groupBy.y !== null ? groupBy.y.cut(10) : ''), func: () => {
+			menuName: subMenu, entryText: 'By TF...\t' + _b(groupBy.y === null ? '' : groupBy.y.cut(10)), func: () => {
 				groupBy.y = Input.string('string', groupBy.y || '%ALBUM%', 'Input desired tag for aggregation:', 'Y-Axis label', '%ALBUM%') || Input.lastInput;
 				if (groupBy.y === null) { return; };
 				groupBy.yKey = Input.string('string', groupBy.yKey || 'Albums', 'Input the desired Y-Axis label:', 'Y-Axis label', 'Albums') || Input.lastInput;
@@ -372,7 +372,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 		menu.newCheckMenuLast(() => Object.values(groupBy).every((val) => val === null));
 	}
 	{	// Listens range
-		const subMenu = menu.newMenu('Time range', void (0), !bListens && !bListensPerPeriod ? MF_GRAYED : (timeRange.timePeriod !== Infinity ? MF_CHECKED : MF_STRING));
+		const subMenu = menu.newMenu('Time range', void (0), !bListens && !bListensPerPeriod ? MF_GRAYED : (timeRange.timePeriod === Infinity ? MF_STRING : MF_CHECKED));
 		menu.newEntry({ menuName: subMenu, entryText: 'Select time range:', flags: MF_GRAYED });
 		menu.newSeparator(subMenu);
 		const options = [
@@ -410,7 +410,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 		});
 		menu.newCheckMenuLast(() => {
 			const idx = options.findIndex((opt) => opt.timePeriod === timeRange.timePeriod && opt.timeKey === timeRange.timeKey);
-			return (idx !== -1 ? idx : timeRange.timePeriod === Infinity ? 0 : options.length);
+			return (idx === -1 ? timeRange.timePeriod === Infinity ? 0 : options.length : idx);
 		}, options.length + 2);
 	}
 	menu.newSeparator();
@@ -457,7 +457,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 		});
 		menu.newCheckMenuLast(() => {
 			const idx = options.findIndex((opt) => opt.sourceType === dataSource.sourceType);
-			return (idx !== -1 ? idx : 0);
+			return (idx === -1 ? 0 : idx);
 		}, options);
 	}
 	{	// Data filtering
@@ -483,7 +483,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 					dataSource.removeDuplicatesOptions = { ...dataSource.removeDuplicatesOptions, ...opt.removeDuplicatesOptions };
 					this.saveDataSettings({ dataSource });
 					this.setData(dataSource);
-				}, flags: !dataSource.bRemoveDuplicates ? MF_GRAYED : MF_STRING
+				}, flags: dataSource.bRemoveDuplicates ? MF_STRING : MF_GRAYED
 			});
 			menu.newCheckMenuLast(() => Object.keys(opt.removeDuplicatesOptions).every((key) =>
 				JSON.stringify(opt.removeDuplicatesOptions[key]) === JSON.stringify(dataSource.removeDuplicatesOptions[key])
@@ -496,7 +496,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 				if (input === null) { return; }
 				this.saveDataSettings({ dataSource });
 				this.setData(dataSource);
-			}, flags: !dataSource.bRemoveDuplicates ? MF_GRAYED : MF_STRING
+			}, flags: dataSource.bRemoveDuplicates ? MF_STRING : MF_GRAYED
 		});
 	}
 	{	// Data filtering
@@ -525,7 +525,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 				this.setData({ query: input });
 			}
 		});
-		menu.newCheckMenuLast(() => list.filter(menu.isNotSeparator).findIndex((entry) => entry.query === properties.dataQuery[1]) === -1);
+		menu.newCheckMenuLast(() => !list.filter(menu.isNotSeparator).some((entry) => entry.query === properties.dataQuery[1]) );
 		menu.newSeparator(subMenu);
 		_createSubMenuEditEntries(menu, subMenu, {
 			name: 'Query entries',
@@ -603,7 +603,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 				dynQueryMode.preferPlayback = !dynQueryMode.preferPlayback;
 				properties.dynQueryMode[1] = JSON.stringify(dynQueryMode);
 				overwriteProperties(properties);
-			}, flags: !dynQueryMode.onPlayback ? MF_GRAYED : MF_STRING
+			}, flags: dynQueryMode.onPlayback ? MF_STRING : MF_GRAYED
 		});
 		menu.newCheckMenuLast(() => dynQueryMode.onPlayback && dynQueryMode.preferPlayback);
 		menu.newEntry({

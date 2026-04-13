@@ -282,7 +282,7 @@ const getTimeRange = (properties) => {
 	timeRange.toDate = now;
 	return timeRange;
 };
-const timePeriods = ['#DAY#', '#WEEK#', '#MONTH#', '#YEAR#'];
+const timePeriods = new Set(['#DAY#', '#WEEK#', '#MONTH#', '#YEAR#']);
 
 // Info Popup
 if (!properties.firstPopup[1]) {
@@ -416,9 +416,9 @@ const defaultConfig = deepAssign()(
 										else if (!background.useCoverColors) {
 											background.changeConfig({
 												bRepaint: false, callbackArgs: { bSaveProperties: true },
-												config: !background.useCover
-													? { coverMode: background.getDefaultCoverMode(), coverModeOptions: { alpha: 0, bProcessColors: true } }
-													: { coverModeOptions: { bProcessColors: true } },
+												config: background.useCover
+													? { coverModeOptions: { bProcessColors: true } }
+													: { coverMode: background.getDefaultCoverMode(), coverModeOptions: { alpha: 0, bProcessColors: true } },
 											});
 										}
 									}
@@ -495,7 +495,7 @@ newConfig.forEach((row) => row.forEach((config) => {
 	const bListens = bHasY
 		? config.axis.y.tf === '#LISTENS#'
 		: false;
-	const bListensPerPeriod = bListens && bHasX && timePeriods.includes(config.axis.x.tf);
+	const bListensPerPeriod = bListens && bHasX && timePeriods.has(config.axis.x.tf);
 	const bHasZ = Object.hasOwn(config.axis.z, 'tf') && config.axis.z.tf.length && !bListensPerPeriod;
 	const bAsync = properties.bAsync[1];
 	if (bAsync || defaultConfig.configuration.bLoadAsyncData) {
@@ -576,7 +576,7 @@ charts.forEach((/** @type {_chart} */ chart, i) => {
 			: bHasTfY
 				? this.axis.y.tf === '#LISTENS#'
 				: false;
-		const bListensPerPeriod = bListens && timePeriods.includes(bHasX ? entry.x : (bHasTfX ? this.axis.x.tf : ''));
+		const bListensPerPeriod = bListens && timePeriods.has(bHasX ? entry.x : (bHasTfX ? this.axis.x.tf : ''));
 		const bHasTfZ = Object.hasOwn(this.axis.z, 'tf') && this.axis.z.tf.length && !bListensPerPeriod;
 		const bHasZ = Object.hasOwn(entry, 'z') && entry.z.length && !bListensPerPeriod;
 		const dataSource = JSON.parse(this.properties.dataSource[1]);
@@ -632,7 +632,7 @@ charts.forEach((/** @type {_chart} */ chart, i) => {
 				queryHandle: getSel(),
 				bProportional: bHasY ? entry.bProportional : dataOpts.y.bProportional,
 				removeDuplicatesOptions: {
-					...(dataSource.removeDuplicatesOptions || {}),
+					...dataSource.removeDuplicatesOptions,
 					...(Object.hasOwn(entry, 'removeDuplicatesOptions') ? entry.removeDuplicatesOptions : {})
 				},
 				filePaths
@@ -1045,10 +1045,10 @@ addEventListener('on_notify_data', (name, info) => {
 		}
 		// External integration
 		case window.ScriptInfo.Name + ': panel tracks': { // { window?: string[], chart?: string[], handleList: FbMetadbHandleList, uuid: string }
-			if (info && info.window && !info.window.some((v) => v === window.Name)) { break; }
+			if (info && info.window && !info.window.includes(window.Name)) { break; }
 			if (!info.handleList) { return; }
 			charts.forEach((chart) => {
-				if (info && info.chart && !info.chart.some((v) => v === chart.title)) { return; }
+				if (info && info.chart && !info.chart.includes(chart.title)) { return; }
 				if (!chart.panelCache.uuid.includes(info.uuid)) { return; }
 				let bChanged = false;
 				chart.panelCache.uuid.forEach(v => {
@@ -1082,10 +1082,10 @@ addEventListener('on_notify_data', (name, info) => {
 			break;
 		}
 		case window.ScriptInfo.Name + ': add tracks': { // { window?: string[], chart?: string[], bAdd?: boolean, handleList: FbMetadbHandleList }
-			if (info && info.window && !info.window.some((v) => v === window.Name)) { break; }
+			if (info && info.window && !info.window.includes(window.Name)) { break; }
 			if (!info.handleList) { return; }
 			charts.forEach((chart) => {
-				if (info && info.chart && !info.chart.some((v) => v === chart.title)) { return; }
+				if (info && info.chart && !info.chart.includes(chart.title)) { return; }
 				let sourceArg = new FbMetadbHandleList(info.handleList);
 				if (sourceArg && sourceArg.Count) {
 					sourceArg.Sort();
@@ -1102,18 +1102,18 @@ addEventListener('on_notify_data', (name, info) => {
 			break;
 		}
 		case window.ScriptInfo.Name + ': refresh data': { // { window?: string[], chart?: string[] }
-			if (info && info.window && !info.window.some((v) => v === window.Name)) { break; }
+			if (info && info.window && !info.window.includes(window.Name)) { break; }
 			charts.forEach((chart) => {
-				if (info && info.chart && !info.chart.some((v) => v === chart.title)) { return; }
+				if (info && info.chart && !info.chart.includes(chart.title)) { return; }
 				chart.setData();
 			});
 			break;
 		}
 		case window.ScriptInfo.Name + ': set data by entry name': { // { window?: string[], chart?: string[], xEntry?: string, yEntry?: string, zEntry?: string }
-			if (info && info.window && !info.window.some((v) => v === window.Name)) { break; }
+			if (info && info.window && !info.window.includes(window.Name)) { break; }
 			if (info) {
 				charts.forEach((chart) => {
-					if (info.chart && !info.chart.some((v) => v === chart.title)) { return; }
+					if (info.chart && !info.chart.includes(chart.title)) { return; }
 					let entry = {};
 					if (info.xEntry) {
 						const entries = JSON.parse(properties.xEntries[1]);
@@ -1135,10 +1135,10 @@ addEventListener('on_notify_data', (name, info) => {
 			break;
 		}
 		case window.ScriptInfo.Name + ': set data filter by name': { // { window?: string[], chart?: string[], filterEntry: string, bSaveProperties?: boolean }
-			if (info && info.window && !info.window.some((v) => v === window.Name)) { break; }
+			if (info && info.window && !info.window.includes(window.Name)) { break; }
 			if (info && info.filterEntry) {
 				charts.forEach((chart) => {
-					if (info.chart && !info.chart.some((v) => v === chart.title)) { return; }
+					if (info.chart && !info.chart.includes(chart.title)) { return; }
 					const entries = JSON.parse(chart.properties.queryEntries[1]);
 					const entry = entries.find((entry) => entry.name === info.filterEntry);
 					if (entry) {
@@ -1150,10 +1150,10 @@ addEventListener('on_notify_data', (name, info) => {
 			break;
 		}
 		case window.ScriptInfo.Name + ': set data aggregation': { // { window?: string[], chart?: string[], groupBy: {y?: string, yKey?: string }, bSaveProperties?: boolean }
-			if (info && info.window && !info.window.some((v) => v === window.Name)) { break; }
+			if (info && info.window && !info.window.includes(window.Name)) { break; }
 			if (info && info.groupBy) {
 				charts.forEach((chart) => {
-					if (info.chart && !info.chart.some((v) => v === chart.title)) { return; }
+					if (info.chart && !info.chart.includes(chart.title)) { return; }
 					const groupBy = JSON.parse(chart.properties.groupBy[1]);
 					for (let key in info.groupBy) { groupBy[key] = info.groupBy[key]; }
 					if (info.bSaveProperties) { chart.saveDataSettings({ groupBy }); }
@@ -1164,16 +1164,16 @@ addEventListener('on_notify_data', (name, info) => {
 			break;
 		}
 		case window.ScriptInfo.Name + ': set data time range': { // { window?: string[], chart?: string[], timeRange: { timePeriod?: number, timeKey?: string }, bSaveProperties?: boolean }
-			if (info && info.window && !info.window.some((v) => v === window.Name)) { break; }
+			if (info && info.window && !info.window.includes(window.Name)) { break; }
 			if (info && info.timeRange) {
 				charts.forEach((chart) => {
-					if (info.chart && !info.chart.some((v) => v === chart.title)) { return; }
+					if (info.chart && !info.chart.includes(chart.title)) { return; }
 					const bHasX = Object.hasOwn(chart.axis.x, 'tf') && chart.axis.x.tf.length;
 					const bHasY = Object.hasOwn(chart.axis.y, 'tf') && chart.axis.y.tf.length;
 					const bListens = bHasY
 						? chart.axis.y.tf === '#LISTENS#'
 						: false;
-					const bListensPerPeriod = bListens && bHasX && timePeriods.includes(chart.axis.x.tf);
+					const bListensPerPeriod = bListens && bHasX && timePeriods.has(chart.axis.x.tf);
 					if (!bListens && !bListensPerPeriod) { return; }
 					const timeRange = {};
 					if (Object.hasOwn(info.timeRange, 'timePeriod')) { timeRange.timePeriod = info.timeRange.timePeriod; }
@@ -1185,11 +1185,11 @@ addEventListener('on_notify_data', (name, info) => {
 			break;
 		}
 		case window.ScriptInfo.Name + ': set data source': { // { window?: string[], chart?: string[], dataSource: { sourceType?: string, sourceArg?: string[]|FbMetadbHandleList, bRemoveDuplicates?: boolean }, bSaveProperties?: boolean }
-			if (info && info.window && !info.window.some((v) => v === window.Name)) { break; }
+			if (info && info.window && !info.window.includes(window.Name)) { break; }
 			if (info && info.dataSource) {
 				if (!['library', 'activePlaylist', 'playingPlaylist', 'playlist', 'handleList', 'panel'].includes(info.sourceType)) { return; }
 				charts.forEach((chart) => {
-					if (info && info.chart && !info.chart.some((v) => v === chart.title)) { return; }
+					if (info.chart && !info.chart.includes(chart.title)) { return; }
 					const dataSource = {};
 					chart.dragDropCache.RemoveAll();
 					if (Object.hasOwn(info.dataSource, 'sourceType')) { dataSource.sourceType = info.dataSource.sourceType; }
@@ -1211,12 +1211,12 @@ addEventListener('on_notify_data', (name, info) => {
 			break;
 		}
 		case window.ScriptInfo.Name + ': set data': { // { window?: string[], chart?: string[], entry: object, bSaveProperties?: boolean }
-			if (info && info.window && !info.window.some((v) => v === window.Name)) { break; }
+			if (info && info.window && !info.window.includes(window.Name)) { break; }
 			if (info && info.entry) {
 				const entry = clone(info.entry);
 				if (Object.hasOwn(entry, 'dataSource')) { for (let key in entry.dataSource) { entry[key] = entry.dataSource[key]; } }
 				charts.forEach((chart) => {
-					if (info.chart && !info.chart.some((v) => v === chart.title)) { return; }
+					if (info.chart && !info.chart.includes(chart.title)) { return; }
 					if (info.bSaveProperties) { chart.saveDataSettings(entry); }
 					chart.setData(entry);
 				});
@@ -1224,21 +1224,21 @@ addEventListener('on_notify_data', (name, info) => {
 			break;
 		}
 		case window.ScriptInfo.Name + ': set chart type': { // { window?: string[], chart?: string[], type: string, bSaveProperties?: boolean }
-			if (info && info.window && !info.window.some((v) => v === window.Name)) { break; }
+			if (info && info.window && !info.window.includes(window.Name)) { break; }
 			if (info && info.type) {
 				charts.forEach((chart) => {
-					if (info.chart && !info.chart.some((v) => v === chart.title)) { return; }
+					if (info.chart && !info.chart.includes(chart.title)) { return; }
 					this.changeConfig({ graph: { type: info.type }, callbackArgs: { bSaveProperties: !!info.bSaveProperties } });
 				});
 			}
 			break;
 		}
 		case window.ScriptInfo.Name + ': set chart sorting': { // { window?: string[], chart?: string[], sort: {x?: string, y?: string, z?: string, my?: string, mz?:string}, bSaveProperties?: boolean }
-			if (info && info.window && !info.window.some((v) => v === window.Name)) { break; }
+			if (info && info.window && !info.window.includes(window.Name)) { break; }
 			if (info && info.sort) {
 				charts.forEach((chart) => {
 					if (chart.dataManipulation.distribution !== null) { return; }
-					if (info.chart && !info.chart.some((v) => v === chart.title)) { return; }
+					if (info.chart && !info.chart.includes(chart.title)) { return; }
 					const sort = {};
 					const allowed = {
 						'*': ['natural', 'reverse'],
@@ -1259,20 +1259,20 @@ addEventListener('on_notify_data', (name, info) => {
 			break;
 		}
 		case window.ScriptInfo.Name + ': set chart slice': { // { window?: string[], chart?: string[], slice: [number, number], bSaveProperties?: boolean }
-			if (info && info.window && !info.window.some((v) => v === window.Name)) { break; }
+			if (info && info.window && !info.window.includes(window.Name)) { break; }
 			if (info && info.slice && Array.isArray(info.slice) && info.slice.length === 2) {
 				charts.forEach((chart) => {
-					if (info.chart && !info.chart.some((v) => v === chart.title)) { return; }
+					if (info.chart && !info.chart.includes(chart.title)) { return; }
 					this.changeConfig({ dataManipulation: { slice: [...info.slice] }, callbackArgs: { bSaveProperties: !!info.bSaveProperties } });
 				});
 			}
 			break;
 		}
 		case window.ScriptInfo.Name + ': set chart filter': { // { window?: string[], chart?: string[], filter?: Function|string, mFilter?: boolean, bSaveProperties?: boolean }
-			if (info && info.window && !info.window.some((v) => v === window.Name)) { break; }
+			if (info && info.window && !info.window.includes(window.Name)) { break; }
 			if (info && (Object.hasOwn(info, 'filter') || Object.hasOwn(info, 'mFilter'))) {
 				charts.forEach((chart) => {
-					if (info.chart && !info.chart.some((v) => v === chart.title)) { return; }
+					if (info.chart && !info.chart.includes(chart.title)) { return; }
 					const dataManipulation = {};
 					if (Object.hasOwn(info, 'filter')) { dataManipulation.filter = typeof info.filter === 'function' ? chart.serializeFunction(info.filter) : info.filter; }
 					if (Object.hasOwn(info, 'mFilter')) { dataManipulation.mFilter = info.mFilter; }
@@ -1282,10 +1282,10 @@ addEventListener('on_notify_data', (name, info) => {
 			break;
 		}
 		case window.ScriptInfo.Name + ': set chart settings': { // { window?: string[], chart?: string[], settings: object, bSaveProperties?: boolean }
-			if (info && info.window && !info.window.some((v) => v === window.Name)) { break; }
+			if (info && info.window && !info.window.includes(window.Name)) { break; }
 			if (info && info.settings) {
 				charts.forEach((chart) => {
-					if (info.chart && !info.chart.some((v) => v === chart.title)) { return; }
+					if (info.chart && !info.chart.includes(chart.title)) { return; }
 					const settings = clone(info.settings);
 					if (Object.hasOwn(settings, 'dataManipulation') && Object.hasOwn(settings.dataManipulation, 'filter') && typeof settings.dataManipulation.filter === 'function') {
 						settings.dataManipulation.filter = chart.serializeFunction(settings.dataManipulation.filter);

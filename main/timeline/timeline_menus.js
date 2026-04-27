@@ -672,7 +672,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 	});
 	menu.newSeparator();
 	{	// Readmes
-		const subMenu = menu.newMenu('Readmes');
+		const subMenu = menu.newMenu('Help');
 		(readmes || [
 			{ path: folders.xxx + 'helpers\\readme\\timeline.txt', name: window.ScriptInfo.Name },
 			{ path: folders.xxx + 'helpers\\readme\\timeline_dynamic_query.txt', name: 'Dynamic queries' }

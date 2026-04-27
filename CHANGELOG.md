@@ -43,6 +43,7 @@
 - UI: improvements on dynamic colors handling related to K-means++ with OKLAB color space when using JSplitter v3.7.10+ or v4.1.0+ as JS host. See [here](https://hydrogenaudio.org/index.php/topic,126743.msg1078415.html#msg1078415).
 - Helpers: support for long paths (>260 chars) in multiple internal file handling functions.
 - Readmes: general cleanup.
+- Readmes: readmes submenus are now renamed to 'Help' in all instances.
 ### Removed
 ### Fixed
 - UI: cursor is no longer changed on single click over point, only while dragging.

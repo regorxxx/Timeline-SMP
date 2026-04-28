@@ -1,8 +1,6 @@
 # Timeline-SMP
 [![version][version_badge]][changelog]
-[![CodeFactor][codefactor_badge]](https://www.codefactor.io/repository/github/regorxxx/Timeline-SMP/overview/main)
-[![CodacyBadge][codacy_badge]](https://www.codacy.com/gh/regorxxx/Timeline-SMP/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=regorxxx/Timeline-SMP&amp;utm_campaign=Badge_Grade)
-![GitHub](https://img.shields.io/github/license/regorxxx/Timeline-SMP)  
+![GitHub](https://img.shields.io/badge/license-NON--AI_AGPL--3.0-blue)  
 A [foobar2000](https://www.foobar2000.org/) interactive Timeline 
 [Spider Monkey Panel](https://theqwertiest.github.io/foo_spider_monkey_panel/)/[JSplitter](https://foobar2000.ru/forum/viewtopic.php?t=6378) of your library. 
 Configurable by Title Format, lets you generate playlists based on selection. Based on [Statistics-Framework-SMP](https://regorxxx.github.io/foobar2000-Framework-SMP.github.io/scripts/statistics-framework-smp/)

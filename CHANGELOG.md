@@ -2,6 +2,7 @@
 
 ## [Table of Contents]
 - [Unreleased](#unreleased)
+- [3.0.0](#300---2026-04-28)
 - [2.5.0](#250---2026-01-12)
 - [2.4.0](#240---2025-12-23)
 - [2.3.0](#230---2025-12-12)
@@ -25,6 +26,12 @@
 - [0.6.0](#060---2023-11-15)
 
 ## [Unreleased][]
+### Added
+### Changed
+### Removed
+### Fixed
+
+## [3.0.0] - 2026-04-28
 ### Added
 - UI: new setting to show/hide axis' ticks.
 - UI: new setting to merge X-Y labels on some chart types (like 'Bars (horizontal)').
@@ -395,7 +402,8 @@
 ### Removed
 ### Fixed
 
-[Unreleased]: ../../compare/v2.5.0...HEAD
+[Unreleased]: ../../compare/v3.0.0...HEAD
+[3.0.0]: ../../compare/v2.5.0...v3.0.0
 [2.5.0]: ../../compare/v2.4.0...v2.5.0
 [2.4.0]: ../../compare/v2.3.0...v2.4.0
 [2.3.0]: ../../compare/v2.2.1...v2.3.0

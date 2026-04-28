@@ -15,6 +15,7 @@ Configurable by Title Format, lets you generate playlists based on selection. Ba
  	- Configurable sources: library, active/now playing playist, selectable playlists (by name).
    	- Filtering with queries.
 	- Highly configurable chart and data manipulation.
+- D2D support (requires JSplitter).
 - Asynchronous data calculations (UI is not blocked).
 - Point statistics.
 - Scroll with buttons and mouse dragging.

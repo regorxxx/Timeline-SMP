@@ -1,5 +1,5 @@
 ﻿'use strict';
-//28/04/26
+//14/05/26
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '3.0.0', features: { drag_n_drop: true, grab_focus: true } }); }
 
@@ -7,7 +7,7 @@ if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author
 window.DrawMode = Math.max(Math.min(window.GetProperty('Draw mode: GDI (0), D2D (1)', 0), 1), 0);
 
 include('helpers\\helpers_xxx.js');
-/* global globTags:readable, globQuery:readable, globProfiler:readable, folders:readable, VK_CONTROL:readable, clone:readable, VK_ALT:readable, dropEffect:readable, MK_CONTROL:readable, VK_SHIFT:readable */
+/* global globTags:readable, globQuery:readable, globProfiler:readable, folders:readable, VK_CONTROL:readable, clone:readable, VK_ALT:readable, dropEffect:readable, VK_SHIFT:readable */
 include('helpers\\helpers_xxx_file.js');
 /* global _open:readable, utf8:readable, _save:readable, _foldPath:readable */
 include('helpers\\helpers_xxx_flags.js');
@@ -1313,7 +1313,7 @@ addEventListener('on_drag_over', (action, x, y, mask) => {
 	if (action.Effect === dropEffect.none || (action.Effect & dropEffect.link) === dropEffect.link) { action.Effect = dropEffect.none; return; }
 	charts.some((chart) => {
 		if (chart.move(x, y, mask)) {
-			if ((mask & dropMask.ctrl) === dropMask.ctrl && chart.dragDropCache.Count) { action.Effect = dropEffect.copy; action.Text = 'Add tracks to chart'; } // Mask is mouse + key
+			if (dropMask.has(mask, 'ctrl') && chart.dragDropCache.Count) { action.Effect = dropEffect.copy; action.Text = 'Add tracks to chart'; }
 			else { action.Effect = dropEffect.move; action.Text = 'Add tracks to chart (replace)'; }
 			return true;
 		}
@@ -1328,7 +1328,7 @@ addEventListener('on_drag_drop', (action, x, y, mask) => {
 			let sourceArg = fb.GetSelections(1);
 			if (sourceArg && sourceArg.Count) {
 				sourceArg.Sort();
-				if ((mask & MK_CONTROL) === MK_CONTROL) {
+				if (dropMask.has(mask, 'ctrl')) {
 					chart.dragDropCache.MakeUnion(sourceArg);
 					sourceArg = chart.dragDropCache;
 				} else {

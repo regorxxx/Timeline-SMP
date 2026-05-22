@@ -1,5 +1,5 @@
 ﻿'use strict';
-//14/05/26
+//22/05/26
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '3.0.0', features: { drag_n_drop: true, grab_focus: true } }); }
 
@@ -12,8 +12,10 @@ include('helpers\\helpers_xxx_file.js');
 /* global _open:readable, utf8:readable, _save:readable, _foldPath:readable */
 include('helpers\\helpers_xxx_flags.js');
 /* global VK_LWIN:readable, dropMask:readable */
+include('helpers\\helpers_xxx_prototypes.js');
+/* global debounce:readable, isIntInf:readable, isInt:readable */
 include('helpers\\helpers_xxx_prototypes_smp.js');
-/* global extendGR:readable, debounce:readable, isIntInf:readable, isInt:readable */
+/* global extendGR:readable, checkCompatible:readable */
 include('main\\statistics\\statistics_xxx.js');
 /* global _chart:readable */
 include('main\\statistics\\statistics_xxx_menu.js');
@@ -30,6 +32,7 @@ include('helpers\\helpers_xxx_properties.js');
 /* global setProperties:readable, getPropertiesPairs:readable, overwriteProperties:readable, checkJsonProperties:readable */
 
 globProfiler.Print('helpers');
+checkCompatible();
 
 let properties = {
 	drawMode: ['Draw mode: GDI (0), D2D (1)', 0, { func: isInt, range: [[0,1]] }],

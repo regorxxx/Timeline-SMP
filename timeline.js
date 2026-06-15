@@ -1,5 +1,5 @@
 ﻿'use strict';
-//22/05/26
+//12/06/26
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '3.0.0', features: { drag_n_drop: true, grab_focus: true } }); }
 
@@ -298,7 +298,7 @@ if (!properties.firstPopup[1]) {
 
 // Update check
 if (properties.bAutoUpdateCheck[1]) {
-	include('helpers\\helpers_xxx_web_update.js');
+	include('helpers\\helpers_xxx_web.js');
 	/* global checkUpdate:readable */
 	setTimeout(checkUpdate, 120000, { bDownload: globSettings.bAutoUpdateDownload, bOpenWeb: globSettings.bAutoUpdateOpenWeb });
 }

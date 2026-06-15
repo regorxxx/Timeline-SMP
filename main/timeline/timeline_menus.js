@@ -1,5 +1,5 @@
 ﻿'use strict';
-//13/04/26
+//12/06/26
 
 /* exported onLbtnUpPoint, onLbtnUpSettings, onRbtnUpImportSettings */
 
@@ -648,7 +648,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 					properties.bAutoUpdateCheck[1] = !properties.bAutoUpdateCheck[1];
 					overwriteProperties(properties);
 					if (properties.bAutoUpdateCheck[1]) {
-						if (typeof checkUpdate === 'undefined') { include('..\\..\\helpers\\helpers_xxx_web_update.js'); }
+						if (typeof checkUpdate === 'undefined') { include('..\\..\\helpers\\helpers_xxx_web.js'); }
 						setTimeout(checkUpdate, 1000, { bDownload: globSettings.bAutoUpdateDownload, bOpenWeb: globSettings.bAutoUpdateOpenWeb, bDisableWarning: false });
 					}
 				}
@@ -657,7 +657,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 			menu.newSeparator(subMenuTwo);
 			menu.newEntry({
 				menuName: subMenuTwo, entryText: 'Check for updates...', func: () => {
-					if (typeof checkUpdate === 'undefined') { include('..\\..\\helpers\\helpers_xxx_web_update.js'); }
+					if (typeof checkUpdate === 'undefined') { include('..\\..\\helpers\\helpers_xxx_web.js'); }
 					checkUpdate({ bDownload: globSettings.bAutoUpdateDownload, bOpenWeb: globSettings.bAutoUpdateOpenWeb, bDisableWarning: false })
 						.then((bFound) => !bFound && fb.ShowPopupMessage('No updates found.', window.FullPanelName + ': Update check'));
 				}
@@ -734,7 +734,7 @@ function onRbtnUpImportSettings(properties = this.properties || {}) {
 				properties.bAutoUpdateCheck[1] = !properties.bAutoUpdateCheck[1];
 				overwriteProperties(properties);
 				if (properties.bAutoUpdateCheck[1]) {
-					if (typeof checkUpdate === 'undefined') { include('..\\..\\helpers\\helpers_xxx_web_update.js'); }
+					if (typeof checkUpdate === 'undefined') { include('..\\..\\helpers\\helpers_xxx_web.js'); }
 					setTimeout(checkUpdate, 1000, { bDownload: globSettings.bAutoUpdateDownload, bOpenWeb: globSettings.bAutoUpdateOpenWeb, bDisableWarning: false });
 				}
 			}
@@ -743,7 +743,7 @@ function onRbtnUpImportSettings(properties = this.properties || {}) {
 		menu.newSeparator(subMenuTwo);
 		menu.newEntry({
 			menuName: subMenuTwo, entryText: 'Check for updates...', func: () => {
-				if (typeof checkUpdate === 'undefined') { include('..\\..\\helpers\\helpers_xxx_web_update.js'); }
+				if (typeof checkUpdate === 'undefined') { include('..\\..\\helpers\\helpers_xxx_web.js'); }
 				checkUpdate({ bDownload: globSettings.bAutoUpdateDownload, bOpenWeb: globSettings.bAutoUpdateOpenWeb, bDisableWarning: false })
 					.then((bFound) => !bFound && fb.ShowPopupMessage('No updates found.', window.FullPanelName + ': Update check'));
 			}

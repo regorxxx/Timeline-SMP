@@ -1,7 +1,7 @@
 ﻿'use strict';
-//12/06/26
+//24/08/26
 
-if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '3.0.0', features: { drag_n_drop: true, grab_focus: true } }); }
+if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '3.1.0', features: { drag_n_drop: true, grab_focus: true } }); }
 
 // GDI/D2D draw mode
 window.DrawMode = Math.max(Math.min(window.GetProperty('Draw mode: GDI (0), D2D (1)', 0), 1), 0);
@@ -16,6 +16,8 @@ include('helpers\\helpers_xxx_prototypes.js');
 /* global debounce:readable, isIntInf:readable, isInt:readable */
 include('helpers\\helpers_xxx_prototypes_smp.js');
 /* global extendGR:readable, checkCompatible:readable */
+include('helpers\\callbacks_xxx.js');
+/* global runDelayedEventListeners:readable*/
 include('main\\statistics\\statistics_xxx.js');
 /* global _chart:readable */
 include('main\\statistics\\statistics_xxx_menu.js');
@@ -242,7 +244,8 @@ let properties = {
 		lastfmArtists: _foldPath(folders.data + 'lastfm_artists.json')
 	}), { func: isJSON, forceDefaults: true }],
 	bOnNotifyColors: ['Adjust colors on panel notify', true, { func: isBoolean }],
-	bNotifyColors: ['Notify colors to other panels', false, { func: isBoolean }]
+	bNotifyColors: ['Notify colors to other panels', false, { func: isBoolean }],
+	bProcessNotVisible: ['Process panel while not visible', true, { func: isBoolean }]
 };
 Object.keys(properties).forEach(p => properties[p].push(properties[p][1]));
 setProperties(properties, '', 0);
@@ -862,32 +865,33 @@ const refreshData = properties.dataRefreshRate[1]
 			background.updateImageBg();
 		}
 	};
-	['on_item_focus_change', 'on_selection_changed', 'on_playlists_changed', 'on_playlist_items_added', 'on_playlist_items_removed', 'on_playlist_switch'].forEach((e) => addEventListener(e, callback));
+	['on_item_focus_change', 'on_selection_changed', 'on_playlists_changed', 'on_playlist_items_added', 'on_playlist_items_removed', 'on_playlist_switch'].forEach((e) => addEventListener(e, callback, true, !charts.every((chart) => chart.properties.bProcessNotVisible[1])));
 
 	addEventListener('on_playback_stop', (reason) => {
 		if (reason !== 2) { // Invoked by user or Starting another track
 			if (background.useCover && background.coverModeOptions.bNowPlaying) { background.updateImageBg(); }
 		}
-	});
+	}, true, !charts.every((chart) => chart.properties.bProcessNotVisible[1]));
 
 	addEventListener('on_playback_new_track', () => {
 		if (background.useCover) { background.updateImageBg(); }
-	});
+	}, true, !charts.every((chart) => chart.properties.bProcessNotVisible[1]));
 
 	addEventListener('on_colours_changed', () => {
 		background.colorsChanged();
-	});
+	}, true, !charts.every((chart) => chart.properties.bProcessNotVisible[1]));
 }
 
 addEventListener('on_paint', (gr) => {
 	if (!window.ID) { return; }
 	if (!window.Width || !window.Height) { return; }
+	if (!charts.every((chart) => chart.properties.bProcessNotVisible[1])) { runDelayedEventListeners(); }
 	if (globSettings.bDebugPaint) { extendGR(gr, { Repaint: true }); }
 	background.paint(gr);
 	charts.forEach((chart) => { chart.paint(gr); });
 	if (window.highlight) { extendGR(gr, { Highlight: true }); }
 	if (window.debugPainting) { window.drawDebugRectAreas(gr); }
-});
+}, true, !charts.every((chart) => chart.properties.bProcessNotVisible[1]));
 
 addEventListener('on_size', (width, height) => {
 	if (!window.ID) { return; }
@@ -902,7 +906,7 @@ addEventListener('on_size', (width, height) => {
 			nCharts[i][j].changeConfig({ x, y, w, h, bPaint: false });
 		}
 	}
-});
+}, true, !charts.every((chart) => chart.properties.bProcessNotVisible[1]));
 
 addEventListener('on_mouse_move', (x, y, mask) => {
 	if (!window.ID) { return; }
@@ -919,12 +923,12 @@ addEventListener('on_mouse_move', (x, y, mask) => {
 	} else {
 		charts.some((chart) => chart.move(x, y, mask));
 	}
-});
+}, true, !charts.every((chart) => chart.properties.bProcessNotVisible[1]));
 
 addEventListener('on_mouse_leave', () => {
 	charts.forEach((chart) => { chart.leave(); });
 	background.leave();
-});
+}, true, !charts.every((chart) => chart.properties.bProcessNotVisible[1]));
 
 addEventListener('on_mouse_rbtn_up', (x, y, mask) => {
 	if (utils.IsKeyPressed(VK_CONTROL) && utils.IsKeyPressed(VK_LWIN)) {
@@ -932,22 +936,22 @@ addEventListener('on_mouse_rbtn_up', (x, y, mask) => {
 	}
 	charts.some((chart) => chart.rbtnUp(x, y, mask));
 	return true; // left shift + left windows key will bypass this callback and will open default context menu.
-});
+}, true, !charts.every((chart) => chart.properties.bProcessNotVisible[1]));
 
 addEventListener('on_mouse_lbtn_up', (x, y, mask) => {
 	if (!window.ID) { return; }
 	charts.some((chart) => chart.lbtnUp(x, y, mask));
-});
+}, true, !charts.every((chart) => chart.properties.bProcessNotVisible[1]));
 
 addEventListener('on_mouse_lbtn_down', (x, y, mask) => {
 	if (!window.ID) { return; }
 	charts.some((chart) => chart.lbtnDown(x, y, mask));
-});
+}, true, !charts.every((chart) => chart.properties.bProcessNotVisible[1]));
 
 addEventListener('on_mouse_lbtn_dblclk', (x, y, mask) => {
 	if (!window.ID) { return; }
 	charts.some((chart) => chart.lbtnDblClk(x, y, mask));
-});
+}, true, !charts.every((chart) => chart.properties.bProcessNotVisible[1]));
 
 addEventListener('on_mouse_wheel', (step) => {
 	if (!window.ID) { return; }
@@ -956,7 +960,7 @@ addEventListener('on_mouse_wheel', (step) => {
 		else { charts.some((chart) => chart.wheelResize(step, void (0), { bSaveProperties: true })); }
 	} else if (utils.IsKeyPressed(VK_SHIFT)) { background.cycleArtAsync(step); }
 	else { charts.some((chart) => chart.wheel(step)); }
-});
+}, true, !charts.every((chart) => chart.properties.bProcessNotVisible[1]));
 
 addEventListener('on_mouse_wheel_h', (step) => {
 	if (!window.ID) { return; }
@@ -968,51 +972,51 @@ addEventListener('on_mouse_wheel_h', (step) => {
 			}
 		}
 	});
-});
+}, true, !charts.every((chart) => chart.properties.bProcessNotVisible[1]));
 
 addEventListener('on_key_down', (vKey) => {
 	if (!window.ID) { return; }
 	charts.some((chart) => chart.keyDown(vKey));
-});
+}, true, !charts.every((chart) => chart.properties.bProcessNotVisible[1]));
 
 addEventListener('on_key_up', (vKey) => {
 	if (!window.ID) { return; }
 	charts.some((chart) => chart.keyUp(vKey));
-});
+}, true, !charts.every((chart) => chart.properties.bProcessNotVisible[1]));
 
 addEventListener('on_playback_new_track', () => { // To show playing now playlist indicator...
 	if (!window.ID) { return; }
 	if (charts.some((chart) => chart.properties.bAutoData[1])) { refreshData(plman.PlayingPlaylist, 'on_playback_new_track'); }
 	if (dynQueryMode.onPlayback) { refreshData(plman.PlayingPlaylist, 'on_playback_new_track_dynQuery'); }
-});
+}, true, !charts.every((chart) => chart.properties.bProcessNotVisible[1]));
 
 addEventListener('on_selection_changed', () => {
 	if (dynQueryMode.onSelection) { refreshData(plman.ActivePlaylist, 'on_selection_changed_dynQuery'); }
-});
+}, true, !charts.every((chart) => chart.properties.bProcessNotVisible[1]));
 
 addEventListener('on_item_focus_change', () => {
 	if (dynQueryMode.onSelection) { refreshData(plman.ActivePlaylist, 'on_item_focus_change_dynQuery'); }
-});
+}, true, !charts.every((chart) => chart.properties.bProcessNotVisible[1]));
 
 addEventListener('on_playlist_switch', () => {
 	if (!window.ID) { return; }
 	if (charts.some((chart) => chart.properties.bAutoData[1])) { refreshData(-1, 'on_playlist_switch'); }
-});
+}, true, !charts.every((chart) => chart.properties.bProcessNotVisible[1]));
 
 addEventListener('on_playlists_changed', () => { // To show/hide loaded playlist indicators...
 	if (!window.ID) { return; }
 	if (charts.some((chart) => chart.properties.bAutoData[1])) { refreshData(-1, 'on_playlists_changed'); }
-});
+}, true, !charts.every((chart) => chart.properties.bProcessNotVisible[1]));
 
 addEventListener('on_playlist_items_added', (idx) => { // eslint-disable-line no-unused-vars
 	if (!window.ID) { return; }
 	if (charts.some((chart) => chart.properties.bAutoData[1])) { refreshData(idx, 'on_playlist_items_added'); }
-});
+}, true, !charts.every((chart) => chart.properties.bProcessNotVisible[1]));
 
 addEventListener('on_playlist_items_removed', (idx) => { // eslint-disable-line no-unused-vars
 	if (!window.ID) { return; }
 	if (charts.some((chart) => chart.properties.bAutoData[1])) { refreshData(idx, 'on_playlist_items_removed'); }
-});
+}, true, !charts.every((chart) => chart.properties.bProcessNotVisible[1]));
 
 addEventListener('on_notify_data', (name, info) => {
 	if (name === 'bio_imgChange' || name === 'bio_chkTrackRev' || name === 'xxx-scripts: panel name reply') { return; }
@@ -1300,16 +1304,16 @@ addEventListener('on_notify_data', (name, info) => {
 			break;
 		}
 	}
-});
+}, true, !charts.every((chart) => chart.properties.bProcessNotVisible[1]));
 
 addEventListener('on_drag_enter', (action, x, y, mask) => { // eslint-disable-line no-unused-vars
 	// Avoid things outside foobar2000
 	if (action.Effect === dropEffect.none || (action.Effect & dropEffect.link) === dropEffect.link) { action.Effect = dropEffect.none; }
-});
+}, true, !charts.every((chart) => chart.properties.bProcessNotVisible[1]));
 
 addEventListener('on_drag_leave', (action, x, y, mask) => {
 	on_mouse_leave(x, y, mask);
-});
+}, true, !charts.every((chart) => chart.properties.bProcessNotVisible[1]));
 
 addEventListener('on_drag_over', (action, x, y, mask) => {
 	// Avoid things outside foobar2000
@@ -1321,7 +1325,7 @@ addEventListener('on_drag_over', (action, x, y, mask) => {
 			return true;
 		}
 	});
-});
+}, true, !charts.every((chart) => chart.properties.bProcessNotVisible[1]));
 
 addEventListener('on_drag_drop', (action, x, y, mask) => {
 	// Avoid things outside foobar2000
@@ -1344,7 +1348,7 @@ addEventListener('on_drag_drop', (action, x, y, mask) => {
 		}
 	});
 	action.Effect = dropEffect.none; // Forces not sending things to a playlist
-});
+}, true, !charts.every((chart) => chart.properties.bProcessNotVisible[1]));
 
 charts.some((chart) => {
 	if (chart.properties.bOnNotifyColors[1]) { // Ask color-servers at init
@@ -1354,7 +1358,7 @@ charts.some((chart) => {
 		}, 1000);
 		return true;
 	}
-});
+}, true, !charts.every((chart) => chart.properties.bProcessNotVisible[1]));
 
 {  // Set panel sources at init and notify other panels
 	const dataSource = JSON.parse(properties.dataSource[1]);

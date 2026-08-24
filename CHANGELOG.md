@@ -2,6 +2,7 @@
 
 ## [Table of Contents]
 - [Unreleased](#unreleased)
+- [3.1.0](#310---2026-08-24)
 - [3.0.0](#300---2026-04-28)
 - [2.5.0](#250---2026-01-12)
 - [2.4.0](#240---2025-12-23)
@@ -27,6 +28,13 @@
 
 ## [Unreleased][]
 ### Added
+### Changed
+### Removed
+### Fixed
+
+## [3.1.0] - 2026-08-24
+### Added
+- UI: added new setting to control panel processing when panel is not visible (true by default), so changes are immediately displayed on panel visibility switching, without delays. See [here](https://hydrogenaudio.org/index.php/topic,126743.msg1083496.html#msg1083496).
 - UI: added fallback to front art setting for Art by TF (background setting), if no file was found.
 - UI: added new mask effect setting to background. See [here](https://hydrogenaudio.org/index.php/topic,112914.msg1084108.html#msg1084108).
 - UI: added new img counter setting to background while using Art by TF mode. See [here](https://hydrogenaudio.org/index.php/topic,116669.msg1083339.html#msg1083339).
@@ -417,7 +425,8 @@
 ### Removed
 ### Fixed
 
-[Unreleased]: ../../compare/v3.0.0...HEAD
+[Unreleased]: ../../compare/v3.1.0...HEAD
+[3.1.0]: ../../compare/v3.0.0...v3.1.0
 [3.0.0]: ../../compare/v2.5.0...v3.0.0
 [2.5.0]: ../../compare/v2.4.0...v2.5.0
 [2.4.0]: ../../compare/v2.3.0...v2.4.0

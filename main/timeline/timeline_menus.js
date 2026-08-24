@@ -205,7 +205,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 				if (entry) { this.setData(entry); }
 			}
 		});
-		menu.newCheckMenuLast(() => !list.filter(menu.isNotSeparator).some((entry) => _qCond(entry.x) === this.axis.x.tf) );
+		menu.newCheckMenuLast(() => !list.filter(menu.isNotSeparator).some((entry) => _qCond(entry.x) === this.axis.x.tf));
 		menu.newSeparator(subMenu);
 		_createSubMenuEditEntries(menu, subMenu, {
 			name: 'Axis X TF entries',
@@ -255,7 +255,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 				if (entry) { this.setData(entry); }
 			}
 		});
-		menu.newCheckMenuLast(() => !list.filter(menu.isNotSeparator).some((entry) => this.axis.y.tf === _qCond(entry.y) && this.axis.y.bProportional === entry.bProportional) );
+		menu.newCheckMenuLast(() => !list.filter(menu.isNotSeparator).some((entry) => this.axis.y.tf === _qCond(entry.y) && this.axis.y.bProportional === entry.bProportional));
 		menu.newSeparator(subMenu);
 		_createSubMenuEditEntries(menu, subMenu, {
 			name: 'Axis Y TF entries',
@@ -298,7 +298,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 				if (entry) { this.setData(entry); }
 			}
 		});
-		menu.newCheckMenuLast(() => bHasZ && !list.filter(menu.isNotSeparator).some((entry) => this.axis.z.tf === _qCond(entry.z)) );
+		menu.newCheckMenuLast(() => bHasZ && !list.filter(menu.isNotSeparator).some((entry) => this.axis.z.tf === _qCond(entry.z)));
 		menu.newSeparator(subMenu);
 		_createSubMenuEditEntries(menu, subMenu, {
 			name: 'Axis Z TF entries',
@@ -525,7 +525,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 				this.setData({ query: input });
 			}
 		});
-		menu.newCheckMenuLast(() => !list.filter(menu.isNotSeparator).some((entry) => entry.query === properties.dataQuery[1]) );
+		menu.newCheckMenuLast(() => !list.filter(menu.isNotSeparator).some((entry) => entry.query === properties.dataQuery[1]));
 		menu.newSeparator(subMenu);
 		_createSubMenuEditEntries(menu, subMenu, {
 			name: 'Query entries',
@@ -663,6 +663,15 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 				}
 			});
 		}
+		menu.newSeparator(subMenu);
+		menu.newEntry({
+			menuName: subMenu, entryText: 'Process panel while not visible', func: () => {
+				properties.bProcessNotVisible[1] = !properties.bProcessNotVisible[1];
+				overwriteProperties(properties);
+				window.Reload();
+			}
+		});
+		menu.newCheckMenuLast(() => properties.bProcessNotVisible[1]);
 	}
 	menu.newSeparator();
 	menu.newEntry({

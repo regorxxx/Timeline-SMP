@@ -32,6 +32,7 @@
 - Helpers: updated helpers.
 ### Removed
 ### Fixed
+- UI: chart types not being changed when using menu settings. See [here](https://hydrogenaudio.org/index.php/topic,125040.msg1086767.html#msg1086767).
 
 ## [3.1.0] - 2026-08-24
 ### Added

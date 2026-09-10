@@ -1,5 +1,5 @@
 ﻿'use strict';
-//23/06/26
+//10/09/26
 
 /* exported createStatisticsMenu */
 
@@ -116,6 +116,7 @@ function createStatisticsMenu({ bClear = true, menuKey = 'menu', onBtnUp = null,
 			{ isEq: null, key: this.graph.type, value: null, newValue: 'pie', entryText: 'Pie' },
 		].filter((opt) => !hideCharts.has(opt.newValue)).forEach(createMenuOption('graph', 'type', subMenu, void (0), (option) => {
 			this.graph.borderWidth = fineGraphs.has(option.newValue) ? _scale(1) : _scale(4);
+			return true;
 		}));
 	}
 	{

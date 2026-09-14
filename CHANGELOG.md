@@ -33,6 +33,7 @@
 ### Removed
 ### Fixed
 - UI: chart types not being changed when using menu settings. See [here](https://hydrogenaudio.org/index.php/topic,125040.msg1086767.html#msg1086767).
+- Fixed UTF-8 script files without BOM not being properly recognized on windows.
 
 ## [3.1.0] - 2026-08-24
 ### Added

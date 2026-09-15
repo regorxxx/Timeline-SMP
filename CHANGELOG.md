@@ -29,9 +29,12 @@
 
 ## [Unreleased][]
 ### Added
+- UI: support for line styles: solid, dot, dash, ... They work with most chart types, either as filling or border. Requires JSplitter.
 ### Changed
+- UI: minor improvements to menu entries display.
 ### Removed
 ### Fixed
+- UI: fixed vertical labels position on Horizontal bars charts when using multiple series (for ex. using 3 axis).
 
 ## [3.2.0] - 2026-09-14
 ### Added

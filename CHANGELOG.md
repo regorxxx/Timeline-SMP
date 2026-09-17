@@ -39,6 +39,7 @@
 - Helpers: updated helpers.
 ### Removed
 ### Fixed
+- UI: reset 'Show (X-axis)' setting when changing source data TF.
 - UI: minor fixes on focused point highlighting in some cases.
 - UI: fix Y-Tittle being shown even if it was disabled.
 - UI: fix horizontal grid width in some chart types.

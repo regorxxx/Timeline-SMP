@@ -37,6 +37,7 @@
 ### Removed
 ### Fixed
 - UI: fixed vertical labels position on Horizontal bars charts when using multiple series (for ex. using 3 axis).
+- UI: fix X-Y Titles showing quotes in some cases due to optimization on [3.1.0](#310---2026-08-24).
 
 ## [3.2.0] - 2026-09-14
 ### Added

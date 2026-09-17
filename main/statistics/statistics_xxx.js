@@ -342,9 +342,6 @@ function _chart({
 			const bFocused = this.currPoint[0] === i && this.currPoint[1] === j;
 			const point = this.dataCoords[i][j] = { x: j > 0 ? xPoint - selBar / 2 : xPoint, y: yPoint, w: (j > 0 && j !== last ? selBar : selBar / 2), h: valH };
 			if (xPoint > w + tickW) { return; }
-			if (bFocused) {
-				gr.FillSolidRect(point.x, point.y, point.w, point.h, borderColor);
-			}
 			if (j !== 0) {
 				const paintPoint = (color) => {
 					const newValH = series[j - 1].y / (maxY || 1) * (y - h);
@@ -354,6 +351,7 @@ function _chart({
 				};
 				paintPoint(color);
 			}
+			if (bFocused) { gr.FillSolidRect(point.x, point.y, point.w, point.h, borderColor); }
 		});
 	};
 	/**
@@ -382,7 +380,7 @@ function _chart({
 		const borderColor = RGBA(...toRGB(invert(this.colors[i], true)), getBrightness(...toRGB(this.colors[i])) < 50 ? this.graph.pointAlpha : 25);
 		const color = RGBA(...toRGB(this.colors[i]), this.graph.pointAlpha);
 		const lineArr = [];
-		const clip = { x: Infinity, y: Infinity, w: 0, h: 0 };
+		let focusPoint;
 		series.forEach((value, j) => {
 			valH = value.y / (maxY || 1) * (y - h);
 			const idx = xAxisValues.indexOf(value.x);
@@ -397,15 +395,10 @@ function _chart({
 			};
 			if (xPoint > w + tickW) { return; }
 			lineArr.push(xPoint, yPoint);
-			clip.x = Math.min(clip.x, xPoint);
-			clip.y = Math.min(clip.y, yPoint);
-			clip.w = Math.max(clip.w, xPoint);
-			clip.h = Math.max(clip.h, yPoint);
-			if (bFocused) {
-				gr.FillSolidRect(point.x, point.y, point.w, point.h, borderColor);
-			}
+			if (bFocused) { focusPoint = point; }
 		});
 		gr.DrawLines(color, this.graph.borderWidth, lineArr, this.strokeStyle);
+		if (focusPoint) { gr.FillSolidRect(focusPoint.x, focusPoint.y, focusPoint.w, focusPoint.h, borderColor); }
 	};
 	/**
 	 * Draws fill chart. Recommended to use gr.SetSmoothingMode(SmoothingMode.AntiAlias) before
@@ -433,6 +426,7 @@ function _chart({
 		const color = RGBA(...toRGB(this.colors[i]), this.graph.pointAlpha);
 		const minColor = this.configuration.bGradientPoints ? invert(color, false, true) : color;
 		const smoothMode = SmoothingMode.AntiAlias;
+		let focusPoint;
 		series.forEach((value, j) => {
 			const scale = value.y / (maxY || 1);
 			valH = scale * (y - h);
@@ -448,9 +442,6 @@ function _chart({
 			};
 			if (xPoint > w + tickW) { return; }
 			const topColor = this.configuration.bGradientPoints ? blendColors(minColor, color, scale, true) : color;
-			if (bFocused) {
-				gr.FillSolidRect(point.x, point.y, point.w, point.h, borderColor);
-			}
 			if (j !== 0) {
 				if (minColor === topColor) {
 					const paintPoint = (color) => {
@@ -478,7 +469,9 @@ function _chart({
 					gr.DrawImage(img, xPoint - tickW, h, tickW + 0.25, y - h, 0, 0, img.Width, img.Height);
 				}
 			}
+			if (bFocused) { focusPoint = point; }
 		});
+		if (focusPoint) { gr.FillSolidRect(focusPoint.x, focusPoint.y, focusPoint.w, focusPoint.h, borderColor); }
 	};
 	/**
 	 * Draws bars chart. Recommended to use gr.SetSmoothingMode(SmoothingMode.AntiAlias) before

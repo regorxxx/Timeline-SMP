@@ -38,6 +38,7 @@
 - Helpers: updated helpers.
 ### Removed
 ### Fixed
+- UI: minor fixes on focused point highlighting in some cases.
 - UI: fix Y-Tittle being shown even if it was disabled.
 - UI: fix horizontal grid width in some chart types.
 - UI: fixed vertical labels position on Horizontal bars charts when using multiple series (for ex. using 3 axis).

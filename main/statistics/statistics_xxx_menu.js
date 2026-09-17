@@ -381,6 +381,21 @@ function createStatisticsMenu({ bClear = true, menuKey = 'menu', onBtnUp = null,
 			[
 				{ isEq: null, key: this.grid.y.show, value: null, newValue: { show: !this.grid.y.show }, entryText: (this.grid.y.show ? 'Hide' : 'Show') + ' ' + (switchedGraphs.has(this.graph.type) ? 'Horizontal' : 'Y') + ' grid' }
 			].forEach(createMenuOption('grid', 'y', subMenuTwo, false));
+			menu.newSeparator(subMenuTwo);
+			{
+				const configSubMenu = menu.newMenu((switchedGraphs.has(this.graph.type) ? 'Vertical' : 'X') + ' grid opacity', subMenuTwo);
+				menu.addTipLast('[' + Math.round(this.grid.x.alpha / 255 * 100) + ']');
+				[0, 20, 40, 60, 80, 100].map((val) => {
+					return { isEq: null, key: this.grid.x.alpha, value: null, newValue: Math.round(val * 255 / 100), entryText: val.toString() + (val === 0 ? '\t(transparent)' : val === 100 ? '\t(opaque)' : '') };
+				}).forEach(createMenuOption('grid', ['x', 'alpha'], configSubMenu));
+			}
+			{
+				const configSubMenu = menu.newMenu((switchedGraphs.has(this.graph.type) ? 'Horizontal' : 'Y') + 'grid opacity', subMenuTwo);
+				menu.addTipLast('[' + Math.round(this.grid.y.alpha / 255 * 100) + ']');
+				[0, 20, 40, 60, 80, 100].map((val) => {
+					return { isEq: null, key: this.grid.y.alpha, value: null, newValue: Math.round(val * 255 / 100), entryText: val.toString() + (val === 0 ? '\t(transparent)' : val === 100 ? '\t(opaque)' : '') };
+				}).forEach(createMenuOption('grid', ['y', 'alpha'], configSubMenu));
+			}
 		}
 		{
 			const subMenuTwo = menu.newMenu('Axis', subMenu);

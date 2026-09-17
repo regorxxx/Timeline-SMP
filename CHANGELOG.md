@@ -30,6 +30,7 @@
 ## [Unreleased][]
 ### Added
 - UI: new setting to modify and control how chart title is shown (previously on menus).
+- UI: new setting to control X-Y grids opacity.
 - UI: support for line styles: solid, dot, dash, ... They work with most chart types, either as filling or border. Requires JSplitter.
 - UI: support for line join styles: miter, round,... It works with Lines (high quality)' chart type. Requires JSplitter.
 ### Changed
@@ -37,6 +38,7 @@
 - Helpers: updated helpers.
 ### Removed
 ### Fixed
+- UI: fix horizontal grid width in some chart types.
 - UI: fixed vertical labels position on Horizontal bars charts when using multiple series (for ex. using 3 axis).
 - UI: fix X-Y Titles showing quotes in some cases due to optimization on [3.1.0](#310---2026-08-24).
 

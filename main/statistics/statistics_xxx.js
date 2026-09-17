@@ -70,8 +70,8 @@ include('statistics_xxx_helper.js');
  * @param {number} [o.background.color] - [=RGB(255, 255, 255)]
  * @param {GdiBitmap} [o.background.image] - [=null]
  * @param {object} [o.grid] - Grid settings
- * @param {{show:boolean, color:number, width:number}} [o.grid.x] - [={show: false, color: RGB(0,0,0), width: _scale(1)}] X-axis grid settings
- * @param {{show:boolean, color:number, width:number}} [o.grid.y] - [={show: false, color: RGB(0,0,0), width: _scale(1)}] Y-Axis Grid settings
+ * @param {{show:boolean, color:number, width:number, alpha:number}} [o.grid.x] - [={show: false, color: RGB(0,0,0), width: _scale(1), alpha: 200}] X-axis grid settings
+ * @param {{show:boolean, color:number, width:number, alpha:number}} [o.grid.y] - [={show: false, color: RGB(0,0,0), width: _scale(1), alpha: 200}] Y-Axis Grid settings
  * @param {object} [o.axis] - Axis settings (and its sub-elements)
  * @param {{show:boolean, color:number, width:number, ticks:boolean, labels:boolean, key:string, bSingleLabels:boolean, bAltLabels:boolean}} [o.axis.x] - X-Axis settings. Key sets the displayed title. When bAltLabels is true, it uses a different method to display labels.
  * @param {{show:boolean, color:number, width:number, ticks:boolean, labels:boolean, key:string}} [o.axis.y] - Y-Axis settings. Key sets the displayed title.
@@ -120,7 +120,7 @@ function _chart({
 	dataManipulation = {/* sort, filter, mFilter, slice, distribution , probabilityPlot, group */ },
 	background = {/* color, image*/ },
 	grid = {
-		x: {/* show, color, width */ },
+		x: {/* show, color, width, alpha */ },
 		y: {/* ... */ }
 	},
 	axis = {
@@ -162,7 +162,7 @@ function _chart({
 		this.graph = { type: 'bars', multi: false, borderWidth: _scale(1), point: null, line: null, pointAlpha: 255 };
 		this.dataManipulation = { sort: { x: 'natural', y: null, z: null, my: 'reverse num', mz: null }, filter: null, mFilter: true, slice: [0, 10], distribution: null, probabilityPlot: null, group: 4 };
 		this.background = { color: RGB(255, 255, 255), image: null };
-		this.grid = { x: { show: false, color: RGB(0, 0, 0), width: _scale(1) }, y: { show: false, color: RGB(0, 0, 0), width: _scale(1) } };
+		this.grid = { x: { show: false, color: RGB(0, 0, 0), width: _scale(1), alpha: 200 }, y: { show: false, color: RGB(0, 0, 0), width: _scale(1), alpha: 200 } };
 		this.axis = {
 			x: { show: true, showTicks: true, showKey: true, color: RGB(0, 0, 0), width: _scale(2), ticks: 'auto', labels: true, bSingleLabels: true, key: '', bAltLabels: false, mergeLabels: true, tf: '' },
 			y: { show: true, showTicks: true, showKey: true, color: RGB(0, 0, 0), width: _scale(2), ticks: 10, labels: true, key: 'tracks', tf: '', bProportional: false },
@@ -239,7 +239,7 @@ function _chart({
 	 * @memberof _chart
 	 * @param {GdiGraphics} gr - GDI graphics object from on_paint callback.
 	 * @param {GdiGraphics} series - Point series
-	 * @param {GdiGraphics} i - Current serie
+	 * @param {GdiGraphics} i - Current series
 	 * @param {number} x - Draw zone coords
 	 * @param {number} y - Draw zone coords
 	 * @param {number} w - Draw zone coords
@@ -318,7 +318,7 @@ function _chart({
 	 * @memberof _chart
 	 * @param {GdiGraphics} gr - GDI graphics object from on_paint callback.
 	 * @param {GdiGraphics} series - Point series
-	 * @param {GdiGraphics} i - Current serie
+	 * @param {GdiGraphics} i - Current series
 	 * @param {number} x - Draw zone coords
 	 * @param {number} y - Draw zone coords
 	 * @param {number} w - Draw zone coords
@@ -364,7 +364,7 @@ function _chart({
 	 * @memberof _chart
 	 * @param {GdiGraphics} gr - GDI graphics object from on_paint callback.
 	 * @param {GdiGraphics} series - Point series
-	 * @param {GdiGraphics} i - Current serie
+	 * @param {GdiGraphics} i - Current series
 	 * @param {number} x - Draw zone coords
 	 * @param {number} y - Draw zone coords
 	 * @param {number} w - Draw zone coords
@@ -415,7 +415,7 @@ function _chart({
 	 * @memberof _chart
 	 * @param {GdiGraphics} gr - GDI graphics object from on_paint callback.
 	 * @param {GdiGraphics} series - Point series
-	 * @param {GdiGraphics} i - Current serie
+	 * @param {GdiGraphics} i - Current series
 	 * @param {number} x - Draw zone coords
 	 * @param {number} y - Draw zone coords
 	 * @param {number} w - Draw zone coords
@@ -488,7 +488,7 @@ function _chart({
 	 * @memberof _chart
 	 * @param {GdiGraphics} gr - GDI graphics object from on_paint callback.
 	 * @param {GdiGraphics} series - Point series
-	 * @param {GdiGraphics} i - Current serie
+	 * @param {GdiGraphics} i - Current series
 	 * @param {number} x - Draw zone coords
 	 * @param {number} y - Draw zone coords
 	 * @param {number} w - Draw zone coords
@@ -534,7 +534,7 @@ function _chart({
 	 * @memberof _chart
 	 * @param {GdiGraphics} gr - GDI graphics object from on_paint callback.
 	 * @param {GdiGraphics} series - Point series
-	 * @param {GdiGraphics} i - Current serie
+	 * @param {GdiGraphics} i - Current series
 	 * @param {number} x - Draw zone coords
 	 * @param {number} y - Draw zone coords
 	 * @param {number} w - Draw zone coords
@@ -581,7 +581,7 @@ function _chart({
 	 * @memberof _chart
 	 * @param {GdiGraphics} gr - GDI graphics object from on_paint callback.
 	 * @param {GdiGraphics} series - Point series
-	 * @param {GdiGraphics} i - Current serie
+	 * @param {GdiGraphics} i - Current series
 	 * @param {number} x - Draw zone coords
 	 * @param {number} y - Draw zone coords
 	 * @param {number} w - Draw zone coords
@@ -628,7 +628,7 @@ function _chart({
 	 * @memberof _chart
 	 * @param {GdiGraphics} gr - GDI graphics object from on_paint callback.
 	 * @param {GdiGraphics} series - Point series
-	 * @param {GdiGraphics} i - Current serie
+	 * @param {GdiGraphics} i - Current series
 	 * @param {number} x - Draw zone coords
 	 * @param {number} y - Draw zone coords
 	 * @param {number} w - Draw zone coords
@@ -698,14 +698,14 @@ function _chart({
 	 * @memberof _chart
 	 * @param {GdiGraphics} gr - GDI graphics object from on_paint callback.
 	 * @param {GdiGraphics} series - Point series
-	 * @param {GdiGraphics} i - Current serie
+	 * @param {GdiGraphics} i - Current series
 	 * @param {number} x - Draw zone coords
 	 * @param {number} y - Draw zone coords
 	 * @param {number} w - Draw zone coords
 	 * @param {number} h - Draw zone coords
 	 * @param {number} maxY - Max Y-axis value for all series
-	 * @param {number} r - Doughnut outer radious
-	 * @param {number} rInner - Doughnut inner radious
+	 * @param {number} r - Doughnut outer radius
+	 * @param {number} rInner - Doughnut inner radius
 	 * @returns {void}
 	*/
 	this.paintDoughnut = (gr, series, i, x, y, w, h, maxY, r, rInner) => { // NOSONAR
@@ -786,8 +786,18 @@ function _chart({
 				? bgColor
 				: invert(xAxisColor, true);
 		const yAxisColor = bDynLabelColor ? bgColor : this.axis.y.color || bgColor;
-		const xGridColor = bDynLabelColor ? bgColor : this.grid.x.color || bgColor;
-		const yGridColor = bDynLabelColor ? bgColor : this.grid.y.color || bgColor;
+		const xGridColor = opaqueColor(
+			this.callbacks.config.backgroundColor
+				? invert(this.callbacks.config.backgroundColor(), true)
+				: bDynLabelColor ? bgColor : this.grid.x.color || bgColor,
+			this.grid.x.alpha / 255 * 100
+		);
+		const yGridColor = opaqueColor(
+			this.callbacks.config.backgroundColor
+				? invert(this.callbacks.config.backgroundColor(), true)
+				: bDynLabelColor ? bgColor : this.grid.y.color || bgColor,
+			this.grid.y.alpha / 255 * 100
+		);
 		// Max Y value for all series
 		let maxY = 0, minY = 0;
 		this.dataDraw.forEach((series) => {
@@ -1458,8 +1468,8 @@ function _chart({
 								: 0
 							: 0
 						);
-						const lineW = Math.min(w + (this.axis.y.show ? this.margin.leftAuto - this.axis.y.width : 0), this.w - this.margin.right);
-						gr.DrawLine(x, yTick, lineW, yTick, this.grid.y.width, this.callbacks.config.backgroundColor ? invert(this.callbacks.config.backgroundColor(), true) : yGridColor);
+						const lineW = Math.min(w + this.margin.leftAuto + (this.axis.y.show ? this.axis.y.width : 0), this.w - this.margin.right);
+						gr.DrawLine(x, yTick, lineW, yTick, this.grid.y.width, yGridColor);
 					});
 				}
 				if (this.grid.x.show) {
@@ -3272,7 +3282,7 @@ function _chart({
 		if (axis.y) { this.axis.y = { ...this.axis.y, ...axis.y }; }
 		if (axis.z) { this.axis.z = { ...this.axis.z, ...axis.z }; }
 	}
-	/** @type {{x: {show:boolean, color:number, width:number}, y: {show:boolean, color:number, width:number}}} */
+	/** @type {{x: {show:boolean, color:number, width:number, alpha:number}, y: {show:boolean, color:number, width:number, alpha:number}}} */
 	this.grid; // NOSONAR
 	if (grid) {
 		if (grid.x) { this.grid.x = { ...this.grid.x, ...grid.x }; }

@@ -1376,7 +1376,7 @@ function _chart({
 							}
 						});
 					}
-					if (this.axis.y.showKey || this.axis.y.key.length) {
+					if (this.axis.y.showKey && this.axis.y.key.length) {
 						const key = this.configuration.bAltVerticalText ? this.axis.y.key.flip() : this.axis.y.key;
 						const maxTickW = gr.CalcTextWidth(tickText[tickText.length - 1], this.gFont);
 						const keyW = gr.CalcTextWidth(key, this.gFont);

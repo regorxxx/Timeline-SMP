@@ -38,6 +38,7 @@
 - Helpers: updated helpers.
 ### Removed
 ### Fixed
+- UI: fix Y-Tittle being shown even if it was disabled.
 - UI: fix horizontal grid width in some chart types.
 - UI: fixed vertical labels position on Horizontal bars charts when using multiple series (for ex. using 3 axis).
 - UI: fix X-Y Titles showing quotes in some cases due to optimization on [3.1.0](#310---2026-08-24).

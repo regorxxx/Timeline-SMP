@@ -1,5 +1,5 @@
 'use strict';
-//16/09/26
+//17/09/26
 
 /* exported _chart */
 
@@ -103,7 +103,11 @@ include('statistics_xxx_helper.js');
  * @param {number} [o.y] - [=0] Y panel position
  * @param {number} [o.w] - [=window.Width] W panel position
  * @param {number} [o.w] - [=window.Height] H panel position
- * @param {string} [o.title] - Chart title
+ * @param {object} [o.title] - Title settings
+ * @param {string} [o.title.key] - Chart title string
+ * @param {boolean} [o.title.show] - [=false] Flag to control title display
+ * @param {number} [o.title.color] - [=RGB(0,0,0)] Title color
+ * @param {number} [o.title.alpha] - [=200] Title color
  * @param {GdiFont} [o.gFont] - [=_gdiFont('Segoe UI', _scale(10))] Chart font
  * @param {((refPoint, series, mask) => string)|string} [o.tooltipText] - [='']
  */
@@ -164,6 +168,12 @@ function _chart({
 			y: { show: true, showTicks: true, showKey: true, color: RGB(0, 0, 0), width: _scale(2), ticks: 10, labels: true, key: 'tracks', tf: '', bProportional: false },
 			z: { key: '', tf: '' },
 		};
+		this.title = {
+			key: this.createTitle(),
+			color: RGB(0, 0, 0),
+			show: false,
+			alpha: 200
+		};
 		this.graphSpecs = {
 			timeline: { bAxisCenteredX: false },
 		};
@@ -198,7 +208,6 @@ function _chart({
 			maxSliceOnDataChange: 50,
 			bGradientPoints: false
 		};
-		this.title = window.Name + ' {' + this.axis.x.key + ' - ' + this.axis.y.key + '}';
 		this.tooltipText = '';
 		this.strokeStyle = 0;
 	};
@@ -749,6 +758,16 @@ function _chart({
 		return [...new Map(arr.map((item) => [item[key], item])).values()];
 	};
 
+	/**
+	 * Paints chart area
+	 *
+	 * @property
+	 * @name paintGraph
+	 * @kind method
+	 * @memberof _chart
+	 * @param {GdiGraphics} gr - GDI graphics object from on_paint callback.
+	 * @returns {boolean}
+	*/
 	this.paintGraph = (gr) => {
 		this.dataCoords = this.dataDraw.map(() => []);
 		let x, y, w, h, xOffsetKey, yOffsetKey;
@@ -1450,9 +1469,33 @@ function _chart({
 					});
 				}
 		}
+		/*
+			Title
+		*/
+		if (this.title.show && this.title.key.length) {
+			const titleColor = opaqueColor(
+				this.callbacks.config.backgroundColor
+					? invert(this.callbacks.config.backgroundColor(), true)
+					: bDynLabelColor ? bgColor : this.title.color || bgColor,
+				this.title.alpha / 255 * 100
+			);
+			const textW = gr.CalcTextWidth(this.title.key, this.gFont);
+			gr.DrawString(this.title.key, this.gFont, titleColor, x + (w - textW) / 2, h, w, y);
+		}
 		return { bHideToolbar };
 	};
 
+	/**
+	 * Paints scrolling and toolbar buttons
+	 *
+	 * @property
+	 * @name paintButtons
+	 * @kind method
+	 * @memberof _chart
+	 * @param {GdiGraphics} gr - GDI graphics object from on_paint callback.
+	 * @param {Boolean} bHideToolbar
+	 * @returns {boolean}
+	*/
 	this.paintButtons = (gr, bHideToolbar = false) => {
 		const color = invert(this.callbacks.config.backgroundColor ? this.callbacks.config.backgroundColor() : this.background.color || this.axis.x.color, true);
 		if (this.buttons.xScroll && this.getCurrentRange() < this.getMaxRange()) {
@@ -1955,6 +1998,8 @@ function _chart({
 	this.getMaxRange = () => {
 		return Math.max(...this.stats.points);
 	};
+
+	this.createTitle = (chartNumber) => _chart.createTitle(chartNumber, this.axis.x.key, this.axis.y.key);
 
 	let prevX = null;
 	const cleanPrevX = debounce((release) => { !utils.IsKeyPressed(release) && (prevX = null); }, 500);
@@ -2828,7 +2873,7 @@ function _chart({
 				false
 			);
 		}
-		if (title) { this.title = title; }
+		if (title) { this.title = { ... this.title, ...title }; }
 		if (configuration) {
 			for (let key in configuration) {
 				this.configuration[key] = configuration[key];
@@ -2961,7 +3006,7 @@ function _chart({
 	};
 
 	this.checkConfig = () => {
-		if (this.configuration.bProfile) { this.profile = new FbProfiler(this.title); }
+		if (this.configuration.bProfile) { this.profile = new FbProfiler(this.title.key); }
 		if (this.graph.type) { this.graph.type = this.graph.type.replace('–', '-'); }
 		if (this.dataManipulation.probabilityPlot) { this.dataManipulation.probabilityPlot = this.dataManipulation.probabilityPlot.replace('–', '-'); }
 		const pPlot = this.dataManipulation.probabilityPlot ? this.dataManipulation.probabilityPlot.toLowerCase() : null;
@@ -3133,7 +3178,7 @@ function _chart({
 			buttons: { ...this.buttons },
 			configuration: { ...this.configuration },
 			...(bPosition ? { x: this.x, y: this.y, w: this.w, h: this.h } : {}),
-			title: this.title
+			title: { ...this.title }
 		};
 	};
 
@@ -3233,6 +3278,8 @@ function _chart({
 		if (grid.x) { this.grid.x = { ...this.grid.x, ...grid.x }; }
 		if (grid.y) { this.grid.y = { ...this.grid.y, ...grid.y }; }
 	}
+	/** @type {{key:string, show:boolean, color:number, alpha:number}} */
+	this.title = { ...this.title, ...title };
 	/** @type {{left: number, right: number, top: number, bottom: number}} */
 	this.margin = { ...this.margin, ...margin };
 	/** @type {{timeline: {bAxisCenteredX:boolean}} */
@@ -3266,7 +3313,6 @@ function _chart({
 	this.mX = -1;
 	this.mY = -1;
 	this.inFocus = false;
-	this.title = typeof title === 'undefined' ? window.Name + ' {' + this.axis.x.key + ' - ' + this.axis.y.key + '}' : title;
 	this.tooltipText = tooltipText;
 	/** @type {D2DStrokeStyleOptions|null} */
 	this.strokeStyle = 0;
@@ -3347,3 +3393,15 @@ function _chart({
 	});
 	this.init();
 }
+
+/**
+ * Creates a chart title for given keys
+ * @static
+ * @name createTitle
+ * @kind method
+ * @memberof _chart
+ * @returns {string}
+ */
+_chart.createTitle = (chartNumber, xKey, yKey) => {
+	return window.Name + (chartNumber ? ' - Graph ' + chartNumber : '') + ' {' + xKey + ' - ' + yKey + '}';
+};

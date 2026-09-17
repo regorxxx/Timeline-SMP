@@ -1,5 +1,5 @@
 ﻿'use strict';
-//14/09/26
+//17/09/26
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '3.2.0', features: { drag_n_drop: true, grab_focus: true } }); }
 
@@ -37,7 +37,7 @@ globProfiler.Print('helpers');
 checkCompatible();
 
 let properties = {
-	drawMode: ['- Draw mode: GDI (0), D2D (1)', 0, { func: isInt, range: [[0,1]] }],
+	drawMode: ['- Draw mode: GDI (0), D2D (1)', 0, { func: isInt, range: [[0, 1]] }],
 	background: ['Background options', JSON.stringify(_background.defaults()), { func: isJSON, forceDefaults: true }],
 	chart: ['Chart options', JSON.stringify(deepAssign()(
 		(new _chart).exportConfig(),
@@ -553,12 +553,15 @@ const rows = newConfig.length;
 const columns = newConfig[0].length;
 const nCharts = Array.from({ length: rows }, (row, i) => {
 	return Array.from({ length: columns }, (cell, j) => {
+		const config = newConfig[i][j];
 		const w = window.Width / columns;
 		const h = window.Height / rows * (i + 1);
 		const x = w * j;
 		const y = window.Height / rows * i;
-		const title = window.PanelName + ' - Graph ' + (1 + rows * i + j) + ' {' + newConfig[i][j].axis.x.key + ' - ' + newConfig[i][j].axis.y.key + '}';
-		return new _chart({ ...defaultConfig, x, y, w, h }).changeConfig({ ...newConfig[i][j], bPaint: false, title });
+		if (!Object.hasOwn(defaultConfig, 'title') && !Object.hasOwn(config, 'title')) {
+			config.title = { key: _chart.createTitle(1 + rows * i + j, config.axis.x.key, config.axis.y.key) };
+		}
+		return new _chart({ ...defaultConfig, x, y, w, h }).changeConfig({ ...config, bPaint: false });
 	});
 });
 const charts = nCharts.flat(Infinity);
@@ -652,8 +655,11 @@ charts.forEach((/** @type {_chart} */ chart, i) => {
 		if (bHasZ) { newConfig.axis.z = { key: entry.keyZ, tf: _qCond(entry.z) }; }
 		if (bHasZ || bHasTfZ) { newConfig.graph = { multi: true }; }
 		else { newConfig.graph = { multi: false }; }
-		const title = window.PanelName + ' - Graph ' + i + ' {' + this.axis.x.key + ' - ' + this.axis.y.key + '}';
+		if (bHasX || bHasY || bHasZ) { delete newConfig.dataManipulation.slice; }
 		this.changeConfig({ ...newConfig, bPaint: true, bForceLoadData: true });
+		const title = Object.hasOwn(entry, 'title')
+			? title
+			: { key: this.createTitle(i + 1) };
 		this.changeConfig({ title, bPaint: false, callbackArgs: { bSaveProperties: true } });
 	};
 	chart.saveDataSettings = function (input) {
@@ -1056,7 +1062,7 @@ addEventListener('on_notify_data', (name, info) => {
 			if (info && info.window && !info.window.includes(window.Name)) { break; }
 			if (!info.handleList) { return; }
 			charts.forEach((chart) => {
-				if (info && info.chart && !info.chart.includes(chart.title)) { return; }
+				if (info && info.chart && !info.chart.includes(chart.title.key)) { return; }
 				if (!chart.panelCache.uuid.includes(info.uuid)) { return; }
 				let bChanged = false;
 				chart.panelCache.uuid.forEach(v => {
@@ -1093,7 +1099,7 @@ addEventListener('on_notify_data', (name, info) => {
 			if (info && info.window && !info.window.includes(window.Name)) { break; }
 			if (!info.handleList) { return; }
 			charts.forEach((chart) => {
-				if (info && info.chart && !info.chart.includes(chart.title)) { return; }
+				if (info && info.chart && !info.chart.includes(chart.title.key)) { return; }
 				let sourceArg = new FbMetadbHandleList(info.handleList);
 				if (sourceArg && sourceArg.Count) {
 					sourceArg.Sort();
@@ -1112,7 +1118,7 @@ addEventListener('on_notify_data', (name, info) => {
 		case window.ScriptInfo.Name + ': refresh data': { // { window?: string[], chart?: string[] }
 			if (info && info.window && !info.window.includes(window.Name)) { break; }
 			charts.forEach((chart) => {
-				if (info && info.chart && !info.chart.includes(chart.title)) { return; }
+				if (info && info.chart && !info.chart.includes(chart.title.key)) { return; }
 				chart.setData();
 			});
 			break;
@@ -1121,7 +1127,7 @@ addEventListener('on_notify_data', (name, info) => {
 			if (info && info.window && !info.window.includes(window.Name)) { break; }
 			if (info) {
 				charts.forEach((chart) => {
-					if (info.chart && !info.chart.includes(chart.title)) { return; }
+					if (info.chart && !info.chart.includes(chart.title.key)) { return; }
 					let entry = {};
 					if (info.xEntry) {
 						const entries = JSON.parse(properties.xEntries[1]);
@@ -1146,7 +1152,7 @@ addEventListener('on_notify_data', (name, info) => {
 			if (info && info.window && !info.window.includes(window.Name)) { break; }
 			if (info && info.filterEntry) {
 				charts.forEach((chart) => {
-					if (info.chart && !info.chart.includes(chart.title)) { return; }
+					if (info.chart && !info.chart.includes(chart.title.key)) { return; }
 					const entries = JSON.parse(chart.properties.queryEntries[1]);
 					const entry = entries.find((entry) => entry.name === info.filterEntry);
 					if (entry) {
@@ -1161,7 +1167,7 @@ addEventListener('on_notify_data', (name, info) => {
 			if (info && info.window && !info.window.includes(window.Name)) { break; }
 			if (info && info.groupBy) {
 				charts.forEach((chart) => {
-					if (info.chart && !info.chart.includes(chart.title)) { return; }
+					if (info.chart && !info.chart.includes(chart.title.key)) { return; }
 					const groupBy = JSON.parse(chart.properties.groupBy[1]);
 					for (let key in info.groupBy) { groupBy[key] = info.groupBy[key]; }
 					if (info.bSaveProperties) { chart.saveDataSettings({ groupBy }); }
@@ -1175,7 +1181,7 @@ addEventListener('on_notify_data', (name, info) => {
 			if (info && info.window && !info.window.includes(window.Name)) { break; }
 			if (info && info.timeRange) {
 				charts.forEach((chart) => {
-					if (info.chart && !info.chart.includes(chart.title)) { return; }
+					if (info.chart && !info.chart.includes(chart.title.key)) { return; }
 					const bHasX = Object.hasOwn(chart.axis.x, 'tf') && chart.axis.x.tf.length;
 					const bHasY = Object.hasOwn(chart.axis.y, 'tf') && chart.axis.y.tf.length;
 					const bListens = bHasY
@@ -1197,7 +1203,7 @@ addEventListener('on_notify_data', (name, info) => {
 			if (info && info.dataSource) {
 				if (!['library', 'activePlaylist', 'playingPlaylist', 'playlist', 'handleList', 'panel'].includes(info.sourceType)) { return; }
 				charts.forEach((chart) => {
-					if (info.chart && !info.chart.includes(chart.title)) { return; }
+					if (info.chart && !info.chart.includes(chart.title.key)) { return; }
 					const dataSource = {};
 					chart.dragDropCache.RemoveAll();
 					if (Object.hasOwn(info.dataSource, 'sourceType')) { dataSource.sourceType = info.dataSource.sourceType; }
@@ -1224,7 +1230,7 @@ addEventListener('on_notify_data', (name, info) => {
 				const entry = clone(info.entry);
 				if (Object.hasOwn(entry, 'dataSource')) { for (let key in entry.dataSource) { entry[key] = entry.dataSource[key]; } }
 				charts.forEach((chart) => {
-					if (info.chart && !info.chart.includes(chart.title)) { return; }
+					if (info.chart && !info.chart.includes(chart.title.key)) { return; }
 					if (info.bSaveProperties) { chart.saveDataSettings(entry); }
 					chart.setData(entry);
 				});
@@ -1235,7 +1241,7 @@ addEventListener('on_notify_data', (name, info) => {
 			if (info && info.window && !info.window.includes(window.Name)) { break; }
 			if (info && info.type) {
 				charts.forEach((chart) => {
-					if (info.chart && !info.chart.includes(chart.title)) { return; }
+					if (info.chart && !info.chart.includes(chart.title.key)) { return; }
 					this.changeConfig({ graph: { type: info.type }, callbackArgs: { bSaveProperties: !!info.bSaveProperties } });
 				});
 			}
@@ -1246,7 +1252,7 @@ addEventListener('on_notify_data', (name, info) => {
 			if (info && info.sort) {
 				charts.forEach((chart) => {
 					if (chart.dataManipulation.distribution !== null) { return; }
-					if (info.chart && !info.chart.includes(chart.title)) { return; }
+					if (info.chart && !info.chart.includes(chart.title.key)) { return; }
 					const sort = {};
 					const allowed = {
 						'*': ['natural', 'reverse'],
@@ -1270,7 +1276,7 @@ addEventListener('on_notify_data', (name, info) => {
 			if (info && info.window && !info.window.includes(window.Name)) { break; }
 			if (info && info.slice && Array.isArray(info.slice) && info.slice.length === 2) {
 				charts.forEach((chart) => {
-					if (info.chart && !info.chart.includes(chart.title)) { return; }
+					if (info.chart && !info.chart.includes(chart.title.key)) { return; }
 					this.changeConfig({ dataManipulation: { slice: [...info.slice] }, callbackArgs: { bSaveProperties: !!info.bSaveProperties } });
 				});
 			}
@@ -1280,7 +1286,7 @@ addEventListener('on_notify_data', (name, info) => {
 			if (info && info.window && !info.window.includes(window.Name)) { break; }
 			if (info && (Object.hasOwn(info, 'filter') || Object.hasOwn(info, 'mFilter'))) {
 				charts.forEach((chart) => {
-					if (info.chart && !info.chart.includes(chart.title)) { return; }
+					if (info.chart && !info.chart.includes(chart.title.key)) { return; }
 					const dataManipulation = {};
 					if (Object.hasOwn(info, 'filter')) { dataManipulation.filter = typeof info.filter === 'function' ? chart.serializeFunction(info.filter) : info.filter; }
 					if (Object.hasOwn(info, 'mFilter')) { dataManipulation.mFilter = info.mFilter; }
@@ -1293,7 +1299,7 @@ addEventListener('on_notify_data', (name, info) => {
 			if (info && info.window && !info.window.includes(window.Name)) { break; }
 			if (info && info.settings) {
 				charts.forEach((chart) => {
-					if (info.chart && !info.chart.includes(chart.title)) { return; }
+					if (info.chart && !info.chart.includes(chart.title.key)) { return; }
 					const settings = clone(info.settings);
 					if (Object.hasOwn(settings, 'dataManipulation') && Object.hasOwn(settings.dataManipulation, 'filter') && typeof settings.dataManipulation.filter === 'function') {
 						settings.dataManipulation.filter = chart.serializeFunction(settings.dataManipulation.filter);

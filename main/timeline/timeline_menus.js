@@ -1,5 +1,5 @@
 ﻿'use strict';
-//12/06/26
+//17/09/26
 
 /* exported onLbtnUpPoint, onLbtnUpSettings, onRbtnUpImportSettings */
 
@@ -30,7 +30,7 @@ function onLbtnUpPoint(point, x, y, mask) { // eslint-disable-line no-unused-var
 		? this.dataDraw.map((series) => series.find((p) => p.x === point.x)).flat(Infinity).filter(Boolean)
 		: [point];
 	// Header
-	menu.newEntry({ entryText: this.title, flags: MF_GRAYED });
+	menu.newEntry({ entryText: this.title.key.cut(50), flags: MF_GRAYED });
 	menu.newSeparator();
 	// Menus
 	points.forEach((subPoint) => {
@@ -176,7 +176,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 		}
 	};
 	// Header
-	menu.newEntry({ entryText: this.title, flags: MF_GRAYED });
+	menu.newEntry({ entryText: this.title.key.cut(50), flags: MF_GRAYED });
 	menu.newSeparator();
 	// Menus
 	{	// X

@@ -1,5 +1,5 @@
 ﻿'use strict';
-//16/09/26
+//17/09/26
 
 /* exported createStatisticsMenu */
 
@@ -101,7 +101,7 @@ function createStatisticsMenu({ bClear = true, menuKey = 'menu', onBtnUp = null,
 	const switchedGraphs = new Set(['horizontal-bars']);
 	const gradientGraphs = new Set(['horizontal-bars', 'bars', 'timeline', 'fill']);
 	// Header
-	menu.newEntry({ entryText: this.title, flags: MF_GRAYED });
+	menu.newEntry({ entryText: this.title.key.cut(50), flags: MF_GRAYED });
 	menu.newSeparator();
 	// Menus
 	{
@@ -424,13 +424,35 @@ function createStatisticsMenu({ bClear = true, menuKey = 'menu', onBtnUp = null,
 			}
 		}
 		{
-			const subMenuTwo = menu.newMenu('Titles', subMenu);
+			const subMenuTwo = menu.newMenu('Axis titles', subMenu);
 			[
 				{ isEq: null, key: this.axis.x.showKey, value: null, newValue: { showKey: !this.axis.x.showKey }, entryText: (this.axis.x.showKey ? 'Hide' : 'Show') + ' ' + (switchedGraphs.has(this.graph.type) ? 'Vertical' : 'X') + ' title' }
 			].forEach(createMenuOption('axis', 'x', subMenuTwo, false));
 			[
 				{ isEq: null, key: this.axis.y.showKey, value: null, newValue: { showKey: !this.axis.y.showKey }, entryText: (this.axis.y.showKey ? 'Hide' : 'Show') + ' ' + (switchedGraphs.has(this.graph.type) ? 'Horizontal' : 'Y') + ' title' }
 			].forEach(createMenuOption('axis', 'y', subMenuTwo, false));
+		}
+		{
+			const subMenuTwo = menu.newMenu('Chart title', subMenu);
+			[
+				{ isEq: null, key: this.title.show, value: null, newValue: { show: !this.title.show }, entryText: this.title.show ? 'Hide' : 'Show' }
+			].forEach(createMenuOption('title', void (0), subMenuTwo, false));
+
+			menu.newSeparator(subMenuTwo);
+			menu.newEntry({
+				menuName: subMenuTwo, entryText: 'Caption...', func: () => {
+					const val = Input.string('string', this.title.key, 'Input chart title:\n\nNote it will be automatically changed along data TF.', 'Chart title', 'Albums per decade');
+					if (val === null) { return; }
+					this.changeConfig({ title: { key: val }, callbackArgs: { bSaveProperties: true } });
+				}
+			});
+			{
+				const configSubMenu = menu.newMenu('Opacity', subMenuTwo);
+				menu.addTipLast('[' + Math.round(this.title.alpha / 255 * 100) + ']');
+				[0, 20, 40, 60, 80, 100].map((val) => {
+					return { isEq: null, key: this.title.alpha, value: null, newValue: Math.round(val * 255 / 100), entryText: val.toString() + (val === 0 ? '\t(transparent)' : val === 100 ? '\t(opaque)' : '') };
+				}).forEach(createMenuOption('title', 'alpha', configSubMenu));
+			}
 		}
 		{
 			const subMenuTwo = menu.newMenu('Dynamic colors', subMenu, this.callbacks.config.backgroundColor ? MF_STRING : MF_GRAYED);
@@ -535,7 +557,7 @@ function createStatisticsMenu({ bClear = true, menuKey = 'menu', onBtnUp = null,
 					menu.newEntry({ menuName: configSubMenu, entryText: '- N/A by JS-Host -', flags: MF_GRAYED });
 				}
 			}
-			if (type === 'lines-hq')  { // Line Join
+			if (type === 'lines-hq') { // Line Join
 				const configSubMenu = menu.newMenu('Line join', subMenu);
 				const entries = typeof LineJoin === 'undefined' ? null : Object.entries(LineJoin);
 				const currVal = entries

@@ -29,6 +29,7 @@
 
 ## [Unreleased][]
 ### Added
+- UI: new setting to modify and control how chart title is shown (previously on menus).
 - UI: support for line styles: solid, dot, dash, ... They work with most chart types, either as filling or border. Requires JSplitter.
 - UI: support for line join styles: miter, round,... It works with Lines (high quality)' chart type. Requires JSplitter.
 ### Changed

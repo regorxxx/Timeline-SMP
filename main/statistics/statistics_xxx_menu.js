@@ -590,10 +590,21 @@ function createStatisticsMenu({ bClear = true, menuKey = 'menu', onBtnUp = null,
 		}
 		{
 			const configSubMenu = menu.newMenu('Point opacity', subMenu);
-			menu.addTipLast('[' + this.graph.pointAlpha / 255 * 100 + ']');
+			menu.addTipLast('[' + Math.round(this.graph.pointAlpha / 255 * 100) + ']');
 			[0, 20, 40, 60, 80, 100].map((val) => {
 				return { isEq: null, key: this.graph.pointAlpha, value: null, newValue: Math.round(val * 255 / 100), entryText: val.toString() + (val === 0 ? '\t(transparent)' : val === 100 ? '\t(opaque)' : '') };
 			}).forEach(createMenuOption('graph', 'pointAlpha', configSubMenu));
+		}
+		{
+			const configSubMenu = menu.newMenu('Point filling', subMenu);
+			menu.addTipLast('[' + Math.round(this.graph.fillPercent) + '%]');
+			[0, 20, 40, 60, 80, 100].map((val) => {
+				return { isEq: null, key: this.graph.fillPercent, value: null, newValue: val, entryText: val.toString() + (val === 0 ? '\t(none)' : val === 100 ? '\t(full)' : '') };
+			}).forEach(createMenuOption('graph', 'fillPercent', configSubMenu));
+			menu.newSeparator(configSubMenu);
+			[
+				{ isEq: null, key: this.graphSpecs.fill.bShowGap, value: null, newValue: !this.graphSpecs.fill.bShowGap, entryText: 'Show min. gap', flags: this.graph.type === 'fill' ? MF_STRING : MF_GRAYED },
+			].forEach(createMenuOption('graphSpecs', ['fill', 'bShowGap'], configSubMenu, true));
 		}
 		menu.newSeparator(subMenu);
 		[

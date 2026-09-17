@@ -50,6 +50,7 @@ include('statistics_xxx_helper.js');
  * @param {_chartGraphType} [o.graph.type] - [='bars'] Chart type for display purposes
  * @param {boolean} [o.graph.multi] - [=false] Flag to expand {x,y,z} data into multiple {x,y} series to draw 3D data.
  * @param {number} [o.graph.borderWidth] - [=_scale(1)] Point size (scatter) or point border size
+ * @param {number} [o.graph.fillPercent] - [=100] Point filling percentage for bar-based charts
  * @param {_chartGraphPoint} [o.graph.point] - [=null] Point type for display (scatter only). If invalid, fallbacks to 'circle'
  * @param {_chartGraphLine} [o.graph.line] - [=null] Line type for display (line-like charts only). If invalid, fallbacks to 'solid'
  * @param {number} [o.graph.pointAlpha] - [=255] Point opacity [0-255]
@@ -78,6 +79,7 @@ include('statistics_xxx_helper.js');
  * @param {{show:boolean, color:number, width:number, ticks:boolean, labels:boolean, key:string}} [o.axis.z] - Z-Axis settings. Key sets the displayed title.
  * @param {object} [o.graphSpecs] - Graph type specific configuration
  * @param {{bAxisCenteredX:boolean}} [o.graphSpecs.timeline] - Timeline specific settings. bAxisCenteredX controls if ticks must be centered on the point or at the left.
+ * @param {{bShowGap:boolean}} [o.graphSpecs.fill] - Timeline specific settings. bShowGap controls if a 0.25 px wide is shown between points.
  * @param {object} [o.buttons] - Buttons settings
  * @param {boolean} [o.buttons.xScroll] - [=false] X-axis scroll buttons at sides
  * @param {boolean} [o.buttons.settings] - [=false] Settings button at right
@@ -116,7 +118,7 @@ function _chart({
 	dataAsync = null,
 	colors = [/* rgbSeries1, ... */],
 	chroma = {/* scheme, colorBlindSafe, interpolation */ },
-	graph = {/* type, multi, borderWidth, point, pointAlpha */ },
+	graph = {/* type, multi, borderWidth, fillPercent, point, pointAlpha */ },
 	dataManipulation = {/* sort, filter, mFilter, slice, distribution , probabilityPlot, group */ },
 	background = {/* color, image*/ },
 	grid = {
@@ -130,6 +132,7 @@ function _chart({
 	},
 	graphSpecs = { // Graph type specific configuration
 		timeline: {/* bAxisCenteredX */ },
+		fill: {/* bShowGap */ },
 	},
 	margin = {/* left, right, top, bottom */ },
 	buttons = {/* xScroll, settings, display, zoom, custom, alpha, timer, size */ },
@@ -159,7 +162,7 @@ function _chart({
 	this.setDefaults = () => {
 		this.colors = [];
 		this.chroma = { scheme: 'sequential', colorBlindSafe: true, interpolation: 'lrgb' }; // diverging, qualitative, sequential, random or [color, ...] see https://vis4.net/chromajs/#color-scales
-		this.graph = { type: 'bars', multi: false, borderWidth: _scale(1), point: null, line: null, pointAlpha: 255 };
+		this.graph = { type: 'bars', multi: false, borderWidth: _scale(1), fillPercent: 100, point: null, line: null, pointAlpha: 255 };
 		this.dataManipulation = { sort: { x: 'natural', y: null, z: null, my: 'reverse num', mz: null }, filter: null, mFilter: true, slice: [0, 10], distribution: null, probabilityPlot: null, group: 4 };
 		this.background = { color: RGB(255, 255, 255), image: null };
 		this.grid = { x: { show: false, color: RGB(0, 0, 0), width: _scale(1), alpha: 200 }, y: { show: false, color: RGB(0, 0, 0), width: _scale(1), alpha: 200 } };
@@ -176,6 +179,7 @@ function _chart({
 		};
 		this.graphSpecs = {
 			timeline: { bAxisCenteredX: false },
+			fill: { bShowGap: true }
 		};
 		this.margin = { left: _scale(20), right: _scale(20), top: _scale(20), bottom: _scale(20) };
 		this.buttons = { xScroll: false, settings: false, display: false, zoom: false, custom: false, alpha: 25, timer: 1500, size: _scale(24) };
@@ -425,6 +429,7 @@ function _chart({
 		const borderColor = RGBA(...toRGB(invert(this.colors[i], true)), getBrightness(...toRGB(this.colors[i])) < 50 ? this.graph.pointAlpha : 25);
 		const color = RGBA(...toRGB(this.colors[i]), this.graph.pointAlpha);
 		const minColor = this.configuration.bGradientPoints ? invert(color, false, true) : color;
+		const fillOffset = selBar * (1 - this.graph.fillPercent / 100);
 		const smoothMode = SmoothingMode.AntiAlias;
 		let focusPoint;
 		series.forEach((value, j) => {
@@ -446,9 +451,9 @@ function _chart({
 				if (minColor === topColor) {
 					const paintPoint = (color) => {
 						const newValH = series[j - 1].y / (maxY || 1) * (y - h);
-						const newXPoint = x + (idx - 1) * tickW;
+						const newXPoint = x + (idx - 1) * tickW + fillOffset + (this.graphSpecs.fill.bShowGap ? 0.25 : -0.5);
 						const newYPoint = y - newValH;
-						const lineArr = [xPoint, yPoint, xPoint, y, newXPoint + 0.25, y, newXPoint + 0.25, newYPoint];
+						const lineArr = [xPoint, yPoint, xPoint, y, newXPoint, y, newXPoint, newYPoint];
 						gr.FillPolygon(color, 0, lineArr);
 					};
 					paintPoint(minColor);
@@ -498,13 +503,14 @@ function _chart({
 		const borderColor = RGBA(...toRGB(invert(this.colors[i], true)), getBrightness(...toRGB(this.colors[i])) < 50 ? this.graph.pointAlpha : 25);
 		const color = RGBA(...toRGB(this.colors[i]), this.graph.pointAlpha);
 		const minColor = this.configuration.bGradientPoints ? invert(color, false, true) : color;
+		const fillOffset = barW * (1 - this.graph.fillPercent / 100);
 		series.forEach((value, j) => {
 			const scale = value.y / (maxY || 1);
 			valH = scale * (y - h);
 			const xPoint = xValues + xAxisValues.indexOf(value.x) * tickW;
 			const yPoint = y - valH;
 			const bFocused = this.currPoint[0] === i && this.currPoint[1] === j;
-			const point = this.dataCoords[i][j] = { x: xPoint, y: yPoint, w: barW, h: valH };
+			const point = this.dataCoords[i][j] = { x: xPoint + fillOffset / 2, y: yPoint, w: barW - fillOffset, h: valH };
 			if (xPoint > w + tickW) { return; }
 			const topColor = this.configuration.bGradientPoints ? blendColors(minColor, color, scale, true) : color;
 			if (minColor === topColor) {
@@ -545,6 +551,7 @@ function _chart({
 		const borderColor = RGBA(...toRGB(invert(this.colors[i], true)), getBrightness(...toRGB(this.colors[i])) < 50 ? this.graph.pointAlpha : 25);
 		const color = RGBA(...toRGB(this.colors[i]), this.graph.pointAlpha);
 		const minColor = this.configuration.bGradientPoints ? invert(color, false, true) : color;
+		const fillOffset = barW * (1 - this.graph.fillPercent / 100);
 		series.forEach((value, j) => {
 			const scale = value.y / (maxY || 1);
 			valW = scale * (w - x);
@@ -552,7 +559,7 @@ function _chart({
 			const yPoint = yValues - revIdx * tickW;
 			const xPoint = x;
 			const bFocused = this.currPoint[0] === i && this.currPoint[1] === j;
-			const point = this.dataCoords[i][j] = { x: xPoint, y: yPoint, w: valW, h: barW };
+			const point = this.dataCoords[i][j] = { x: xPoint, y: yPoint + fillOffset / 2, w: valW, h: barW - fillOffset };
 			const topColor = this.configuration.bGradientPoints ? blendColors(minColor, color, scale, true) : color;
 			if (minColor === topColor) {
 				gr.FillSolidRect(point.x, point.y, point.w, point.h, minColor);
@@ -591,13 +598,14 @@ function _chart({
 		const borderColor = RGBA(...toRGB(invert(this.colors[i], true)), getBrightness(...toRGB(this.colors[i])) < 50 ? this.graph.pointAlpha : 25);
 		const color = RGBA(...toRGB(this.colors[i]), this.graph.pointAlpha);
 		const minColor = this.configuration.bGradientPoints ? invert(color, false, true) : color;
+		const fillOffset = barW * (1 - this.graph.fillPercent / 100);
 		series.forEach((value, j) => {
 			const scale = value.y / (maxY || 1);
 			valH = scale / 2 * (y - h);
 			const xPoint = xValues + xAxisValues.indexOf(value.x) * tickW;
 			const yPoint = (y - h) / 2 - valH + this.margin.top;
 			const bFocused = this.currPoint[0] === i && this.currPoint[1] === j;
-			const point = this.dataCoords[i][j] = { x: xPoint, y: yPoint, w: barW, h: valH + this.axis.x.width };
+			const point = this.dataCoords[i][j] = { x: xPoint + fillOffset / 2, y: yPoint, w: barW - fillOffset, h: valH + this.axis.x.width };
 			const topColor = this.configuration.bGradientPoints ? blendColors(minColor, color, scale, true) : color;
 			if (minColor === topColor) {
 				gr.FillSolidRect(point.x, point.y, point.w, point.h - this.axis.x.width / 2, minColor);
@@ -2856,6 +2864,7 @@ function _chart({
 		}
 		if (graphSpecs) {
 			if (graphSpecs.timeline) { this.graphSpecs.timeline = { ...this.graphSpecs.timeline, ...graphSpecs.timeline }; }
+			if (graphSpecs.fill) { this.graphSpecs.fill = { ...this.graphSpecs.fill, ...graphSpecs.fill }; }
 		}
 		if (grid) {
 			if (grid.x) { this.grid.x = { ...this.grid.x, ...grid.x }; }
@@ -3180,6 +3189,7 @@ function _chart({
 			margin: { ...this.margin },
 			buttons: { ...this.buttons },
 			configuration: { ...this.configuration },
+			graphSpecs: { timeline: { ...this.graphSpecs.timeline }, fill: { ...this.graphSpecs.fill } },
 			...(bPosition ? { x: this.x, y: this.y, w: this.w, h: this.h } : {}),
 			title: { ...this.title }
 		};
@@ -3285,10 +3295,11 @@ function _chart({
 	this.title = { ...this.title, ...title };
 	/** @type {{left: number, right: number, top: number, bottom: number}} */
 	this.margin = { ...this.margin, ...margin };
-	/** @type {{timeline: {bAxisCenteredX:boolean}} */
+	/** @type {{timeline: {bAxisCenteredX:boolean}, fill: {bShowGap:boolean}} */
 	this.graphSpecs; // NOSONAR
 	if (graphSpecs) {
 		if (graphSpecs.timeline) { this.graphSpecs.timeline = { ...this.graphSpecs.timeline, ...graphSpecs.timeline }; }
+		if (graphSpecs.fill) { this.graphSpecs.fill = { ...this.graphSpecs.fill, ...graphSpecs.fill }; }
 	}
 	this.buttons = { ...this.buttons, ...buttons };
 	if (callbacks) {

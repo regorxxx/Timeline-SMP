@@ -29,6 +29,7 @@
 
 ## [Unreleased][]
 ### Added
+- UI: new setting to modify the degree of point filling for bar-based charts. i.e. Instead of using the entire available width, it will leave blank spaces between points if using any value below 100%.
 - UI: new setting to modify and control how chart title is shown (previously on menus).
 - UI: new setting to control X-Y grids opacity.
 - UI: support for line styles: solid, dot, dash, ... They work with most chart types, either as filling or border. Requires JSplitter.

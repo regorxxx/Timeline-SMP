@@ -7,7 +7,7 @@ include('statistics_xxx_helper.js');
 /* global _gdiFont:readable, getBrightness:readable, toRGB:readable, RGBA:readable, invert:readable, Chroma:readable, _scale:readable, _tt:readable, round:readable, DT_CENTER:readable, DT_END_ELLIPSIS:readable, DT_CALCRECT:readable, DT_NOPREFIX:readable, DT_RIGHT:readable, DT_LEFT:readable, DT_VCENTER:readable, TextRenderingHint:readable, StringFormatFlags:readable, InterpolationMode:readable, RotateFlipType:readable, VK_SHIFT:readable, range:readable, RGB:readable, isFunction:readable, _p:readable, IDC_HAND:readable, IDC_ARROW:readable, debounce:readable, throttle:readable, VK_CONTROL:readable, MK_LBUTTON:readable, colorbrewer:readable, NatSort:readable, MK_SHIFT:readable, _button:readable, chars:readable, _popup:readable, opaqueColor:readable, memoryPrint:readable, strNumCollator:readable, blendColors:readable, applyAsMask:readable, SmoothingMode:readable, IDC_WAIT:readable, DashStyle:readable, CapStyle:readable */
 
 /**
- * @typedef {'timeline'|'bars'|'bars-horizontal'|'lines'|'lines-hq'|'fill'|'scatter'|'doughnut'|'pie'} _chartGraphType
+ * @typedef {'timeline'|'bars'|'bars-horizontal'|'lines'|'lines-hq'|'lines-markers'|'fill'|'scatter'|'doughnut'|'pie'} _chartGraphType
  */
 
 /**
@@ -881,6 +881,7 @@ function _chart({
 			case 'scatter':
 			case 'lines':
 			case 'lines-hq':
+			case 'lines-markers':
 			case 'fill': {
 				x -= this.axis.x.width * 1 / 2;
 				tickW = (w - this.margin.leftAuto) / ((xAxisValuesLen - 1) || 1);
@@ -901,6 +902,10 @@ function _chart({
 					} else if (graphType === 'lines-hq') {
 						if (this.support.drawLines) { this.paintLinesHighQ(gr, series, i, x, y, w, h, maxY, tickW, last, xAxisValues); }
 						else { this.paintLines(gr, series, i, x, y, w, h, maxY, tickW, last, xAxisValues); }
+					} else if (graphType === 'lines-markers') {
+						if (this.support.drawLines) { this.paintLinesHighQ(gr, series, i, x, y, w, h, maxY, tickW, last, xAxisValues); }
+						else { this.paintLines(gr, series, i, x, y, w, h, maxY, tickW, last, xAxisValues); }
+						this.paintScatter(gr, series, i, x, y, w, h, maxY, tickW, xAxisValues);
 					}
 				});
 				gr.SetSmoothingMode();

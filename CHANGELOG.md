@@ -34,6 +34,7 @@
 - UI: new setting to control X-Y grids opacity.
 - UI: support for line styles: solid, dot, dash, ... They work with most chart types, either as filling or border. Requires JSplitter.
 - UI: support for line join styles: miter, round,... It works with Lines (high quality)' chart type. Requires JSplitter.
+- UI: new chart type 'Lines (with markers)'.
 ### Changed
 - UI: minor improvements to menu entries display.
 - Helpers: updated helpers.

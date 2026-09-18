@@ -97,7 +97,7 @@ function createStatisticsMenu({ bClear = true, menuKey = 'menu', onBtnUp = null,
 	const filterLow = (num) => new Function('p', 'return p.y < ' + num + ';'); // NOSONAR [safe dynamic]
 	const filterBetween = (lim) => new Function('p', 'return p.y > ' + lim[0] + ' && p.y < ' + lim[1] + ';'); // NOSONAR [safe dynamic]
 	const fineGraphs = new Set(['bars', 'fill', 'doughnut', 'pie', 'timeline', 'horizontal-bars']).difference(hideCharts || new Set());
-	const sizeGraphs = new Set(['scatter', 'lines', 'lines-hq']).difference(hideCharts || new Set());
+	const sizeGraphs = new Set(['scatter', 'lines', 'lines-hq', 'lines-markers']).difference(hideCharts || new Set());
 	const switchedGraphs = new Set(['horizontal-bars']);
 	const gradientGraphs = new Set(['horizontal-bars', 'bars', 'timeline', 'fill']);
 	// Header
@@ -549,7 +549,7 @@ function createStatisticsMenu({ bClear = true, menuKey = 'menu', onBtnUp = null,
 					return { isEq: null, key: this.graph.borderWidth, value: null, newValue: val, entryText: val.toString() };
 				}).forEach(createMenuOption('graph', 'borderWidth', configSubMenu));
 			}
-			if (type === 'scatter' || type === 'p-p plot') {
+			if (type === 'scatter' || type === 'p-p plot' || type === 'lines-markers') {
 				const configSubMenu = menu.newMenu('Point type', subMenu);
 				menu.addTipLast('[' + (this.graph.point || 'circle').cut(5) + ']');
 				['circle', 'circumference', 'cross', 'triangle', 'plus'].map((val) => {
@@ -573,7 +573,7 @@ function createStatisticsMenu({ bClear = true, menuKey = 'menu', onBtnUp = null,
 					menu.newEntry({ menuName: configSubMenu, entryText: '- N/A by JS-Host -', flags: MF_GRAYED });
 				}
 			}
-			if (type === 'lines-hq') { // Line Join
+			if (type === 'lines-hq' || type === 'lines-markers') { // Line Join
 				const configSubMenu = menu.newMenu('Line join', subMenu);
 				const entries = this.support.lineJoin ? Object.entries(LineJoin) : null;
 				const currVal = entries

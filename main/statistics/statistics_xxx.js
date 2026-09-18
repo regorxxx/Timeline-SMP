@@ -1,5 +1,5 @@
 'use strict';
-//17/09/26
+//18/09/26
 
 /* exported _chart */
 
@@ -377,7 +377,7 @@ function _chart({
 	 * @returns {void}
 	*/
 	this.paintLinesHighQ = (gr, series, i, x, y, w, h, maxY, tickW, last, xAxisValues) => { // NOSONAR
-		if (!gr.DrawLines) { throw new Error('Chart type only supported on JSplitter'); }
+		if (!this.support.drawLines) { throw new Error('Chart type only supported on JSplitter'); }
 		const selBar = tickW;
 		// Values
 		let valH;
@@ -401,7 +401,7 @@ function _chart({
 			lineArr.push(xPoint, yPoint);
 			if (bFocused) { focusPoint = point; }
 		});
-		gr.DrawLines(color, this.graph.borderWidth, lineArr, this.strokeStyle);
+		if (lineArr.length) { gr.DrawLines(color, this.graph.borderWidth, lineArr, this.strokeStyle); }
 		if (focusPoint) { gr.FillSolidRect(focusPoint.x, focusPoint.y, focusPoint.w, focusPoint.h, borderColor); }
 	};
 	/**
@@ -890,14 +890,16 @@ function _chart({
 				const last = xAxisValuesLen - 1;
 				gr.SetSmoothingMode(SmoothingMode.AntiAlias);
 				this.dataDraw.forEach((series, i) => {
-					if (graphType === 'scatter' || (series.length === 1)) {
+					const len = series.length;
+					if (!len) { return; }
+					else if (graphType === 'scatter' || len === 1) {
 						this.paintScatter(gr, series, i, x, y, w, h, maxY, tickW, xAxisValues);
 					} else if (graphType === 'fill') {
 						this.paintFill(gr, series, i, x, y, w, h, maxY, tickW, last, xAxisValues);
 					} else if (graphType === 'lines') {
 						this.paintLines(gr, series, i, x, y, w, h, maxY, tickW, last, xAxisValues);
 					} else if (graphType === 'lines-hq') {
-						if (gr.DrawLines) { this.paintLinesHighQ(gr, series, i, x, y, w, h, maxY, tickW, last, xAxisValues); }
+						if (this.support.drawLines) { this.paintLinesHighQ(gr, series, i, x, y, w, h, maxY, tickW, last, xAxisValues); }
 						else { this.paintLines(gr, series, i, x, y, w, h, maxY, tickW, last, xAxisValues); }
 					}
 				});
@@ -1591,6 +1593,7 @@ function _chart({
 	this.paint = (gr) => {
 		if (!window.ID) { return; }
 		if (!window.Width || !window.Height) { return; }
+		this.support.gr.DrawLines = !!gr.DrawLines;
 		if (this.configuration.bProfile) { this.profile.Reset(); }
 		this.paintBg(gr);
 		if (this.configuration.bProfile) { this.profile.Print('Paint background', false); }
@@ -2011,6 +2014,20 @@ function _chart({
 	};
 
 	this.createTitle = (chartNumber) => _chart.createTitle(chartNumber, this.axis.x.key, this.axis.y.key);
+
+	this.support = {
+		/** @private */
+		gr: { DrawLines: false },
+		get drawLines() {
+			return Object.hasOwn(window, 'DrawMode') && this.gr.DrawLines;
+		},
+		get lineJoin() {
+			return window.DrawMode === 1 && typeof LineJoin !== 'undefined';
+		},
+		get strokeStyle() {
+			return window.DrawMode === 1 && typeof DashStyle !== 'undefined';
+		}
+	};
 
 	let prevX = null;
 	const cleanPrevX = debounce((release) => { !utils.IsKeyPressed(release) && (prevX = null); }, 500);
@@ -3031,7 +3048,7 @@ function _chart({
 			bPass = false;
 		}
 		if (!this.graph.line) { this.graph.line = {}; }
-		if (typeof DashStyle === 'undefined' || typeof window.DrawMode === 'undefined' || window.DrawMode === 0) {
+		if (!this.support.strokeStyle) {
 			this.strokeStyle = 0;
 		} else if (Object.keys(this.graph.line).length === 0) {
 			this.strokeStyle = 0;

@@ -1,5 +1,5 @@
 ﻿'use strict';
-//17/09/26
+//18/09/26
 
 /* exported createStatisticsMenu */
 
@@ -112,7 +112,8 @@ function createStatisticsMenu({ bClear = true, menuKey = 'menu', onBtnUp = null,
 			{ isEq: null, key: this.graph.type, value: null, newValue: 'bars', entryText: 'Bars' },
 			{ isEq: null, key: this.graph.type, value: null, newValue: 'horizontal-bars', entryText: 'Bars (horizontal)' },
 			{ isEq: null, key: this.graph.type, value: null, newValue: 'lines', entryText: 'Lines' },
-			Object.hasOwn(window, 'DrawMode') ? { isEq: null, key: this.graph.type, value: null, newValue: 'lines-hq', entryText: 'Lines (high quality)' } : null,
+			this.support.drawLines ? { isEq: null, key: this.graph.type, value: null, newValue: 'lines-hq', entryText: 'Lines (high quality)' } : null,
+			{ isEq: null, key: this.graph.type, value: null, newValue: 'lines-markers', entryText: 'Lines (with markers)' },
 			{ isEq: null, key: this.graph.type, value: null, newValue: 'fill', entryText: 'Fill' },
 			{ isEq: null, key: this.graph.type, value: null, newValue: 'doughnut', entryText: 'Doughnut' },
 			{ isEq: null, key: this.graph.type, value: null, newValue: 'pie', entryText: 'Pie' },
@@ -390,7 +391,7 @@ function createStatisticsMenu({ bClear = true, menuKey = 'menu', onBtnUp = null,
 				}).forEach(createMenuOption('grid', ['x', 'alpha'], configSubMenu));
 			}
 			{
-				const configSubMenu = menu.newMenu((switchedGraphs.has(this.graph.type) ? 'Horizontal' : 'Y') + 'grid opacity', subMenuTwo);
+				const configSubMenu = menu.newMenu((switchedGraphs.has(this.graph.type) ? 'Horizontal' : 'Y') + ' grid opacity', subMenuTwo);
 				menu.addTipLast('[' + Math.round(this.grid.y.alpha / 255 * 100) + ']');
 				[0, 20, 40, 60, 80, 100].map((val) => {
 					return { isEq: null, key: this.grid.y.alpha, value: null, newValue: Math.round(val * 255 / 100), entryText: val.toString() + (val === 0 ? '\t(transparent)' : val === 100 ? '\t(opaque)' : '') };
@@ -574,7 +575,7 @@ function createStatisticsMenu({ bClear = true, menuKey = 'menu', onBtnUp = null,
 			}
 			if (type === 'lines-hq') { // Line Join
 				const configSubMenu = menu.newMenu('Line join', subMenu);
-				const entries = typeof LineJoin === 'undefined' ? null : Object.entries(LineJoin);
+				const entries = this.support.lineJoin ? Object.entries(LineJoin) : null;
 				const currVal = entries
 					? (entries.find((d) => d[1] === this.graph.line.lineJoin) || entries[0])[0]
 					: 'Miter';

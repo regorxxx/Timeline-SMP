@@ -37,6 +37,7 @@
 - UI: new chart type 'Lines (with markers)'.
 ### Changed
 - UI: minor improvements to menu entries display.
+- UI: minor improvements to some input popups requiring array of strings.
 - Helpers: updated helpers.
 - Helpers: replaced nircmd.exe with nircmdx.exe so all recycle bin errors are directly handled by console.
 ### Removed

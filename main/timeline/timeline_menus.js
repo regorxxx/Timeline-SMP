@@ -1,5 +1,5 @@
 ﻿'use strict';
-//17/09/26
+//02/10/26
 
 /* exported onLbtnUpPoint, onLbtnUpSettings, onRbtnUpImportSettings */
 
@@ -492,7 +492,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 		menu.newSeparator(subMenu);
 		menu.newEntry({
 			menuName: subMenu, entryText: 'By custom TF...' + '\t' + _b((dataSource.removeDuplicatesOptions.checkQueys || globTags.remDupl).join(', ').cut(10)), func: () => {
-				const input = Input.json('array strings', dataSource.removeDuplicatesOptions.checkQueys || globTags.remDupl, 'Enter tags:\n', 'Deduplicate source tags', globTags.remDupl);
+				const input = Input.json('array strings', dataSource.removeDuplicatesOptions.checkQueys || globTags.remDupl, 'Enter tags:\n(JSON strings array)', 'Deduplicate source tags', globTags.remDupl);
 				if (input === null) { return; }
 				this.saveDataSettings({ dataSource });
 				this.setData(dataSource);
@@ -574,7 +574,7 @@ function onLbtnUpSettings({ bShowZ = true, readmes } = {}) {
 			: playingTF.length ? 'Tags' : 'Never';
 		menu.newEntry({
 			menuName: subMenu, entryText: 'On playback only by TF...' + '\t' + _b(playingTFTip), func: () => {
-				const input = Input.json('array strings', playingTF, 'Enter tags:\n(Use ["*"] for all tags)', 'Auto-refresh sources by TitleFormat', '["PLAY_COUNT"]');
+				const input = Input.json('array strings', playingTF, 'Enter tags:\n(JSON strings array)\n\nUse ["*"] for all tags.', 'Auto-refresh sources by TitleFormat', '["PLAY_COUNT"]');
 				if (input === null) { return; }
 				properties.playingTF[1] = JSON.stringify(input.map((tag) => tag.toUpperCase()));
 				overwriteProperties(properties);

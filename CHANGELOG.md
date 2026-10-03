@@ -38,6 +38,7 @@
 ### Changed
 - UI: minor improvements to menu entries display.
 - Helpers: updated helpers.
+- Helpers: replaced nircmd.exe with nircmdx.exe so all recycle bin errors are directly handled by console.
 ### Removed
 ### Fixed
 - UI: reset 'Show (X-axis)' setting when changing source data TF.

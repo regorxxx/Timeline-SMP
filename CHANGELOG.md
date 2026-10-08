@@ -40,6 +40,7 @@
 - UI: minor improvements to some input popups requiring array of strings.
 - Helpers: updated helpers.
 - Helpers: replaced nircmd.exe with nircmdx.exe so all recycle bin errors are directly handled by console.
+- Installation: required fonts are now loaded on the fly when using JSplitter instead of requiring being installed system-wide.
 ### Removed
 ### Fixed
 - UI: reset 'Show (X-axis)' setting when changing source data TF.

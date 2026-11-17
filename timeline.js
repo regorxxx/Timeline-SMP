@@ -1,5 +1,5 @@
 ﻿'use strict';
-//06/11/26
+//17/11/26
 
 if (!window.ScriptInfo.PackageId) { window.DefineScript('Timeline-SMP', { author: 'regorxxx', version: '3.2.0', features: { drag_n_drop: true, grab_focus: true } }); }
 
@@ -1029,7 +1029,10 @@ addEventListener('on_notify_data', (name, info) => {
 	switch (name) { // NOSONAR
 		// Share panel settings
 		case window.ScriptInfo.Name + ': share UI settings': {
-			if (info) { charts.every((chart) => chart.applyUiSettings(clone(info))); }
+			if (info) {
+				if (info.window && !info.window.includes(window.Name)) { break; }
+				charts.every((chart) => chart.applyUiSettings(clone(info)));
+			}
 			break;
 		}
 		// Dynamic colors
